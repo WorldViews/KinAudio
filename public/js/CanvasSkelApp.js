@@ -16,11 +16,16 @@ class BodyGraphic extends CanvasTool.Graphic {
     draw(canvas, ctx) {
         var J = JointType;
         var hpt = this.body.getFloorXY(J.head);
+        var lspt = this.body.getFloorXY(J.shoulderLeft);
+        var lept = this.body.getFloorXY(J.elbowLeft);
         var lhpt = this.body.getFloorXY(J.handLeft);
+        var rspt = this.body.getFloorXY(J.shoulderRight);
+        var rept = this.body.getFloorXY(J.elbowRight);
         var rhpt = this.body.getFloorXY(J.handRight);
         this.drawCircle(canvas, ctx, 4, hpt.x, hpt.y);
         this.drawCircle(canvas, ctx, 2, lhpt.x, lhpt.y);
         this.drawCircle(canvas, ctx, 2, rhpt.x, rhpt.y);
+        this.drawPolyLine(canvas, ctx, [rhpt, rept, rspt, lspt, lept, lhpt])
     }
 }
 

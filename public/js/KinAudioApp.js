@@ -59,7 +59,7 @@ class KinAudioApp {
     }
 
     initCanvasTool() {
-        this.canvasTool = new CanvasTool("canvas1");
+        this.canvasTool = new CanvasTool("trackingCanvas");
         var n = 0;
         var low = -100;
         var high = 100;
@@ -76,13 +76,6 @@ class KinAudioApp {
 
     initSkelApp() {
         this.skelApp = new CanvasSkelApp({canvasTool: this.canvasTool});
-        $("#trackedBodiesInfo").click(() => {
-            var v = $("#bodyStatus").is(":visible");
-            if (v)
-                $("#bodyStatus").hide();
-            else
-                $("#bodyStatus").show();
-        });
     }
 
     setupGUIBindings() {
@@ -101,6 +94,19 @@ class KinAudioApp {
         $("#send").click(() => {
             inst.portal.sendMessage({ type: 'click', n });
         });
+
+        function rigCollapsableDiv(ctrlId, panelId) {
+            $(ctrlId).click(() => {
+                var v = $(panelId).is(":visible");
+                if (v)
+                    $(panelId).hide(1);
+                else
+                    $(panelId).show(1);
+            });
+        }
+        rigCollapsableDiv("#trackedBodiesInfo", "#bodyStatus");
+        rigCollapsableDiv("#showAudioControls", "#audioControls");
+        rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
     }
 
 

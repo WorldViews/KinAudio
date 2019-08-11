@@ -244,6 +244,17 @@ CanvasTool.Graphic = class {
         ctx.stroke();
     }
 
+    drawPolyLine(canvas, ctx, pts) {
+        ctx.lineWidth = this.lineWidth;
+        ctx.strokeStyle = this.strokeStyle;
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (var i=1; i<pts.length; i++) {
+            ctx.lineTo(pts[i].x, pts[i].y);
+        }
+        ctx.stroke();
+    }
+    
     contains(pt) {
         var d = this.tool.dist(this, pt);
         //console.log("contains", this.id, d, this.x, this.y, pt, this.radius);

@@ -27,7 +27,8 @@
 </head>
 
 <body>
-    <div id="colorDisplay" style="padding:40px;">
+    <h4 id="showAudioControls">Audio Controls</h4>
+    <div id="audioControls" style="padding:40px;">
         <input type="button" id="startButton" value="Start"> &nbsp;
         <button id="loadAudio" style="">Load Audio</button> &nbsp;
         <p>
@@ -53,7 +54,8 @@
         <h4 id="trackedBodiesInfo">Tracked Bodies</h4>
             <pre id="bodyStatus" style="font-size: 16px" hidden></pre>
     </div>
-    <canvas id="canvas1" width="720" height="480" style="border-style: solid; border-width:2"></canvas>
+    <h4 id="showTrackingCanvas">Tracking Canvas</h4>
+    <canvas id="trackingCanvas" width="720" height="480" style="border-style: solid; border-width:2"></canvas>
     
     <script>
     var app = null;
