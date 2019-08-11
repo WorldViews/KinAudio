@@ -60,22 +60,25 @@ class KinAudioApp {
 
     initCanvasTool() {
         this.canvasTool = new CanvasTool("trackingCanvas");
-        var n = 0;
-        var low = -100;
-        var high = 100;
-        var inc = 50;
-        for (var i=low; i <= high; i += inc) {
-            for (var j=low; j <= high; j+= inc) {
-                var g = new CanvasTool.Graphic(n, i, j);
-                this.canvasTool.addGraphic(g);
-                n++;
+        var addSampleGraphics = false;
+        if (addSampleGraphics) {
+            var n = 0;
+            var low = -100;
+            var high = 100;
+            var inc = 50;
+            for (var i=low; i <= high; i += inc) {
+                for (var j=low; j <= high; j+= inc) {
+                    var g = new CanvasTool.Graphic(n, i, j);
+                    this.canvasTool.addGraphic(g);
+                    n++;
+                }
             }
         }
         this.canvasTool.start();
     }
 
     initSkelApp() {
-        this.skelApp = new CanvasSkelApp({canvasTool: this.canvasTool});
+        this.skelApp = new CanvasSkelWatcher({canvasTool: this.canvasTool});
     }
 
     setupGUIBindings() {
@@ -267,7 +270,6 @@ class KinAudioApp {
             console.log("new frequency value: ", f);
             this.audioEffects.biquad.frequency.value = f;
         }
-
     }
 
     changeFilterDetune() {

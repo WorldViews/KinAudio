@@ -6,6 +6,14 @@ class KinectCameraGraphic extends CanvasTool.Graphic {
     }
 }
 
+class PanoPortalGraphic extends CanvasTool.Graphic {
+    constructor(id, x, y) {
+        super(id, x, y);
+        this.radius = 50;
+        this.fillStyle = "#FEE"
+    }
+}
+
 class BodyGraphic extends CanvasTool.Graphic {
     constructor(body) {
         var id = "body"+body.id;
@@ -52,12 +60,13 @@ class CanvBody extends RiggedBody {
     }
 }
 
-//TODO: ***  Why do we need SkelWatcher and SkelApp.  Maybe they can be combined.
 class CanvasSkelWatcher extends SkelWatcher {
-    constructor(canvasTool) {
-        super();
-        this.canvasTool = canvasTool;
-        canvasTool.addGraphic(new KinectCameraGraphic('kin1', 0, 0));
+
+    constructor(opts) {
+        super(opts);
+        this.canvasTool = opts.canvasTool;
+        this.canvasTool.addGraphic(new PanoPortalGraphic('panoPortal1', 10, 100));
+        this.canvasTool.addGraphic(new KinectCameraGraphic('kin1', 0, 0));
     }
 
     makeNewBody(bid, bodyRec) {
@@ -76,17 +85,5 @@ class CanvasSkelWatcher extends SkelWatcher {
         body.graphic = g;
     }
 }
-
-//TODO: ***  Why do we need SkelWatcher and SkelApp.  Maybe they can be combined.
-class CanvasSkelApp extends SkelApp {
-    constructor(opts) {
-        super(opts);
-    }
-
-    makeSkelWatcher(opts) {
-        return new CanvasSkelWatcher(opts.canvasTool);
-    }
-}
-
 
 

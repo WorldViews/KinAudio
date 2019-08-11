@@ -228,7 +228,7 @@ class RiggedBody extends Body {
     }
 }
 
-class SkelWatcher
+class SkelWatcherBase
 {
     constructor(opts) {
         opts = opts || {};
@@ -324,5 +324,44 @@ class SkelWatcher
             $("#bodyStatus").append(body.statusStr());
         }
     }
+}
+
+class SkelWatcher extends SkelWatcherBase {
+    constructor(opts) {
+        super(opts);
+        var inst = this;
+        var clientId = "skelApp_"+getClockTime();
+        this.portal = new MUSEPortal();
+        var portal = this.portal;
+        this.n = 0;
+        portal.addWatcher(this.handleMUSEMessage.bind(this));
+        this.sendMessage({ type: 'request.status' });
+        setInterval(() => inst.tick(), 100);
+        setInterval(() => {
+            //console.log("heartbeat...");
+            inst.n++;
+            inst.sendMessage({ type: 'heartbeat', n: inst.n, client: "SkelApp", clientId });
+        }, 5000);
+    }
+
+    tick() {
+    }
+
+    sendMessage(msg) {
+        //console.log("SkelApp.sendMessage", msg);
+        msg._clientName = this.clientName;
+        this.portal.sendMessage(msg);
+    }
+
+    handleMUSEMessage(msg) {
+        //console.log("handleMUSEMessage", msg);
+        //$("#log").html(JSON.stringify(msg, null, 3));
+        if (msg._src != 'playerView') {
+            //console.log("rejecting ", msg);
+            return;
+        }
+        if (msg.type == "poseFit") {
+        }
+    }    
 }
 

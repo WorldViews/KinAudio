@@ -12,10 +12,10 @@
     <script src="../js/kinDefs.js"></script>
     <script src="js/RVWatcher.js"></script>
     <script src="js/Estimators.js"></script>
+    <script src="js/AppProxy.js"></script>
     <script src="js/CanvasTool.js"></script>
     <script src="js/SkelWatcher.js"></script>
-    <script src="js/SkelApp.js"></script>
-    <script src="js/CanvasSkelApp.js"></script>
+    <script src="js/CanvasSkelWatcher.js"></script>
     <script src="js/KinAudioApp.js"></script>
     <script src="js/AudioEffectsTool.js"></script>
     <script src="js/BufferLoader.js"></script>
@@ -55,7 +55,8 @@
             <pre id="bodyStatus" style="font-size: 16px" hidden></pre>
     </div>
     <h4 id="showTrackingCanvas">Tracking Canvas</h4>
-    <canvas id="trackingCanvas" width="720" height="480" style="border-style: solid; border-width:2"></canvas>
+    <canvas id="trackingCanvas" width="720" height="480"
+       style="border-style: solid; border-width:2; width: 95%"></canvas>
     
     <script>
     var app = null;
