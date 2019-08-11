@@ -15,7 +15,6 @@ class ToneTool {
         this.curentBpm = this.defaultBpm;
         Tone.Transport.bpm.value = this.bpm;
         this.now = Tone.Context.now;
-        this.counter = 0;
     }
 
     createDrum(){
@@ -80,7 +79,6 @@ class ToneTool {
 		bellPart.loop = false;
         //bellPart.loopEnd = "1m";
         return bellPart;
-
     }
 
     createConga(){
@@ -92,14 +90,8 @@ class ToneTool {
 				"decay" : 0.5,
                 "sustain" : 0
             }
-        }).toMaster();
-        
+        }).toMaster();       
         return conga;
-    }
-
-    createComplexDrums(no, types){
-        // when the composition is set to a certain chain (instruments, filter, reverb, master)
-        // move all to a higher level of sound engine 
     }
 
     createLoopBeat(loop, measureNo, bpm){
@@ -108,7 +100,6 @@ class ToneTool {
         }
         Tone.Transport.bpm.value = bpm;
         var loopBeat = new Tone.Loop(loop, measureNo);
-        this.loopBeat = loopBeat;
         return loopBeat;
     }
 
@@ -197,15 +188,6 @@ class ToneTool {
 
         synth.chain(delay, Tone.Master);
         return delay;
-    }
-
-    createDrumMelody(counter, onset, notes, duration, time, volume){
-        if (counter%8 == onset){
-            drums.triggerAttackRelease(notes[0],duration,time,volume);
-            drums2.triggerAttackRelease(notes[1],duration,time,volume);
-            //console.log(counter);
-        }
-        this.counter = counter;
     }
 
 }

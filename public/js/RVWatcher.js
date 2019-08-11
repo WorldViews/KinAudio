@@ -18,7 +18,6 @@ class RVWatcher {
     this.energySmoo = null;
     this.playSpeedSmoo = null;
     this.speedAvg = null;
-    this.msgCounter = 0;
     this.playTime = 0;
     this.clockTime = 0;
     this.playSpeed = 0;
@@ -60,7 +59,8 @@ class RVWatcher {
       this.playSpeed = dpt / dct;
       this.smooSpeed = this.speedAvg.mean;
       //console.log("playSpeed is now: ", this.playSpeed, "average is: ", this.smooSpeed);
-      var tempo = app.changePartTempo(this.playSpeed, this.smooSpeed);
+      //var tempo = app.changePartTempo(this.playSpeed, this.smooSpeed);
+      app.noticePoseFit(msg, this)
       //console.log("Changing tempo to: ", tempo);
     }
     this.prevPlayTime = this.playTime;
