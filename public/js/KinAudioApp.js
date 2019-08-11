@@ -75,7 +75,7 @@ class KinAudioApp {
     }
 
     initSkelApp() {
-        this.skelApp = new SkelApp({canvasTool: this.canvasTool});
+        this.skelApp = new CanvasSkelApp({canvasTool: this.canvasTool});
         $("#trackedBodiesInfo").click(() => {
             var v = $("#bodyStatus").is(":visible");
             if (v)

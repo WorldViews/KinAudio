@@ -231,9 +231,10 @@ CanvasTool.Graphic = class {
     }
     
     draw(canvas, ctx) {
-        let r = this.radius;
-        let x = this.x;
-        let y = this.y;
+        this.drawCircle(canvas, ctx, this.radius, this.x, this.y);
+    }
+
+    drawCircle(canvas, ctx, r, x, y) {
         ctx.lineWidth = this.lineWidth;
         ctx.strokeStyle = this.strokeStyle;
         ctx.fillStyle = this.fillStyle;
