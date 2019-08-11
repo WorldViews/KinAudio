@@ -191,6 +191,7 @@ class CanvasTool {
     }
 
     addGraphic(graphic){
+        graphic.tool = this;
         this.graphics[graphic.id] = graphic;       
     }
 
@@ -208,7 +209,7 @@ class CanvasTool {
     start() {
         this.tick();
         let inst = this;
-        setInterval(() => inst.tick(), 1000);
+        setInterval(() => inst.tick(), 100);
     }
 
 }
@@ -243,7 +244,7 @@ CanvasTool.Graphic = class {
     }
 
     contains(pt) {
-        var d = this.dist(this, pt);
+        var d = this.tool.dist(this, pt);
         //console.log("contains", this.id, d, this.x, this.y, pt, this.radius);
         var v = d <= this.radius;
         //console.log("v", v);

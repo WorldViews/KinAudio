@@ -56,19 +56,10 @@
     <canvas id="canvas1" width="720" height="480" style="border-style: solid; border-width:2"></canvas>
     
     <script>
-    var skelApp = null;
     var app = null;
 
         $(document).ready(() => {
             app = new KinAudioApp();
-            skelApp = new SkelApp();
-            $("#trackedBodiesInfo").click(() => {
-                var v = $("#bodyStatus").is(":visible");
-                if (v)
-                    $("#bodyStatus").hide();
-                else
-                    $("#bodyStatus").show();
-            });
         });
     </script>
 </body>

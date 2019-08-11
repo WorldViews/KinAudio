@@ -297,7 +297,7 @@ class SkelWatcher
     }
     
     handleNewBody(body) {
-        console.log("New Body", body.id, body);
+        console.log("New Body", body);
     }
 
     handleRemovedBody(body) {

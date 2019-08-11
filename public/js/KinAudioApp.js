@@ -48,12 +48,41 @@ class KinAudioApp {
         this.rvWatcher.onConnect = (msg) => this.onConnect();
         this.rvWatcher.onDisconnect = (msg) => this.onDisconnect();
         this.toneTool = null;
-        this.canvasTool = new CanvasTool("canvas1");
+        this.initCanvasTool();
         let inst = this;
+        this.skelApp = null;
+        this.initSkelApp();
         $("#startButton").click(() => {
             inst.initAudio();
         });
     
+    }
+
+    initCanvasTool() {
+        this.canvasTool = new CanvasTool("canvas1");
+        var n = 0;
+        var low = -100;
+        var high = 100;
+        var inc = 50;
+        for (var i=low; i <= high; i += inc) {
+            for (var j=low; j <= high; j+= inc) {
+                var g = new CanvasTool.Graphic(n, i, j);
+                this.canvasTool.addGraphic(g);
+                n++;
+            }
+        }
+        this.canvasTool.start();
+    }
+
+    initSkelApp() {
+        this.skelApp = new SkelApp({canvasTool: this.canvasTool});
+        $("#trackedBodiesInfo").click(() => {
+            var v = $("#bodyStatus").is(":visible");
+            if (v)
+                $("#bodyStatus").hide();
+            else
+                $("#bodyStatus").show();
+        });
     }
 
     setupGUIBindings() {

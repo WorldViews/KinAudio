@@ -22,6 +22,55 @@ class AppProxy {
     }
 }
 
+var BODY = null;
+
+class CanvBody extends RiggedBody {
+    constructor(bid, bodyRec) {
+        super(bid, bodyRec);
+    }
+
+    getFloorXY(j) {
+        var wp = this.getWPos(j);
+        var x = 150*wp[0];
+        var y = 150*wp[2];
+        return {x,y};
+    }
+
+    handleRec(bodyRec, t, frame) {
+        super.handleRec(bodyRec, t, frame);
+        var J = JointType;
+        var fp = this.getFloorXY(J.head);
+        BODY = this;
+        this.graphic.x = fp.x;
+        this.graphic.y = fp.y;
+        this.watcher.canvasTool.draw();
+        //console.log("fp", fp);
+    }
+}
+
+class SkelWatcherWithCanvas extends SkelWatcher {
+    constructor(canvasTool) {
+        super();
+        this.canvasTool = canvasTool;
+    }
+
+    makeNewBody(bid, bodyRec) {
+        var cb = new CanvBody(bid, bodyRec);
+        cb.watcher = this;
+        return cb;
+    }
+
+    handleNewBody(body) {
+        super.handleNewBody();
+        console.log("********** new Body !!! *******", body);
+        var id = "body"+body.id;
+        var g = new CanvasTool.Graphic(id, 48, 49);
+        g.radius = 10;
+        g.fillStyle = "#98A"
+        this.canvasTool.addGraphic(g);
+        body.graphic = g;
+    }
+}
 
 class SkelApp {
     constructor(opts) {
@@ -44,12 +93,12 @@ class SkelApp {
             inst.sendMessage({ type: 'heartbeat', n: inst.n, client: "SkelApp", clientId });
         }, 5000);
         $("#userName").val(this.userName);
-        this.skelWatcher = this.makeSkelWatcher();
+        this.skelWatcher = this.makeSkelWatcher(opts);
         this.playerView = new AppProxy("playerView", portal);
     }
 
-    makeSkelWatcher() {
-        return new SkelWatcher();
+    makeSkelWatcher(opts) {
+        return new SkelWatcherWithCanvas(opts.canvasTool);
     }
 
     tick() {
