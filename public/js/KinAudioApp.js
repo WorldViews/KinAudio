@@ -99,9 +99,9 @@ class KinAudioApp {
             $(ctrlId).click(() => {
                 var v = $(panelId).is(":visible");
                 if (v)
-                    $(panelId).hide(1);
+                    $(panelId).hide({duration: 500});
                 else
-                    $(panelId).show(1);
+                    $(panelId).show({duration: 500});
             });
         }
         rigCollapsableDiv("#trackedBodiesInfo", "#bodyStatus");
