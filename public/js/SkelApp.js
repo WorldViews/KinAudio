@@ -57,7 +57,7 @@ class SkelApp {
     
 
     sendMessage(msg) {
-        console.log("TrialApp.sendMessage", msg);
+        //console.log("SkelApp.sendMessage", msg);
         msg._clientName = this.clientName;
         this.portal.sendMessage(msg);
     }

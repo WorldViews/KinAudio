@@ -252,7 +252,7 @@ class SkelWatcher
     }
 
     handleMUSEMessage(msg) {
-        console.log("SkelWatcher.handleMUSEMessage", msg);
+        //console.log("SkelWatcher.handleMUSEMessage", msg);
     }
 
     handleBodyFrame(frame) {
