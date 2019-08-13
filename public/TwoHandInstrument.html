@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>KinAudio Tool</title>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/libs/jquery-3.1.0.min.js"></script>
+    <script src="js/libs/sprintf.js"></script>
+    <script src="js/libs/resonance-audio.min.js"></script>
+    <script src="js/libs/tone/13.8.17/Tone.js"></script>
+    <script src="../js/MUSEPortal.js"></script>
+    <script src="../js/kinDefs.js"></script>
+    <script src="js/RVWatcher.js"></script>
+    <script src="js/Estimators.js"></script>
+    <script src="js/AppProxy.js"></script>
+    <script src="js/CanvasTool.js"></script>
+    <script src="js/SkelWatcher.js"></script>
+    <script src="js/CanvasSkelWatcher.js"></script>
+    <script src="js/KinAudioApp.js"></script>
+    <script src="js/AudioEffectsTool.js"></script>
+    <script src="js/BufferLoader.js"></script>
+    <script src="js/ToneTool.js"></script>
+    <script src="js/Program.js"></script>
+    <script src="js/TwoHandInstrument.js"></script>
+</head>
+<body>
+    <h4 id="showAudioControls">Audio Controls</h4>
+    <div id="audioControls" style="padding:40px;">
+        <input type="button" id="startButton" value="Start"> &nbsp;
+        <button id="loadAudio" style="">Load Audio</button> &nbsp;
+        <p>
+        <button id="addFilter">Add Filter</button> &nbsp;
+        <button id="removeFilter">Remove Filter</button><br>
+        <input type="range" id="filterFrequency" changeFilterFrequency()" min="0" max="1000" style="width:80%"/>
+        <label for="Frequency">Frequency</label>
+        <input type="range" id="detune" oninput="app.program.changeFilterDetune()" min="0" max="1000" style="width:80%"/>
+        <label for="Detune">Detune</label>
+        <input type="range" id="Q" oninput="app.program.changeFilterQ()" min="0" max="10" style="width:80%"/>
+        <label for="Q">Q</label>
+        <p>
+        <input type="checkbox" checked id="handleRVMessagesCB" /> handle RV Messages
+        </p>
+    </div>
+    <pre id="status">
+        waiting for start...
+    </pre>
+    <h4 id="showMessage">Show Message</h4>
+    <div id="messageDiv" style="height:160px"></div>
+    <div>
+        <h4 id="trackedBodiesInfo">Tracked Bodies</h4>
+        <pre id="bodyStatus" style="font-size: 16px" hidden></pre>
+    </div>
+    <h4 id="showTrackingCanvas">Tracking Canvas</h4>
+    <canvas id="trackingCanvas" width="720" height="480"
+       style="border-style: solid; border-width:2; width: 95%"></canvas>
+
+    <script>
+    var app = null;
+        $(document).ready(() => {
+            app = new KinAudioApp();
+        });
+    </script>
+</body>
+
+</html>
