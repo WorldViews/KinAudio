@@ -187,7 +187,28 @@ class KinAudioApp {
         console.log("***** onDisconnect ****")
     }
 
+    setProgram(program) {
+        if (this.program) {
+            this.program.stop();
+        }
+        this.program = program;
+        if (program) {
+            program.start();
+        }
+    }
 
+    loadApp(name) {
+        var url = "Programs/"+name+".html";
+        this.loadAppURL(url);
+    }
+
+    loadAppURL(url) {
+        if (this.program) {
+            this.program.stop();
+            this.program = null;
+        }
+        $("#audioControls").load(url);
+    }
 }
 
 
