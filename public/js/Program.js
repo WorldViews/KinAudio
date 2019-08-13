@@ -17,5 +17,22 @@ class AudioProgram extends Program {
         this.toneTool = app.toneTool;
         this.audioEffects = app.audioEffects;
     }
+
+    start() {
+        console.log("start");
+    }
+
+    finish() {
+        console.log("finish");
+    }
+
+    noticePoseFit(msg, rvWatcher) {
+
+    }
+
+    // gets called every processing cycle
+    update() {
+
+    }
 }
 
