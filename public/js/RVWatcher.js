@@ -5,14 +5,18 @@ var data = {
   avg: [],
 };
 
-// create user data
+// This is a class that should just keep track of things about the ReactiveVideo
+// state.   It may also do some smoothing or estimates of things in that state.
+// It should not do things to control audio or other media.   It is a proxy for
+// the information in the RV system.
+//
 class RVWatcher {
   constructor() {
     console.log("Creating RVWatcher");
     this.msg = null;
-    this.le = null;
+    //this.le = null;
     this.s = null;
-    this.id = null;
+    this.driverId = null;
     this.rgb = null;
 
     this.energySmoo = null;
@@ -51,10 +55,13 @@ class RVWatcher {
     if (this.prevPlayTime != null) {
       var dpt = this.playTime - this.prevPlayTime;
       var dct = this.clockTime - this.prevClockTime;
-      if (dct <= 0) {
+      if (dct < 0) {
         console.log("Bad deltaClockTime", dct);
         alert("Bad deltaClockTime");
         dct = 0.01;
+      }
+      if (dct == 0) {
+        return;
       }
       this.playSpeed = dpt / dct;
       this.smooSpeed = this.speedAvg.mean;
@@ -85,8 +92,8 @@ class RVWatcher {
 
   handleDriverChange(msg) {
     console.log("handleDriverChange", msg);
-    this.id = msg.driverId;
-    console.log("Driver change, change player driver id", this.id);
+    this.driverId = msg.driverId;
+    console.log("Driver change, change player driver id", this.driverId);
   }
 
   handleConnectDrag(msg) {
@@ -153,26 +160,4 @@ class RVWatcher {
     avg.update(data);
   }
 
-  writeToFile() {
-    var speedVal = this.msg.playSpeed;
-    data.speed.push({ PlaySpeed: speedVal });
-
-    // smooth the play speed data
-    this.playSpeedSmoo.update(speedVal)
-    data.movAve.push({ MovingAverage: this.playSpeedSmoo.mean });
-
-    // calculate the exponential moving average
-    this.playSpeedSmooExp.update(speedVal)
-    data.exMovAve.push({ ExpMovingAverage: this.playSpeedSmooExp.mean });
-
-    this.speedAvg.update(speedVal)
-    data.avg.push({ RunningAverage: this.speedAvg.mean });
-
-    fs.writeFileSync('out.json', JSON.stringify(data));
-  }
 }
-
-
-
-
-

@@ -29,6 +29,10 @@ class AudioEffectsTool{
     }
 
     addBiquad(source, freq, type) {
+        if (this.source) {
+            console.log("no source");
+            return;
+        }
         if (this.biquad == null) {
             this.biquad = this.audioContext.createBiquadFilter();
             this.biquad.freq = freq;
@@ -40,8 +44,8 @@ class AudioEffectsTool{
             console.log("audioEffects.biquad already exists!");
         }
 
-        source.disconnect(this.audioContext.destination);
-        source.connect(this.biquad);
+        this.source.disconnect(this.audioContext.destination);
+        this.source.connect(this.biquad);
         this.biquad.connect(this.audioContext.destination);
     }
 
@@ -51,9 +55,9 @@ class AudioEffectsTool{
             console.log("audioEffects.biquad is null. Nothing to remove!");
         }
         else{
-            source.disconnect(filter);
+            this.source.disconnect(filter);
             filter.disconnect(this.audioContext.destination);
-            source.connect(this.audioContext.destination);
+            this.source.connect(this.audioContext.destination);
         }
     }
 

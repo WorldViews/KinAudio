@@ -66,7 +66,7 @@ class KinAudioApp {
             //console.log("tick...");
             inst.numSteps++;
             inst.portal.sendMessage(inst.rvWatcher.msg, { type: 'tick', n: inst.numSteps });
-            $("#log").html("N: " + inst.numSteps + "<br>\n");
+            //$("#log").html("N: " + inst.numSteps + "<br>\n");
         }, 5000);
 
         $("#loadAudio").click(() => {
@@ -88,6 +88,7 @@ class KinAudioApp {
         rigCollapsableDiv("#trackedBodiesInfo", "#bodyStatus");
         rigCollapsableDiv("#showAudioControls", "#audioControls");
         rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
+        rigCollapsableDiv("#showMessage", "#messageDiv");
     }
 
 
@@ -96,7 +97,7 @@ class KinAudioApp {
             return;
         }
         //console.log("AudioFeedbackApp.handleMessage", msg);
-        $("#log").html(JSON.stringify(msg, null, 3));
+        $("#messageDiv").html(JSON.stringify(msg, null, 3));
 
         if (!this.rvWatcher) {
             console.log("PoseFit Message Watcher not created");
@@ -109,7 +110,8 @@ class KinAudioApp {
             return;
         }
         if (msg.type == "poseFit") {
-            this.changeFilterParam(msg.energy);
+            //this.changeFilterParam(msg.energy);
+            this.changeFilterParam(msg.poseError);
         }
 
     }
@@ -165,48 +167,6 @@ class KinAudioApp {
             fc, this.audioEffects.biquad.freq, this.audioEffects.biquad.frequency);
     }
 
-    changeFilterFrequency() {
-        if (this.audioEffects.biquad == null) {
-            console.log("No filter added yet");
-        }
-        else {
-            var f = document.getElementById("filterFrequency").value;
-            console.log("new frequency value: ", f);
-            this.audioEffects.biquad.frequency.value = f;
-        }
-    }
-
-    changeFilterDetune() {
-        if (this.audioEffects.biquad == null) {
-            console.log("No filter added yet");
-        }
-        else {
-            var detune = document.getElementById("detune").value;
-            console.log("new frequency value: ", detune);
-            this.audioEffects.biquad.detune.value = detune;
-        }
-    }
-
-    changeFilterQ() {
-        if (this.audioEffects.biquad == null) {
-            console.log("No filter added yet");
-        }
-        else {
-            var q = document.getElementById("Q").value;
-            console.log("new frequency value: ", q);
-            this.audioEffects.biquad.Q.value = q;
-        }
-    }
-
-    addFilter() {
-        var defaultFreq = 350;
-        var type = "lowpass";
-        this.audioEffects.addBiquad(this.audioEffects.source, defaultFreq, type);
-    }
-
-    removeFilter() {
-        this.audioEffects.addBiquad(this.audioEffects.source, audioEffects.biquad);
-    }
 
     onConnect(msg) {
         console.log("***** onConect ****")
