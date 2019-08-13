@@ -27,7 +27,19 @@ class KinAudioApp {
             this.initProgram();
         });
         this.program = null;
+        this.start();
         //this.initProgram();
+    }
+
+    start() {
+        let inst = this;
+        setInterval(() => inst.update(app), 100);
+    }
+
+    update() {
+        //console.log("***** KinAudioApp.update()");
+        if (this.program)
+            this.program.update();
     }
 
     initProgram() {
@@ -113,7 +125,6 @@ class KinAudioApp {
             //this.changeFilterParam(msg.energy);
             this.changeFilterParam(msg.poseError);
         }
-
     }
 
     noticePoseFit(msg, rvWatcher) {

@@ -199,6 +199,8 @@ class RiggedBody extends Body {
         return (this.wdist(j1,j2) < 0.1);
     }
 
+    // get 3D world point in camera coordinates.
+    // j is the joint id.
     getWPos(j) {
         return getWPos(this.lastBodyRec.joints[j]);
     }

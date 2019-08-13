@@ -81,6 +81,26 @@ class Prog1 extends AudioProgram {
         */
     }
 
+    update() {
+        //super.update();
+        var rv = this.rvWatcher;
+        console.log("speed:", rv.playSpeed);
+        this.changePartTempo(rv.playSpeed, rv.smooSpeed);
+        this.handleBodies();
+        this.updateStatus();
+    }
+
+    handleBodies() {
+        var sw = this.skelWatcher;
+        var J = JointType;
+        for (var bodyId in sw.bodies) {
+            var body = sw.bodies[bodyId];
+            console.log("body", bodyId, body);
+            console.log(" head pos", body.getWPos(J.head));
+            console.log(" head floor coordinates", body.getFloorXY(J.head));
+        }
+    }
+
     loadAudio() {
         console.log("loadAudio");
        var url = '../Audio/samples/RVSoundscapeV2.wav';
@@ -97,8 +117,6 @@ class Prog1 extends AudioProgram {
     noticePoseFit(msg, rvWatcher) {
         this.tickNum++;
         //console.log("Prog noticePoseFit");
-        this.changePartTempo(rvWatcher.playSpeed, rvWatcher.smooSpeed);
-        this.updateStatus();
     }
 
     changePartTempo(playSpeed, smooSpeed) {
