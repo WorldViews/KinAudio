@@ -34,14 +34,6 @@
         <p>
         <button id="addFilter">Add Filter</button> &nbsp;
         <button id="removeFilter">Remove Filter</button><br>
-        <!--
-        <input type="range" id="filterFrequency" oninput="app.program.changeFilterFrequency()" min="0" max="1000" style="width:80%"/>
-        <label for="Frequency">Frequency</label>
-        <input type="range" id="detune" oninput="app.program.changeFilterDetune()" min="0" max="1000" style="width:80%"/>
-        <label for="Detune">Detune</label>
-        <input type="range" id="Q" oninput="app.program.changeFilterQ()" min="0" max="10" style="width:80%"/>
-        <label for="Q">Q</label>
-        -->
         <input type="range" id="filterFrequency" changeFilterFrequency()" min="0" max="1000" style="width:80%"/>
         <label for="Frequency">Frequency</label>
         <input type="range" id="detune" oninput="app.program.changeFilterDetune()" min="0" max="1000" style="width:80%"/>
@@ -67,7 +59,6 @@
     
     <script>
     var app = null;
-
         $(document).ready(() => {
             app = new KinAudioApp();
         });

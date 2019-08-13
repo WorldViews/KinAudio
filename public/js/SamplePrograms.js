@@ -1,3 +1,5 @@
+//TODO: move these parameters to members of Prog1 iff appropriate
+
 var toneGain = null;
 var sweepEnv = null;
 
@@ -86,8 +88,8 @@ class Prog1 extends AudioProgram {
         console.log("loading audio", url, startTime);
         this.audioEffects.loadAudio(url, () => {
             console.log("ready to startAudio");
-            this.audioEffects.addBiquad(this.audioEffects.source, 500, 'lowpass');
             console.log("audioEffects.source", this.audioEffects.source);
+            this.audioEffects.addBiquad(this.audioEffects.source, 500, 'lowpass');
             this.audioEffects.startAudio(this.audioEffects.source);
         });
     }

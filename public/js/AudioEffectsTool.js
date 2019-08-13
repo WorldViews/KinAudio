@@ -29,7 +29,7 @@ class AudioEffectsTool{
     }
 
     addBiquad(source, freq, type) {
-        if (this.source) {
+        if (!this.source) {
             console.log("no source");
             return;
         }
