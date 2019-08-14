@@ -109,7 +109,8 @@ class KinAudioApp {
         }
         rigCollapsableDiv("#trackedBodiesInfo", "#bodyStatus");
         rigCollapsableDiv("#showAudioControls", "#audioControls");
-        rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
+        //rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
+        rigCollapsableDiv("#showTrackingCanvas", "#canvasDiv");
         rigCollapsableDiv("#showMessage", "#messageDiv");
     }
 

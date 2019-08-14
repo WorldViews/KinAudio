@@ -43,6 +43,7 @@ class CanvasTool {
             //console.log("down", e, this.mouseDownPt);
         });
         this.canvas.addEventListener("mousemove", e=> {
+            inst.mouseMove(e);
             if (inst.mouseDownPt == null) {
                  inst.mouseOver(e);
                 return;
@@ -61,11 +62,21 @@ class CanvasTool {
         });
         this.canvas.addEventListener("wheel", e => {
             //console.log("mousewheel", e);
+            e.preventDefault();
             if (e.deltaY > 0)
                 inst.zoom(inst.zf);
             else
                 inst.zoom(1/inst.zf);
         });
+    }
+
+    mouseMove(e) {
+        var pt = this.getMousePos(e);
+        var cpt = this.getMousePosCanv(e);
+        console.log("mouse pos", pt);
+        $("#canvasStat").html(
+            sprintf("cx: %5.1f cy: %5.1f   x: %5.1f  y: %5.1f",
+                    cpt.x, cpt.y, pt.x, pt.y));
     }
 
     getMousePosCanv(e) {
@@ -102,7 +113,6 @@ class CanvasTool {
         }
         return null;
     }
-
 
     init() {
         this.graphics = {};
