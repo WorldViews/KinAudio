@@ -62,6 +62,16 @@ class TwoHandInstrument extends AudioProgram {
         this.drumPart.loop = true;
     }
 
+    startDrums(){
+        if (this.drums == null){
+            console.log("Creating drums ...");
+            this.start();
+        }
+        else {
+            this.drumPart.start();
+        }
+    }
+
     stopDrums(){
         if(this.drums == null){
             console.log("No drums created");
@@ -134,6 +144,7 @@ class TwoHandInstrument extends AudioProgram {
     initGUI() {
         let inst = this;
 
+        $("#startDrums").click(() => inst.startDrums());
         $("#changePart").on('input', () => inst.changeDrumPart());
         $("#stopDrums").click(() => inst.stopDrums());
     }
