@@ -38,6 +38,68 @@ class TwoHandInstrument extends AudioProgram {
         this.initGUI();
     }
 
+    //***** GUI driven acctions *****/
+
+    initGUI() {
+        let inst = this;
+
+        $("#startDrums").click(() => inst.startDrums());
+        $("#stopDrums").click(() => inst.stopDrums());
+        $("#changePart").on('input', () => inst.changeDrumPart());
+        $("#changeTempo").on('input', () => inst.changeDrumsTempo());
+    }
+
+    updateStatus() {
+        return;
+        var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
+            this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
+        //console.log("status:", statusStr);
+        $("#status").html(statusStr);
+    }
+
+    update() {
+        var rv = this.rvWatcher;
+        console.log("speed:", rv.playSpeed);
+        //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
+        //this.handleBodies();
+        this.updateStatus();
+    }
+
+
+    start() {
+        var drums = this.toneTool.createDrum();
+        this.drums = drums;
+        this.toneTool.addFilter(drums, 150, 'lowpass', -12);
+        this.toneTool.addReverb(this.toneTool.filter, 0.5);
+        this.toneTool.currentBpm = tempo;
+        var drumPart = part1;
+        this.triggerDrums(drumPart, "8n");
+        this.drumPart.start();
+        Tone.Transport.start();
+    }
+
+
+    loadAudio() {
+        console.log("loadAudio");
+        var url = '../Audio/samples/RVSoundscapeV2.wav';
+        var startTime = 0;
+        console.log("loading audio", url, startTime);
+        this.audioEffects.loadAudio(url, () => {
+            console.log("ready to startAudio");
+            console.log("audioEffects.source", this.audioEffects.source);
+            this.audioEffects.addBiquad(this.audioEffects.source, 500, 'lowpass');
+            this.audioEffects.startAudio(this.audioEffects.source);
+        });
+    }
+
+    noticePoseFit(msg, rvWatcher) {
+        return;
+        this.tickNum++;
+        //console.log("Prog noticePoseFit");
+        this.changePartTempo(rvWatcher.playSpeed, rvWatcher.smooSpeed);
+        this.updateStatus();
+    }
+
     setDrumPart(drumPart) {
         this.part = drumPart;
         if (this.drums == null) {
@@ -82,40 +144,6 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
-    start() {
-        var drums = this.toneTool.createDrum();
-        this.drums = drums;
-        this.toneTool.addFilter(drums, 150, 'lowpass', -12);
-        this.toneTool.addReverb(this.toneTool.filter, 0.5);
-        this.toneTool.currentBpm = tempo;
-        var drumPart = part1;
-        this.triggerDrums(drumPart, "8n");
-        this.drumPart.start();
-        Tone.Transport.start();
-    }
-
-
-    loadAudio() {
-        console.log("loadAudio");
-        var url = '../Audio/samples/RVSoundscapeV2.wav';
-        var startTime = 0;
-        console.log("loading audio", url, startTime);
-        this.audioEffects.loadAudio(url, () => {
-            console.log("ready to startAudio");
-            console.log("audioEffects.source", this.audioEffects.source);
-            this.audioEffects.addBiquad(this.audioEffects.source, 500, 'lowpass');
-            this.audioEffects.startAudio(this.audioEffects.source);
-        });
-    }
-
-    noticePoseFit(msg, rvWatcher) {
-        return;
-        this.tickNum++;
-        //console.log("Prog noticePoseFit");
-        this.changePartTempo(rvWatcher.playSpeed, rvWatcher.smooSpeed);
-        this.updateStatus();
-    }
-
     changePartTempo(playSpeed, smooSpeed) {
         if (!this.toneTool) {
             console.log("changePartTempo ... ignored - no toneTool");
@@ -128,25 +156,6 @@ class TwoHandInstrument extends AudioProgram {
         tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
         this.tempo = tempo;
         this.toneTool.setTempo(tempo);
-    }
-
-    updateStatus() {
-        return;
-        var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
-            this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
-        //console.log("status:", statusStr);
-        $("#status").html(statusStr);
-    }
-
-
-    //***** GUI driven acctions *****/
-
-    initGUI() {
-        let inst = this;
-
-        $("#startDrums").click(() => inst.startDrums());
-        $("#changePart").on('input', () => inst.changeDrumPart());
-        $("#stopDrums").click(() => inst.stopDrums());
     }
 
     changeDrumPart() {
@@ -181,5 +190,31 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
+    changePartTempo(playSpeed, smooSpeed) {
+        if (!this.toneTool) {
+            console.log("changePartTempo ... ignored - no toneTool");
+            return;
+        }
+        //console.log("playSpeed:", playSpeed, "smooSpeed", smooSpeed);
+        this.playSpeed = playSpeed;
+        this.smooSpeed = smooSpeed;
+        tempo = this.toneTool.calculateTempo(playSpeed, smooSpeed);
+        tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
+        this.tempo = tempo;
+        this.toneTool.setTempo(tempo);
+    }
+
+    changeDrumsTempo() {
+        if (!this.toneTool) {
+            console.log("changePartTempo ... ignored - no toneTool");
+            return;
+        }
+        tempo = document.getElementById("changeTempo").value;
+        console.log("tempo is now ", tempo);
+        tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
+        this.tempo = tempo;
+        this.toneTool.setTempo(tempo);
+        console.log("tempo is set to ", tempo);
+    }
 
 }

@@ -1,5 +1,5 @@
 let tempos = [30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 63, 66, 69, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 126, 132, 138, 144, 152, 160, 168, 176, 184, 192, 200, 208];
-let maxBpm = 160;
+let maxBpm = 208;
 let minBpm = 30;
 let maxSpeed = 10;
 
@@ -103,11 +103,7 @@ class ToneTool {
         return loopBeat;
     }
 
-    // create the synth first, create the loop, 
-    // play the loop at a default at the beginning,
-    // change the tempo based on the mode (input average playSpeed of the user)
-    // by interpolating to the new tempo gradually
-
+    // Change the tempo based on the mode (input average playSpeed)
     calculateTempo(playSpeed, smooSpeed){
         var bpm;
         var currentBpm = this.currentBpm;
@@ -115,7 +111,6 @@ class ToneTool {
         var speed;
         // if the user speed matches the video speed, playSpeed is 0
         if (smooSpeed > playSpeed){
-            //speed = playSpeed;
             speed = smooSpeed;
         }
         else{
@@ -129,20 +124,6 @@ class ToneTool {
         {
             bpm = (speed-1)/maxSpeed * (defaultBpm-minBpm) + defaultBpm;
         }
-
-        /*
-        if (Math.abs(playSpeed) < 0.9) // user is at tehe video speed
-        {
-            bpm = defaultBpm;
-        }
-        else if (playSpeed > 0.9 ) // user is speeding up
-        {
-            bpm = (playSpeed - 1)/(maxSpeed-1) * (maxBpm-defaultBpm) + defaultBpm;
-        } else if (playSpeed < -0.9) // user is slowing down
-        {
-            bpm = ((playSpeed - 1)/(maxSpeed-1) * (defaultBpm-minBpm)) + defaultBpm;
-        }
-        */
         return bpm;    
     }
 
