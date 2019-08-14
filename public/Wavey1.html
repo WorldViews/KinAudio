@@ -27,9 +27,9 @@
     <script src="Programs/Wavey1.js"></script>
 </head>
 <body>
+    <button id="startProgram">Start Program</button>
     <h4 id="showAudioControls">Audio Controls</h4>
     <div id="audioControls" style="padding:40px;">
-        <input type="button" id="startButton" value="Start"> &nbsp;
         <button id="loadAudio" style="">Load Audio</button> &nbsp;
         <button id="beep1">beep1</button> &nbsp;
         <button id="beep2">beep2</button> &nbsp;
@@ -63,8 +63,8 @@
     var app = null;
         $(document).ready(() => {
             app = new KinAudioApp();
-            app.setProgram(new Wavey1(app));
-        });
+            app.setProgramClass(Wavey1);
+       });
     </script>
 </body>
 

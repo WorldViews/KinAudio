@@ -22,10 +22,19 @@ class KinAudioApp {
         let inst = this;
         this.skelApp = null;
         this.initSkelApp();
-        $("#startButton").click(() => {
+        $("#startProgram").click(() => {
             inst.initAudio();
-            //this.initProgram();
+            if (inst.progClass) {
+                inst.setProgram(new inst.progClass(inst))
+            }
+            else {
+                alert("No Program Specified");
+            }
         });
+       // $("#startButton").click(() => {
+       //     inst.initAudio();
+      //      //this.initProgram();
+        //});
         this.program = null;
         this.start();
         //this.initProgram();
@@ -118,13 +127,8 @@ class KinAudioApp {
         }
         this.rvWatcher.handleMessage(msg);
 
-
         if (!this.toneTool) {
             return;
-        }
-        if (msg.type == "poseFit") {
-            //this.changeFilterParam(msg.energy);
-            this.changeFilterParam(msg.poseError);
         }
     }
 
@@ -158,6 +162,7 @@ class KinAudioApp {
         this.toneTool.defaultBpm = 44;
     }
 
+    /*
     changeFilterParam(energy) {
         if (this.audioEffects.biquad == null) {
             console.log("No filter added yet");
@@ -178,7 +183,7 @@ class KinAudioApp {
         console.log("Changing audioEffects.biquad.freq to ",
             fc, this.audioEffects.biquad.freq, this.audioEffects.biquad.frequency);
     }
-
+    */
 
     onConnect(msg) {
         console.log("***** onConect ****")
@@ -186,6 +191,10 @@ class KinAudioApp {
 
     onDisconnect(msg) {
         console.log("***** onDisconnect ****")
+    }
+
+    setProgramClass(progClass) {
+        this.progClass = progClass;
     }
 
     setProgram(program) {
