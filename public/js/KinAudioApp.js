@@ -24,7 +24,7 @@ class KinAudioApp {
         this.initSkelApp();
         $("#startButton").click(() => {
             inst.initAudio();
-            this.initProgram();
+            //this.initProgram();
         });
         this.program = null;
         this.start();
