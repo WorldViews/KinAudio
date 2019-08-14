@@ -31,7 +31,7 @@ class KinAudioApp {
     }
 
     initProgram() {
-        this.program = new Prog1(this);
+        this.program = new TwoHandInstrument(this);
         this.program.start();
     }
 

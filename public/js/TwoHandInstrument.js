@@ -9,8 +9,12 @@ part.start("4m");
 */
 
 let part1 = [["0", "C#3"], ["4n", "G3"], [3 * Tone.Time("8n"), "G#3"], ["2n", "C3"]];
-let part2 = [["0", "C3"], ["4n", null], [3 * Tone.Time("8n"),"Eb3"], [4 * Tone.Time("8n"),"F4"], [4 * Tone.Time("8n") + 1/3 * Tone.Time("4n"),"Bb4"], [4 * Tone.Time("8n") + 2/3 * Tone.Time("4n"),"Bb4"]];
-let seq1 = ["C3", [null, "Eb3"], ["F4", "Bb4", "C5"]]; 
+let part2 = [["0", "C3"], ["4n", null], [3 * Tone.Time("8n"), "Eb3"], [4 * Tone.Time("8n"), "F4"], [4 * Tone.Time("8n") + 1 / 3 * Tone.Time("4n"), "Bb4"], [4 * Tone.Time("8n") + 2 / 3 * Tone.Time("4n"), "Bb4"]];
+let part3 = [["0", "F#3"], ["8n", "G3"], ["4n", "G#3"], [3 * Tone.Time("8n"), "D4"], ["2n", "F#3"], [5 * Tone.Time("8n"), "G3"]]; // Phrygian gates, J.Adams, m.944
+let part4 = [["0", "Gb3"], ["8n", "A3"], ["4n", "C4"], [3 * Tone.Time("8n"), "Gb3"], ["2n", "A3"], [5 * Tone.Time("8n"), "C4"]]; // Phrygian gates, J.Adams, m.945
+let part5 = [["0", "F#3"], ["8n", "A#3"], ["4n", "B#3"], [3 * Tone.Time("8n"), "C4"], ["2n", "D4"], [5 * Tone.Time("8n"), "F#3"]]; // Phrygian gates, J.Adams, m.946
+
+let seq1 = ["C3", [null, "Eb3"], ["F4", "Bb4", "C5"]];
 
 var toneGain = null;
 var sweepEnv = null;
@@ -24,7 +28,7 @@ const midFc = 200;
 const maxFc = 1000;
 
 
-class Prog1 extends AudioProgram {
+class TwoHandInstrument extends AudioProgram {
     constructor(app, opts) {
         super(app, opts);
         this.counter = 0;
@@ -34,15 +38,38 @@ class Prog1 extends AudioProgram {
         this.initGUI();
     }
 
-    setDrumPart(drumPart){
-      this.part = drumPart;
+    setDrumPart(drumPart) {
+        this.part = drumPart;
+        if (this.drums == null) {
+            console.log("No drums created");
+            return;
+        }
+        else {
+            this.drumPart.removeAll();
+            for (var notes in drumPart) {
+                console.log("drumPart note changing to", drumPart[notes]);
+                this.drumPart.add(drumPart[notes][0], drumPart[notes][1]);
+            }
+        }
     }
 
-    triggerDrums(drumPart, duration){
-      this.part = drumPart;
-      this.drumPart = new Tone.Part(function(time, pitch){
-      	synth.triggerAttackRelease(pitch, duration, time);
-      }, this.part);
+    triggerDrums(drumPart, duration) {
+        this.part = drumPart;
+        var inst = this;
+        this.drumPart = new Tone.Part(function (time, pitch) {
+            inst.drums.triggerAttackRelease(pitch, duration, time);
+        }, inst.part);
+        this.drumPart.loop = true;
+    }
+
+    stopDrums(){
+        if(this.drums == null){
+            console.log("No drums created");
+            return;
+        }
+        else {
+            this.drumPart.stop();
+        }
     }
 
     start() {
@@ -51,7 +78,8 @@ class Prog1 extends AudioProgram {
         this.toneTool.addFilter(drums, 150, 'lowpass', -12);
         this.toneTool.addReverb(this.toneTool.filter, 0.5);
         this.toneTool.currentBpm = tempo;
-        triggerDrums(drumPart, "8n");
+        var drumPart = part1;
+        this.triggerDrums(drumPart, "8n");
         this.drumPart.start();
         Tone.Transport.start();
     }
@@ -59,7 +87,7 @@ class Prog1 extends AudioProgram {
 
     loadAudio() {
         console.log("loadAudio");
-       var url = '../Audio/samples/RVSoundscapeV2.wav';
+        var url = '../Audio/samples/RVSoundscapeV2.wav';
         var startTime = 0;
         console.log("loading audio", url, startTime);
         this.audioEffects.loadAudio(url, () => {
@@ -104,57 +132,40 @@ class Prog1 extends AudioProgram {
     initGUI() {
         let inst = this;
 
-        $("#addFilter").click(() => inst.addFilter());
-        $("#removeFilter").click(() => inst.removeFilter());
-        $("#filterFrequency").on('input', () => inst.changeFilterFrequency());
-        $("#detune").on('input', () => inst.changeFilterDetune());
-        $("#Q").on('input', () => inst.changeFilterQ());
+        $("#changePart").on('input', () => inst.changeDrumPart());
+        $("#stopDrums").click(() => inst.stopDrums());
     }
 
-    changeFilterFrequency() {
-        if (this.audioEffects.biquad == null) {
-            console.log("No filter added yet");
+    changeDrumPart() {
+        if (this.drumPart == null) {
+            console.log("No drumPart created");
         }
         else {
-            var f = document.getElementById("filterFrequency").value;
-            console.log("new frequency value: ", f);
-            this.audioEffects.biquad.frequency.value = f;
+            var partNo = document.getElementById("changePart").value;
+            var drumPart;
+            partNo = Math.round(partNo);
+            console.log("new part playing with part number", partNo);
+            switch (partNo) {
+                case 1:
+                    drumPart = part1;
+                    break;
+                case 2:
+                    drumPart = part2;
+                    break;
+                case 3:
+                    drumPart = part3;
+                    break;
+                case 4:
+                    drumPart = part4;
+                    break;
+                case 5:
+                    drumPart = part5;
+                    break;
+                default:
+                    drumPart = part1;
+            }
+            this.setDrumPart(drumPart);
         }
-    }
-
-    changeFilterDetune() {
-        if (this.audioEffects.biquad == null) {
-            console.log("No filter added yet");
-        }
-        else {
-            var detune = document.getElementById("detune").value;
-            console.log("new frequency value: ", detune);
-            this.audioEffects.biquad.detune.value = detune;
-        }
-    }
-
-    changeFilterQ() {
-        if (this.audioEffects.biquad == null) {
-            console.log("No filter added yet");
-        }
-        else {
-            var q = document.getElementById("Q").value;
-            console.log("new frequency value: ", q);
-            this.audioEffects.biquad.Q.value = q;
-        }
-    }
-
-    addFilter() {
-        console.log("addFilter");
-        var defaultFreq = 350;
-        var type = "lowpass";
-        this.audioEffects.addBiquad(this.audioEffects.source, defaultFreq, type);
-    }
-
-    removeFilter() {
-        console.log("removeFilter");
-        var effects = this.audioEffects;
-        effects.removeBiquad(effects.source, effects.biquad);
     }
 
 
