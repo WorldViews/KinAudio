@@ -27,7 +27,19 @@ class KinAudioApp {
             this.initProgram();
         });
         this.program = null;
+        this.start();
         //this.initProgram();
+    }
+
+    start() {
+        let inst = this;
+        setInterval(() => inst.update(app), 100);
+    }
+
+    update() {
+        //console.log("***** KinAudioApp.update()");
+        if (this.program)
+            this.program.update();
     }
 
     initProgram() {
@@ -113,7 +125,6 @@ class KinAudioApp {
             //this.changeFilterParam(msg.energy);
             this.changeFilterParam(msg.poseError);
         }
-
     }
 
     noticePoseFit(msg, rvWatcher) {
@@ -176,7 +187,28 @@ class KinAudioApp {
         console.log("***** onDisconnect ****")
     }
 
+    setProgram(program) {
+        if (this.program) {
+            this.program.stop();
+        }
+        this.program = program;
+        if (program) {
+            program.start();
+        }
+    }
 
+    loadApp(name) {
+        var url = "Programs/"+name+".html";
+        this.loadAppURL(url);
+    }
+
+    loadAppURL(url) {
+        if (this.program) {
+            this.program.stop();
+            this.program = null;
+        }
+        $("#audioControls").load(url);
+    }
 }
 
 

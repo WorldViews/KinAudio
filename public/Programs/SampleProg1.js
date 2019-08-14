@@ -1,25 +1,19 @@
-//TODO: move these parameters to members of Prog1 iff appropriate
 
 var toneGain = null;
 var sweepEnv = null;
 
 var tempo = 44;
-//let fc = null;
+var atwiddle = null;
 
-var energyThreshold = 100;
-var maxEnergy = 300;
-var midFc = 200;
-var maxFc = 1000;
+const energyThreshold = 100;
+const maxEnergy = 300;
+const midFc = 200;
+const maxFc = 1000;
 
-try {
-    console.log("delete Prog1");
-    delete Prog1;
-}
-catch (e) {};
 
-var Prog1 = class extends AudioProgram {
+class SampleProg1 extends AudioProgram {
     constructor(app, opts) {
-        console.log("create Prog1");
+        console.log("***** SampleProg1")
         super(app, opts);
         this.counter = 0;
         this.tickNum = 0;
@@ -141,8 +135,11 @@ var Prog1 = class extends AudioProgram {
     }
 
     updateStatus() {
+        var name = "prog1";
+       // var name = this.constructor.name;
+       console.log(this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed)
         var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
-            this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
+            name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
         //console.log("status:", statusStr);
         $("#status").html(statusStr);
     }
@@ -205,9 +202,10 @@ var Prog1 = class extends AudioProgram {
         var effects = this.audioEffects;
         effects.removeBiquad(effects.source, effects.biquad);
     }
+
 }
 
-app.setProgram(new Prog1(app));
+app.setProgram(new SampleProg1(app));
 
 
 
