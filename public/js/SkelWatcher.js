@@ -56,6 +56,51 @@ class State {
     get() { return this.state; }
 }
 
+class V3State extends State {
+    observe(state) {
+        this.state = state;
+    }
+
+    get() {
+        return this.state;
+    }
+}
+
+class KinematicState extends State {
+    constructor() {
+        super();
+        this.prevT = getClockTime();
+        this.t = this.prevT;
+        this.prevState = [0,0,0];
+    }
+    
+    observe(state) {
+        this.prevState = this.state;
+        this.state = state;
+        this.prevT = this.t;
+        this.t = getClockTime();
+    }
+
+    get() {
+        var p = this.getPos();
+        var v = this.getVel();
+        return {x: p[0], y: p[1], z: p[2], vx: v[0], vy: v[1], vz: [2]}
+    }
+
+    getPos() {
+        return this.state;
+    }
+
+    getVel() {
+        var dt = this.t - this.prevT;
+        if (dt <= 0) dt = 0.00001;
+        var vx = (this.state[0] - this.prevState[0]) / dt;
+        var vy = (this.state[1] - this.prevState[1]) / dt;
+        var vz = (this.state[2] - this.prevState[2]) / dt;
+        return [vx, vy, vz];
+    }
+}
+
 class BooleanState extends State {
     constructor(name) {
         super(name);
@@ -149,6 +194,8 @@ being kept track of, that may be application specific.
 class RiggedBody extends Body {
     constructor(id, bodyRec) {
         super(id, bodyRec);
+        this.RHAND =            new V3State("RHAND");
+        this.LHAND =            new KinematicState("LHAND");
         this.DLR =              new State("DLR"); // dist Left to Right
         this.LEFT_UP =          new BooleanState("LEFT_UP");
         this.RIGHT_UP =         new BooleanState("RIGHT_UP");
@@ -160,6 +207,8 @@ class RiggedBody extends Body {
         super.handleRec(bodyRec, t, frame);
         var J = JointType;
         //
+        this.RHAND.observe(this.getWPos(J.handRight));
+        this.LHAND.observe(this.getWPos(J.handLeft));
         this.DLR.observe(this.wdist(J.handLeft, J.handRight));
         var lup = this.above(J.handLeft, J.head);
         var rup = this.above(J.handRight, J.head);
@@ -203,6 +252,18 @@ class RiggedBody extends Body {
     // j is the joint id.
     getWPos(j) {
         return getWPos(this.lastBodyRec.joints[j]);
+    }
+    
+    // get 3D world point in camera coordinates.
+    // j is the joint id.
+    getTrackingState(j) {
+        return this.lastBodyRec.joints[j].trackingState;
+    }
+    
+    // get 3D world point in camera coordinates.
+    // j is the joint id.
+    getJoint(j) {
+        return this.lastBodyRec.joints[j];
     }
     
     static statusHeader() {

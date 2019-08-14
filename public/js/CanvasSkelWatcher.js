@@ -24,6 +24,7 @@ class BodyGraphic extends CanvasTool.Graphic {
     draw(canvas, ctx) {
         var J = JointType;
         var hpt = this.body.getFloorXY(J.head);
+        var npt = this.body.getFloorXY(J.neck);
         var lspt = this.body.getFloorXY(J.shoulderLeft);
         var lept = this.body.getFloorXY(J.elbowLeft);
         var lhpt = this.body.getFloorXY(J.handLeft);
@@ -33,8 +34,8 @@ class BodyGraphic extends CanvasTool.Graphic {
         this.drawCircle(canvas, ctx, 4, hpt.x, hpt.y);
         this.drawCircle(canvas, ctx, 2, lhpt.x, lhpt.y);
         this.drawCircle(canvas, ctx, 2, rhpt.x, rhpt.y);
-        this.drawPolyLine(canvas, ctx, [rhpt, rept, rspt, lspt, lept, lhpt])
-        this.drawPolyLine(canvas, ctx, [rhpt, rept, rspt, lspt, lept, lhpt])
+        this.drawPolyLine(canvas, ctx, [rhpt, rept, rspt, npt, hpt, npt, lspt, lept, lhpt])
+        //this.drawPolyLine(canvas, ctx, [rhpt, rept, rspt, lspt, lept, lhpt])
     }
 }
 

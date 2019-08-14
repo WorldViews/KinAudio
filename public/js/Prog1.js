@@ -96,6 +96,8 @@ var Prog1 = class extends AudioProgram {
         this.updateStatus();
     }
 
+    // This is just to give some sample code of some things that can be
+    // found from the bodies...
     handleBodies() {
         var sw = this.skelWatcher;
         var J = JointType;
@@ -105,6 +107,12 @@ var Prog1 = class extends AudioProgram {
             console.log(" head pos", body.getWPos(J.head));
             console.log(" head floor coordinates", body.getFloorXY(J.head));
             console.log(" TRIGGER:", body.TRIGGER.get());
+            console.log(" LEFT_UP", body.LEFT_UP.get());
+            console.log(" LHAND", body.LHAND.get());
+            console.log(" RHAND", body.RHAND.get());
+            console.log(" RHAND tracking state", body.getTrackingState(J.handRight));
+            console.log(" RHAND joint", body.getJoint(J.handRight));
+            console.log(" Dist Left Right", body.DLR.get());
         }
     }
 
@@ -141,8 +149,9 @@ var Prog1 = class extends AudioProgram {
     }
 
     updateStatus() {
-        var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
-            this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
+        //console.log(this.constructor.name, this.tickNum, this.tempo, this.playSpeed);
+        var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f",
+            this.constructor.name, this.tickNum, this.tempo, this.playSpeed);
         //console.log("status:", statusStr);
         $("#status").html(statusStr);
     }
