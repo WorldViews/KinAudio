@@ -11,26 +11,13 @@ var maxEnergy = 300;
 var midFc = 200;
 var maxFc = 1000;
 
-try {
-    console.log("delete Prog1");
-    delete Prog1;
-}
-catch (e) {};
 
-var Prog1 = class extends AudioProgram {
+var Wavey1 = class extends AudioProgram {
     constructor(app, opts) {
         console.log("create Prog1");
         super(app, opts);
         this.counter = 0;
         this.tickNum = 0;
-        this.part1 = [
-            [null, null, null],
-            [null, null, null],
-            [null, null, null],
-            [220, null, null],
-            [null, null, null],
-            [null, null, null],
-            [null, null, null]];
         this.initGUI();
     }
 
@@ -62,10 +49,6 @@ var Prog1 = class extends AudioProgram {
             inst.triggerDrums(6, ['f#2', 'f#2'], '8n', time, gain);
 
             var bellPart = inst.toneTool.createBellPart(inst.bell, this.part1);
-            //churchBellPart = toneTool.createBellPart(churchBell, part1);
-
-            //bellPart.start(5);
-            //churchBellPart.start(10);
 
             this.counter = (this.counter + 1) % 16;
         }, '16n', this.toneTool.currentBpm);
@@ -78,13 +61,6 @@ var Prog1 = class extends AudioProgram {
         let delay = this.toneTool.addFeedbackDelay(this.bell, 0.05, 0.5);
         let reverb = this.toneTool.addReverb(delay, 0.2);
         this.bell.chain(delay, reverb, Tone.Master);
-
-        /*
-        churchBell = toneTool.createBell(100, 100, 250, 8, -20);
-        let delay2 = toneTool.addFeedbackDelay(churchBell, 0.05, 0.5);
-        let reverb2 = toneTool.addReverb(delay2, 0.2);
-        churchBell.chain(delay2, reverb2, Tone.Master);
-        */
     }
 
     update() {
@@ -110,7 +86,7 @@ var Prog1 = class extends AudioProgram {
 
     loadAudio() {
         console.log("loadAudio");
-       var url = '../Audio/samples/RVSoundscapeV2.wav';
+        var url = '../Audio/samples/RVSoundscapeV2.wav';
         var startTime = 0;
         console.log("loading audio", url, startTime);
         this.audioEffects.loadAudio(url, () => {
@@ -141,8 +117,14 @@ var Prog1 = class extends AudioProgram {
     }
 
     updateStatus() {
-        var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
+        var statusStr = "status";
+        try {
+             statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
             this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
+        }
+        catch (e) {
+
+        }
         //console.log("status:", statusStr);
         $("#status").html(statusStr);
     }
@@ -155,9 +137,19 @@ var Prog1 = class extends AudioProgram {
 
         $("#addFilter").click(() => inst.addFilter());
         $("#removeFilter").click(() => inst.removeFilter());
+        $("#beep1").click(() => inst.beep1());
+        $("#beep2").click(() => inst.beep2());
         $("#filterFrequency").on('input', () => inst.changeFilterFrequency());
         $("#detune").on('input', () => inst.changeFilterDetune());
         $("#Q").on('input', () => inst.changeFilterQ());
+    }
+
+    beep1() {
+        console.log("beep1");
+    }
+
+    beep2() {
+        console.log("beep2");
     }
 
     changeFilterFrequency() {
@@ -207,7 +199,7 @@ var Prog1 = class extends AudioProgram {
     }
 }
 
-//app.setProgram(new Prog1(app));
+
 
 
 

@@ -34,6 +34,7 @@ class BodyGraphic extends CanvasTool.Graphic {
         this.drawCircle(canvas, ctx, 2, lhpt.x, lhpt.y);
         this.drawCircle(canvas, ctx, 2, rhpt.x, rhpt.y);
         this.drawPolyLine(canvas, ctx, [rhpt, rept, rspt, lspt, lept, lhpt])
+        this.drawPolyLine(canvas, ctx, [rhpt, rept, rspt, lspt, lept, lhpt])
     }
 }
 

@@ -43,6 +43,7 @@ class KinAudioApp {
     }
 
     initProgram() {
+        return;
         this.program = new Prog1(this);
         this.program.start();
     }
@@ -188,6 +189,7 @@ class KinAudioApp {
     }
 
     setProgram(program) {
+        this.initAudio();
         if (this.program) {
             this.program.stop();
         }
@@ -203,8 +205,9 @@ class KinAudioApp {
     }
 
     loadAppURL(url) {
+        this.initAudio();
         if (this.program) {
-            this.program.stop();
+            this.program.finish();
             this.program = null;
         }
         $("#audioControls").load(url);

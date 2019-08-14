@@ -5,18 +5,19 @@ var sweepEnv = null;
 var tempo = 44;
 var atwiddle = null;
 
-const energyThreshold = 100;
-const maxEnergy = 300;
-const midFc = 200;
-const maxFc = 1000;
+var energyThreshold = 100;
+var maxEnergy = 300;
+var midFc = 200;
+var maxFc = 1000;
 
 
-class SampleProg1 extends AudioProgram {
+var SampleProg1 = class extends AudioProgram {
     constructor(app, opts) {
         console.log("***** SampleProg1")
         super(app, opts);
         this.counter = 0;
         this.tickNum = 0;
+        this.smooSpeed = 0;
         this.part1 = [
             [null, null, null],
             [null, null, null],
@@ -86,7 +87,7 @@ class SampleProg1 extends AudioProgram {
         var rv = this.rvWatcher;
         console.log("speed:", rv.playSpeed);
         this.changePartTempo(rv.playSpeed, rv.smooSpeed);
-        this.handleBodies();
+        //this.handleBodies();
         this.updateStatus();
     }
 
@@ -138,9 +139,11 @@ class SampleProg1 extends AudioProgram {
         var name = "prog1";
        // var name = this.constructor.name;
        console.log(this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed)
-        var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
-            name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
-        //console.log("status:", statusStr);
+       //var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
+       //name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
+       var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f",
+       name, this.tickNum, this.tempo, this.playSpeed);
+//console.log("status:", statusStr);
         $("#status").html(statusStr);
     }
 
