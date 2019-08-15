@@ -59,7 +59,6 @@ class KinAudioApp {
 
     initCanvasTool() {
         this.canvasTool = new CanvasTool("trackingCanvas");
-        this.canvasTool.setView(0,200,500);
         var addSampleGraphics = false;
         if (addSampleGraphics) {
             var n = 0;
@@ -75,6 +74,7 @@ class KinAudioApp {
             }
         }
         this.canvasTool.start();
+        this.canvasTool.setView(0,1,5);
     }
 
     initSkelApp() {
