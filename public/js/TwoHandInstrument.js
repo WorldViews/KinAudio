@@ -38,39 +38,33 @@ class TwoHandInstrument extends AudioProgram {
         this.initGUI();
     }
 
-    setDrumPart(drumPart) {
-        this.part = drumPart;
-        if (this.drums == null) {
-            console.log("No drums created");
-            return;
-        }
-        else {
-            this.drumPart.removeAll();
-            for (var notes in drumPart) {
-                console.log("drumPart note changing to", drumPart[notes]);
-                this.drumPart.add(drumPart[notes][0], drumPart[notes][1]);
-            }
-        }
+    //***** GUI driven acctions *****/
+
+    initGUI() {
+        let inst = this;
+
+        $("#startDrums").click(() => inst.startDrums());
+        $("#stopDrums").click(() => inst.stopDrums());
+        $("#changePart").on('input', () => inst.changeDrumPart());
+        $("#changeTempo").on('input', () => inst.changeDrumsTempo());
     }
 
-    triggerDrums(drumPart, duration) {
-        this.part = drumPart;
-        var inst = this;
-        this.drumPart = new Tone.Part(function (time, pitch) {
-            inst.drums.triggerAttackRelease(pitch, duration, time);
-        }, inst.part);
-        this.drumPart.loop = true;
+    updateStatus() {
+        return;
+        var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
+            this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
+        //console.log("status:", statusStr);
+        $("#status").html(statusStr);
     }
 
-    stopDrums(){
-        if(this.drums == null){
-            console.log("No drums created");
-            return;
-        }
-        else {
-            this.drumPart.stop();
-        }
+    update() {
+        var rv = this.rvWatcher;
+        console.log("speed:", rv.playSpeed);
+        //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
+        //this.handleBodies();
+        this.updateStatus();
     }
+
 
     start() {
         var drums = this.toneTool.createDrum();
@@ -106,6 +100,50 @@ class TwoHandInstrument extends AudioProgram {
         this.updateStatus();
     }
 
+    setDrumPart(drumPart) {
+        this.part = drumPart;
+        if (this.drums == null) {
+            console.log("No drums created");
+            return;
+        }
+        else {
+            this.drumPart.removeAll();
+            for (var notes in drumPart) {
+                console.log("drumPart note changing to", drumPart[notes]);
+                this.drumPart.add(drumPart[notes][0], drumPart[notes][1]);
+            }
+        }
+    }
+
+    triggerDrums(drumPart, duration) {
+        this.part = drumPart;
+        var inst = this;
+        this.drumPart = new Tone.Part(function (time, pitch) {
+            inst.drums.triggerAttackRelease(pitch, duration, time);
+        }, inst.part);
+        this.drumPart.loop = true;
+    }
+
+    startDrums(){
+        if (this.drums == null){
+            console.log("Creating drums ...");
+            this.start();
+        }
+        else {
+            this.drumPart.start();
+        }
+    }
+
+    stopDrums(){
+        if(this.drums == null){
+            console.log("No drums created");
+            return;
+        }
+        else {
+            this.drumPart.stop();
+        }
+    }
+
     changePartTempo(playSpeed, smooSpeed) {
         if (!this.toneTool) {
             console.log("changePartTempo ... ignored - no toneTool");
@@ -118,24 +156,6 @@ class TwoHandInstrument extends AudioProgram {
         tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
         this.tempo = tempo;
         this.toneTool.setTempo(tempo);
-    }
-
-    updateStatus() {
-        return;
-        var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
-            this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
-        //console.log("status:", statusStr);
-        $("#status").html(statusStr);
-    }
-
-
-    //***** GUI driven acctions *****/
-
-    initGUI() {
-        let inst = this;
-
-        $("#changePart").on('input', () => inst.changeDrumPart());
-        $("#stopDrums").click(() => inst.stopDrums());
     }
 
     changeDrumPart() {
@@ -170,5 +190,31 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
+    changePartTempo(playSpeed, smooSpeed) {
+        if (!this.toneTool) {
+            console.log("changePartTempo ... ignored - no toneTool");
+            return;
+        }
+        //console.log("playSpeed:", playSpeed, "smooSpeed", smooSpeed);
+        this.playSpeed = playSpeed;
+        this.smooSpeed = smooSpeed;
+        tempo = this.toneTool.calculateTempo(playSpeed, smooSpeed);
+        tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
+        this.tempo = tempo;
+        this.toneTool.setTempo(tempo);
+    }
+
+    changeDrumsTempo() {
+        if (!this.toneTool) {
+            console.log("changePartTempo ... ignored - no toneTool");
+            return;
+        }
+        tempo = document.getElementById("changeTempo").value;
+        console.log("tempo is now ", tempo);
+        tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
+        this.tempo = tempo;
+        this.toneTool.setTempo(tempo);
+        console.log("tempo is set to ", tempo);
+    }
 
 }

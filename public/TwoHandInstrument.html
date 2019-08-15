@@ -30,13 +30,16 @@
 <body>
     <button id="startProgram">Start Program</button>
     <h4 id="showAudioControls">Audio Controls</h4>
+    <h5 id="showDrumsControls">Drums:</h5>
     <div id="audioControls" style="padding:40px;">
-        <input type="button" id="startButton" value="Start"> &nbsp;
+        <button id="startDrums" style="">Start Drums</button> &nbsp;
         <button id="loadAudio" style="">Load Audio</button> &nbsp;
         <button id="stopDrums" style="">Stop Drums</button> &nbsp;
         <p>
         <input type="range" id="changePart" oninput="app.program.changeDrumPart()" min="1" max="5" style="width:80%"/>
-        <label for="changePart">changePart</label>
+        <label for="changePart">change Part</label>
+        <input type="range" id="changeTempo" oninput="app.program.changeDrumsTempo()" min="30" max="256" style="width:80%"/>
+        <label for="changeTempo">change Tempo</label>
         <p>
         <input type="checkbox" checked id="handleRVMessagesCB" /> handle RV Messages
         </p>
