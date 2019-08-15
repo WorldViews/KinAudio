@@ -46,8 +46,8 @@ class CanvBody extends RiggedBody {
 
     getFloorXY(j) {
         var wp = this.getWPos(j);
-        var x = 150*wp[0];
-        var y = 150*wp[2];
+        var x = 100.0*wp[0];
+        var y = 100.0*wp[2];
         return {x,y};
     }
 

@@ -90,6 +90,7 @@ class CanvasTool {
         $("#canvasStat").html(
             sprintf("pt: %5.1f %5.1f   cpt: %5.1f %5.1f  %s",
                      pt.x, pt.y, cpt.x, cpt.y, id));
+        this.getView();
     }
 
     // get the mouse position in canvas coordinates
@@ -101,13 +102,18 @@ class CanvasTool {
         };
     }
 
+    // convert canvas coordinates to model coordinates
+    canvToModel(cpt) {
+        return {
+            x: (cpt.x - this.tx) / this.sx,
+            y: (cpt.y - this.ty) / this.sy
+        };
+    }
+
     // get the mouse position in 'model' coordinates
     getMousePos(e) {
-        var pt = this.getMousePosCanv(e);
-        return {
-            x: (pt.x - this.tx) / this.sx,
-            y: (pt.y - this.ty) / this.sy
-        };
+        var cpt = this.getMousePosCanv(e);
+        return this.canvToModel(cpt);
     }
 
     mouseOver(e) {
@@ -150,6 +156,47 @@ class CanvasTool {
         this.tx += dx;
         this.ty += dy;
     }
+
+    setViewRange(xLow, xHigh, yLow, yHigh)
+    {
+        var x = (xLow + xHigh)/2.0;
+        var y = (yLow + yHigh)/2.0;
+        var w = xHigh - xLow;
+        this.setView(x, y, w);
+    }
+
+    setViewWidth(w) {
+        var s = this.canvas.width / (0.0 + w);
+        this.sx = s;
+        this.sy = s;
+        this.draw();        
+    }
+
+    setViewCenter(x,y) {
+        var view = this.getView();
+        var dx = view.center.x - x;
+        var dy = view.center.y - y;
+        this.pan(dx,dy);
+        this.draw();
+    }
+
+    setView(x, y, w, h) {
+        this.setViewCenter(x,y);
+        if (w != null)
+            this.setViewWidth(w);
+    }
+    
+    getView() {
+        var cwidth = this.canvas.width;
+        var cheight = this.canvas.height;
+        var width = cwidth / this.sx;
+        var height = cheight / this.sy;
+        var center = this.canvToModel({x: cwidth/2.0, y: cheight/2.0});
+        var view = {center, width, height};
+        console.log("view", view);
+        return view;
+    }
+
 
     clearCanvas() {
         var ctx = this.canvas.getContext('2d');
