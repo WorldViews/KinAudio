@@ -14,7 +14,7 @@ class CanvasTool {
         console.log('Creating CanvasTool', canvasName);
         this.canvas = document.getElementById(canvasName);
         if (!this.canvas) {
-            alert("No canvas named "+canvasName);
+            alert("No canvas named " + canvasName);
             return;
         }
         //this.elements = elements;
@@ -22,30 +22,37 @@ class CanvasTool {
         this.mouseDownTrans = null;
         this.init();
         this.setupGUIBindings();
+        this.resize();
     }
 
-    dist(a1,a2) {
+    dist(a1, a2) {
         var dx = a2.x - a1.x;
         var dy = a2.y - a1.y;
-        return Math.sqrt(dx*dx + dy*dy);    
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     setupGUIBindings() {
         var inst = this;
 
-        this.canvas.addEventListener("mousedown", e=> {
+        window.addEventListener("resize", e => {
+            inst.resize();
+        });
+        //this.canvas.parentElement.addEventListener("resize", e=> {
+        //    inst.resize();
+        //});
+        this.canvas.addEventListener("mousedown", e => {
             var hit = this.getHit(e);
             if (hit) {
                 hit.onClick(e);
             }
-            inst.mouseDownPt = {x: e.clientX, y: e.clientY};
-            inst.mouseDownTrans = {tx: inst.tx, ty: inst.ty};
+            inst.mouseDownPt = { x: e.clientX, y: e.clientY };
+            inst.mouseDownTrans = { tx: inst.tx, ty: inst.ty };
             //console.log("down", e, this.mouseDownPt);
         });
-        this.canvas.addEventListener("mousemove", e=> {
+        this.canvas.addEventListener("mousemove", e => {
             inst.mouseMove(e);
             if (inst.mouseDownPt == null) {
-                 inst.mouseOver(e);
+                inst.mouseOver(e);
                 return;
             }
             var tr = inst.mouseDownTrans;
@@ -56,7 +63,7 @@ class CanvasTool {
             //inst.pan(dx,dy);
             //console.log("move", e);
         });
-        this.canvas.addEventListener("mouseup", e=> {
+        this.canvas.addEventListener("mouseup", e => {
             inst.mouseDownPt = null;
             //console.log("up", e);
         });
@@ -66,19 +73,26 @@ class CanvasTool {
             if (e.deltaY > 0)
                 inst.zoom(inst.zf);
             else
-                inst.zoom(1/inst.zf);
+                inst.zoom(1 / inst.zf);
         });
     }
 
     mouseMove(e) {
         var pt = this.getMousePos(e);
         var cpt = this.getMousePosCanv(e);
-        console.log("mouse pos", pt);
+        var id = "";
+        var g = this.getHit(e);
+        if (g)
+            id = "" + g.id;
+        //console.log("mouse pos", pt);
+        // var tstr = sprintf("T: %5.1f %5.1f S: %5.3f %5.3f",
+        //    this.tx, this.ty, this.sx, this.sy);
         $("#canvasStat").html(
-            sprintf("cx: %5.1f cy: %5.1f   x: %5.1f  y: %5.1f",
-                    cpt.x, cpt.y, pt.x, pt.y));
+            sprintf("pt: %5.1f %5.1f   cpt: %5.1f %5.1f  %s",
+                     pt.x, pt.y, cpt.x, cpt.y, id));
     }
 
+    // get the mouse position in canvas coordinates
     getMousePosCanv(e) {
         var rect = this.canvas.getBoundingClientRect();
         return {
@@ -87,10 +101,13 @@ class CanvasTool {
         };
     }
 
+    // get the mouse position in 'model' coordinates
     getMousePos(e) {
         var pt = this.getMousePosCanv(e);
-        return {x: pt.x / this.sx + this.tx,
-                y: pt.y / this.sy + this.ty};
+        return {
+            x: (pt.x - this.tx) / this.sx,
+            y: (pt.y - this.ty) / this.sy
+        };
     }
 
     mouseOver(e) {
@@ -100,7 +117,7 @@ class CanvasTool {
             var g = this.graphics[id];
             if (g.contains(pt))
                 console.log("Over id", id);
-        }    
+        }
     }
 
     getHit(e) {
@@ -129,7 +146,7 @@ class CanvasTool {
         this.sy *= zf;
     }
 
-    pan(dx,dy) {
+    pan(dx, dy) {
         this.tx += dx;
         this.ty += dy;
     }
@@ -148,22 +165,19 @@ class CanvasTool {
 
     setTransform(ctx) {
         ctx.resetTransform();
-        ctx.scale(this.sx, this.sy);
         ctx.translate(this.tx, this.ty);
+        ctx.scale(this.sx, this.sy);
+        //ctx.translate(this.tx, this.ty);
     }
 
     drawGraphics() {
         var ctx = this.canvas.getContext('2d');
         this.setTransform(ctx);
         var canvas = this.canvas;
-        ctx.resetTransform();
-        ctx.scale(this.sx, this.sy);
-        ctx.translate(this.tx, this.ty);
-        for (var id in this.graphics){
+        for (var id in this.graphics) {
             //console.log("draw id", id);
             var graphics = this.graphics[id];
-            if (graphics !== undefined)
-            {
+            if (graphics !== undefined) {
                 graphics.draw(canvas, ctx);
             }
         }
@@ -174,19 +188,24 @@ class CanvasTool {
         this.drawGraphics();
     }
 
-    resize(){
+    resize() {
         console.log("resizing the canvas...");
         let canvasWidth = this.canvas.clientWidth;
+        let canvasHeight = this.canvas.clientHeight;
+        /*
         let maxCanvasSize = 800;
         if (canvasWidth > maxCanvasSize) {
             canvasWidth = maxCanvasSize;
         }
         this.canvas.width = canvasWidth;
         this.canvas.height = canvasWidth;
+        */
+        this.canvas.width = canvasWidth;
+        this.canvas.height = canvasHeight;
         this.draw();
     }
 
-    setXY(id, x, y){
+    setXY(id, x, y) {
         this.graphics[id].x = x;
         this.graphics[id].y = y;
         this.draw();
@@ -200,9 +219,9 @@ class CanvasTool {
         return Object.keys(this.graphics).length;
     }
 
-    addGraphic(graphic){
+    addGraphic(graphic) {
         graphic.tool = this;
-        this.graphics[graphic.id] = graphic;       
+        this.graphics[graphic.id] = graphic;
     }
 
     removeGraphic(id) {
@@ -227,19 +246,19 @@ class CanvasTool {
 CanvasTool.Graphic = class {
     constructor(id, x, y) {
         this.id = id;
-        this.x =x;
+        this.x = x;
         this.y = y;
         this.lineWidth = 1;
         this.strokeStyle = '#000';
         this.fillStyle = '#900';
-        this.radius = 5; 
+        this.radius = 5;
         this.alpha = 0.333;
-        this.clickable =  false;
+        this.clickable = false;
     }
 
     tick() {
     }
-    
+
     draw(canvas, ctx) {
         this.drawCircle(canvas, ctx, this.radius, this.x, this.y);
     }
@@ -259,12 +278,12 @@ CanvasTool.Graphic = class {
         ctx.strokeStyle = this.strokeStyle;
         ctx.beginPath();
         ctx.moveTo(pts[0].x, pts[0].y);
-        for (var i=1; i<pts.length; i++) {
+        for (var i = 1; i < pts.length; i++) {
             ctx.lineTo(pts[i].x, pts[i].y);
         }
         ctx.stroke();
     }
-    
+
     contains(pt) {
         var d = this.tool.dist(this, pt);
         //console.log("contains", this.id, d, this.x, this.y, pt, this.radius);
@@ -279,14 +298,14 @@ CanvasTool.Graphic = class {
 }
 
 CanvasTool.IconGraphic = class extends CanvasTool.Graphic {
-    constructor(id, iconName, x,y) {
+    constructor(id, iconName, x, y) {
         super(id, x, y);
         this.iconName = iconName;
         this.icon = document.getElementById(iconName);
         if (!this.icon) {
             alert("Unable to get icon " + iconName);
         }
-        this.radius = 0.04; 
+        this.radius = 0.04;
         this.alpha = 0.333;
     }
 

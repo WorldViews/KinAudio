@@ -62,9 +62,9 @@ class KinAudioApp {
         var addSampleGraphics = false;
         if (addSampleGraphics) {
             var n = 0;
-            var low = -100;
-            var high = 100;
-            var inc = 50;
+            var low = -400;
+            var high = 400;
+            var inc = 200;
             for (var i = low; i <= high; i += inc) {
                 for (var j = low; j <= high; j += inc) {
                     var g = new CanvasTool.Graphic(n, i, j);
