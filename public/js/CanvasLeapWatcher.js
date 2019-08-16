@@ -13,6 +13,7 @@ class HandsGraphic extends CanvasTool.Graphic {
         var frame = this.watcher.lastFrame;
         if (frame) {
             var s = 0.001;
+            ctx.lineWidth = 5;
             ctx.save();
             ctx.scale(-s,s);
             this.leapRenderer.draw(frame);
