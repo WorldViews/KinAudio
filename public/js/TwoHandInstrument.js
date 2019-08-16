@@ -36,6 +36,12 @@ class TwoHandInstrument extends AudioProgram {
         this.part = part1; // part1 as default
         this.drumPart = null;
         this.initGUI();
+
+        this.msg = this.rvWatcher.msg;
+        this.maxPartNo = 5;
+        this.minX = 900;
+        this.maxX = 1400; // min-max X axis for right hand range
+        this.Xstep = (this.maxX - this.minX)/this.maxPartNo;
     }
 
     //***** GUI driven acctions *****/
@@ -63,6 +69,31 @@ class TwoHandInstrument extends AudioProgram {
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         this.handleBodies();
         this.updateStatus();
+        this.updateParts();
+    }
+
+    updateParts(){
+        var sw = this.skelWatcher;
+        var rv = this.rvWatcher;
+        var body = sw.bodies[0];
+        if (body.LEFT_UP.get()){
+            var RHxy = rv.msg.controlPoints[0].pt;
+            var RHx = RHxy[0];
+            var RHy = RHxy[1];
+
+            var partNo = this.scaleRHx(RHx);
+        }
+        else
+        {
+            console("left hand is below head, no part change");
+            partNo = null;
+        }
+        this.changeDrumPart(partNo);
+    }
+
+    scaleRHx(x){
+        var partNo = ((x - this.minX)/this.Xstep)+1;
+        return partNo;
     }
 
     handleBodies() {
@@ -176,12 +207,16 @@ class TwoHandInstrument extends AudioProgram {
         this.toneTool.setTempo(tempo);
     }
 
-    changeDrumPart() {
+    changeDrumPart(partNo) {
         if (this.drumPart == null) {
             console.log("No drumPart created");
         }
         else {
-            var partNo = document.getElementById("changePart").value;
+            if(partNo == null)
+            {
+                partNo = document.getElementById("changePart").value;
+                console.log("partNo is assigned by slider value");
+            }
             var drumPart;
             var beepSeq = ["C4"];
             partNo = Math.round(partNo);
