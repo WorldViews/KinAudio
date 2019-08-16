@@ -51,6 +51,7 @@ class TwoHandInstrument extends AudioProgram {
 
         $("#startDrums").click(() => inst.startDrums());
         $("#stopDrums").click(() => inst.stopDrums());
+        $("#leftUp").click(() => inst.leftUp());
         $("#changePart").on('input', () => inst.changeDrumPart());
         $("#changeTempo").on('input', () => inst.changeDrumsTempo());
     }
@@ -72,11 +73,13 @@ class TwoHandInstrument extends AudioProgram {
         this.updateParts();
     }
 
+    //TODO: create GUI control for left hand trigger and right hand scroll
+
     updateParts(){
         var sw = this.skelWatcher;
         var rv = this.rvWatcher;
         var body = sw.bodies[0];
-        if (body.LEFT_UP.get()){
+        if (body.LEFT_UP.get() && !body.RIGHT_UP.get()){
             var RHxy = rv.msg.controlPoints[0].pt;
             var RHx = RHxy[0];
             var RHy = RHxy[1];
@@ -94,6 +97,25 @@ class TwoHandInstrument extends AudioProgram {
     scaleRHx(x){
         var partNo = ((x - this.minX)/this.Xstep)+1;
         return partNo;
+    }
+
+    leftUp(){
+        var sw = this.skelWatcher;
+        var body = sw.bodies[0];
+        body.LEFT_UP = true;
+        this.RH_Slide();
+    }
+
+    leftDown(){
+        var sw = this.skelWatcher;
+        var body = sw.bodies[0];
+        body.LEFT_UP = false;
+    }
+
+    // ?: Do we need a left hand up checker in RH_Slider?
+    RH_Slide(){
+        var partNo = document.getElementById("RH_Slide").value;
+        this.changeDrumPart(partNo);
     }
 
     handleBodies() {
