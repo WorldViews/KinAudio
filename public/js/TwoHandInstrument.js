@@ -61,8 +61,26 @@ class TwoHandInstrument extends AudioProgram {
         var rv = this.rvWatcher;
         console.log("speed:", rv.playSpeed);
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
-        //this.handleBodies();
+        this.handleBodies();
         this.updateStatus();
+    }
+
+    handleBodies() {
+        var sw = this.skelWatcher;
+        var J = JointType;
+        for (var bodyId in sw.bodies) {
+            var body = sw.bodies[bodyId];
+            console.log("body", bodyId, body);
+            console.log(" head pos", body.getWPos(J.head));
+            console.log(" head floor coordinates", body.getFloorXY(J.head));
+            console.log(" TRIGGER:", body.TRIGGER.get());
+            console.log(" LEFT_UP", body.LEFT_UP.get());
+            console.log(" LHAND", body.LHAND.get());
+            console.log(" RHAND", body.RHAND.get());
+            console.log(" RHAND tracking state", body.getTrackingState(J.handRight));
+            console.log(" RHAND joint", body.getJoint(J.handRight));
+            console.log(" Dist Left Right", body.DLR.get());
+        }
     }
 
 
@@ -124,8 +142,8 @@ class TwoHandInstrument extends AudioProgram {
         this.drumPart.loop = true;
     }
 
-    startDrums(){
-        if (this.drums == null){
+    startDrums() {
+        if (this.drums == null) {
             console.log("Creating drums ...");
             this.start();
         }
@@ -134,8 +152,8 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
-    stopDrums(){
-        if(this.drums == null){
+    stopDrums() {
+        if (this.drums == null) {
             console.log("No drums created");
             return;
         }
@@ -165,20 +183,25 @@ class TwoHandInstrument extends AudioProgram {
         else {
             var partNo = document.getElementById("changePart").value;
             var drumPart;
+            var beepSeq = ["C4"];
             partNo = Math.round(partNo);
             console.log("new part playing with part number", partNo);
             switch (partNo) {
                 case 1:
                     drumPart = part1;
+                    beepSeq = ["C4"];
                     break;
                 case 2:
                     drumPart = part2;
+                    beepSeq = ["C4", "C4"];
                     break;
                 case 3:
                     drumPart = part3;
+                    beepSeq = ["C4", "C4", "C4"];
                     break;
                 case 4:
                     drumPart = part4;
+                    beepSeq = ["C4", "C4", "C4", "C4"];
                     break;
                 case 5:
                     drumPart = part5;
@@ -186,6 +209,7 @@ class TwoHandInstrument extends AudioProgram {
                 default:
                     drumPart = part1;
             }
+            this.playBeep(partNo, beepSeq);
             this.setDrumPart(drumPart);
         }
     }
@@ -215,6 +239,21 @@ class TwoHandInstrument extends AudioProgram {
         this.tempo = tempo;
         this.toneTool.setTempo(tempo);
         console.log("tempo is set to ", tempo);
+    }
+
+    playBeep(no, seq) {
+        var beep = new Tone.Synth().toMaster();
+        var conga = this.toneTool.createConga();
+        if (no != 5) {
+            var beepSeq = new Tone.Sequence(function (time, note) {
+                beep.triggerAttackRelease(note, "16n", time)
+            }, seq, '4n');
+            beepSeq.loop = 0;
+            beepSeq.start();
+        }
+        else {
+            conga.triggerAttackRelease("C4", "2n");
+        }
     }
 
 }
