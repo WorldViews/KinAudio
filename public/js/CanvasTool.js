@@ -307,7 +307,7 @@ CanvasTool.Graphic = class {
         this.lineWidth = .01;
         this.strokeStyle = '#000';
         this.fillStyle = '#900';
-        this.radius = 5;
+        this.radius = .1;
         this.alpha = 0.333;
         this.clickable = false;
     }
