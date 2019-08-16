@@ -17,7 +17,7 @@ class AudioProgram extends Program {
         this.toneTool = app.toneTool;
         this.audioEffects = app.audioEffects;
         this.rvWatcher = app.rvWatcher;
-        this.skelWatcher = app.skelApp;
+        this.skelWatcher = app.skelWatcher;
     }
 
 // Main lifecycle events...

@@ -2,14 +2,14 @@
 class KinectCameraGraphic extends CanvasTool.Graphic {
     constructor(id, x, y) {
         super(id, x, y);
-        this.radius = 20;
+        this.radius = .2;
     }
 }
 
 class PanoPortalGraphic extends CanvasTool.Graphic {
-    constructor(id, x, y) {
+    constructor(id, x, y, r) {
         super(id, x, y);
-        this.radius = 50;
+        this.radius = r || 1.0;
         this.fillStyle = "#FEE"
     }
 }
@@ -23,6 +23,7 @@ class BodyGraphic extends CanvasTool.Graphic {
 
     draw(canvas, ctx) {
         var J = JointType;
+        var jr = 0.02;
         var hpt = this.body.getFloorXY(J.head);
         var npt = this.body.getFloorXY(J.neck);
         var lspt = this.body.getFloorXY(J.shoulderLeft);
@@ -31,10 +32,10 @@ class BodyGraphic extends CanvasTool.Graphic {
         var rspt = this.body.getFloorXY(J.shoulderRight);
         var rept = this.body.getFloorXY(J.elbowRight);
         var rhpt = this.body.getFloorXY(J.handRight);
-        this.drawCircle(canvas, ctx, 4, hpt.x, hpt.y);
-        this.drawCircle(canvas, ctx, 2, lhpt.x, lhpt.y);
-        this.drawCircle(canvas, ctx, 2, rhpt.x, rhpt.y);
         this.drawPolyLine(canvas, ctx, [rhpt, rept, rspt, npt, hpt, npt, lspt, lept, lhpt])
+        this.drawCircle(canvas, ctx, 3*jr, hpt.x, hpt.y);
+        this.drawCircle(canvas, ctx, jr, lhpt.x, lhpt.y);
+        this.drawCircle(canvas, ctx, jr, rhpt.x, rhpt.y);
         //this.drawPolyLine(canvas, ctx, [rhpt, rept, rspt, lspt, lept, lhpt])
     }
 }
@@ -46,8 +47,8 @@ class CanvBody extends RiggedBody {
 
     getFloorXY(j) {
         var wp = this.getWPos(j);
-        var x = 100.0*wp[0];
-        var y = 100.0*wp[2];
+        var x = 1.0*wp[0];
+        var y = 1.0*wp[2];
         return {x,y};
     }
 
@@ -67,7 +68,7 @@ class CanvasSkelWatcher extends SkelWatcher {
     constructor(opts) {
         super(opts);
         this.canvasTool = opts.canvasTool;
-        this.canvasTool.addGraphic(new PanoPortalGraphic('panoPortal1', 10, 100));
+        this.canvasTool.addGraphic(new PanoPortalGraphic('panoPortal1', 2, 1, .5));
         this.canvasTool.addGraphic(new KinectCameraGraphic('kin1', 0, 0));
     }
 
@@ -81,7 +82,7 @@ class CanvasSkelWatcher extends SkelWatcher {
         super.handleNewBody();
         console.log("********** new Body !!! *******", body);
         var g = new BodyGraphic(body, 48, 49);
-        g.radius = 10;
+        g.radius = .5;
         g.fillStyle = "#98A"
         this.canvasTool.addGraphic(g);
         body.graphic = g;

@@ -176,11 +176,16 @@ class CanvasTool {
         var view = this.getView();
         var dx = view.center.x - x;
         var dy = view.center.y - y;
-        this.pan(dx,dy);
+        this.pan(this.sx*dx,this.sy*dy);
         this.draw();
     }
 
     setView(x, y, w, h) {
+        if (typeof x == "object") {
+            var v = x;
+            return this.setView(v.center.x, v.center.y, v.width);
+        }
+        console.log("setView", x, y, w, h);
         this.setViewCenter(x,y);
         if (w != null)
             this.setViewWidth(w);
@@ -193,7 +198,7 @@ class CanvasTool {
         var height = cheight / this.sy;
         var center = this.canvToModel({x: cwidth/2.0, y: cheight/2.0});
         var view = {center, width, height};
-        console.log("view", view);
+        //console.log("view", view);
         return view;
     }
 
@@ -236,7 +241,9 @@ class CanvasTool {
     }
 
     resize() {
-        console.log("resizing the canvas...");
+        //console.log("resizing the canvas...");
+        //var view = this.getView();
+        //console.log("view:", view);
         let canvasWidth = this.canvas.clientWidth;
         let canvasHeight = this.canvas.clientHeight;
         /*
@@ -249,6 +256,7 @@ class CanvasTool {
         */
         this.canvas.width = canvasWidth;
         this.canvas.height = canvasHeight;
+        //this.setView(view);
         this.draw();
     }
 
@@ -283,6 +291,7 @@ class CanvasTool {
     }
 
     start() {
+        this.setView(0,0,10);
         this.tick();
         let inst = this;
         setInterval(() => inst.tick(), 100);
@@ -295,10 +304,10 @@ CanvasTool.Graphic = class {
         this.id = id;
         this.x = x;
         this.y = y;
-        this.lineWidth = 1;
+        this.lineWidth = .01;
         this.strokeStyle = '#000';
         this.fillStyle = '#900';
-        this.radius = 5;
+        this.radius = .1;
         this.alpha = 0.333;
         this.clickable = false;
     }

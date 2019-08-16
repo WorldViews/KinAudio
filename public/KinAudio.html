@@ -11,14 +11,18 @@
     <script src="js/libs/sprintf.js"></script>
     <script src="js/libs/resonance-audio.min.js"></script>
     <script src="js/libs/tone/13.8.17/Tone.js"></script>
-     <script src="../js/MUSEPortal.js"></script>
+    <script src="../js/MUSEPortal.js"></script>
     <script src="../js/kinDefs.js"></script>
+    <script src="../js/LeapClient.js"></script>
+    <script src="../js/LeapRenderer.js"></script>
+    <script src="../js/libs/math3d.js"></script>
     <script src="js/RVWatcher.js"></script>
     <script src="js/Estimators.js"></script>
     <script src="js/AppProxy.js"></script>
     <script src="js/CanvasTool.js"></script>
     <script src="js/SkelWatcher.js"></script>
     <script src="js/CanvasSkelWatcher.js"></script>
+    <script src="js/CanvasLeapWatcher.js"></script>
     <script src="js/KinAudioApp.js"></script>
     <script src="js/AudioEffectsTool.js"></script>
     <script src="js/BufferLoader.js"></script>
@@ -26,23 +30,25 @@
     <script src="js/Program.js"></script>
     <script src="js/Prog1.js"></script>
 </head>
+
 <body>
     <button id="startProgram">Start Program</button>
     <h4 id="showAudioControls">Audio Controls</h4>
     <div id="audioControls" style="padding:40px;">
         <button id="loadAudio" style="">Load Audio</button> &nbsp;
         <p>
-        <button id="addFilter">Add Filter</button> &nbsp;
-        <button id="removeFilter">Remove Filter</button><br>
-        <input type="range" id="filterFrequency" changeFilterFrequency()" min="0" max="1000" style="width:80%"/>
-        <label for="Frequency">Frequency</label>
-        <input type="range" id="detune" oninput="app.program.changeFilterDetune()" min="0" max="1000" style="width:80%"/>
-        <label for="Detune">Detune</label>
-        <input type="range" id="Q" oninput="app.program.changeFilterQ()" min="0" max="10" style="width:80%"/>
-        <label for="Q">Q</label>
-        <p>
-        <input type="checkbox" checked id="handleRVMessagesCB" /> handle RV Messages 
-        </p>
+            <button id="addFilter">Add Filter</button> &nbsp;
+            <button id="removeFilter">Remove Filter</button><br>
+            <input type="range" id="filterFrequency" changeFilterFrequency()" min="0" max="1000" style="width:80%" />
+            <label for="Frequency">Frequency</label>
+            <input type="range" id="detune" oninput="app.program.changeFilterDetune()" min="0" max="1000"
+                style="width:80%" />
+            <label for="Detune">Detune</label>
+            <input type="range" id="Q" oninput="app.program.changeFilterQ()" min="0" max="10" style="width:80%" />
+            <label for="Q">Q</label>
+            <p>
+                <input type="checkbox" checked id="handleRVMessagesCB" /> handle RV Messages
+            </p>
     </div>
     <pre id="status">
         waiting for start...
@@ -55,12 +61,12 @@
     </div>
     <h4 id="showTrackingCanvas">Tracking Canvas</h4>
     <div id="canvasDiv">
-    <pre id="canvasStat"></pre>
-    <canvas id="trackingCanvas" width="720" height="480"
-       style="border-style: solid; border-width:2; width: 95%"></canvas>
+        <pre id="canvasStat"></pre>
+        <canvas id="trackingCanvas" width="720" height="480"
+            style="border-style: solid; border-width:2; width: 95%"></canvas>
     </div>
     <script>
-    var app = null;
+        var app = null;
         $(document).ready(() => {
             app = new KinAudioApp();
             app.setProgramClass(Prog1);

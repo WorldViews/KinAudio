@@ -20,8 +20,10 @@ class KinAudioApp {
         this.toneTool = null;
         this.initCanvasTool();
         let inst = this;
-        this.skelApp = null;
-        this.initSkelApp();
+        this.skelWatcher = null;
+        this.initSkelWatcher();
+        this.leapWatcher = null;
+        this.initLeapWatcher();
         $("#startProgram").click(() => {
             inst.initAudio();
             if (inst.progClass) {
@@ -59,7 +61,6 @@ class KinAudioApp {
 
     initCanvasTool() {
         this.canvasTool = new CanvasTool("trackingCanvas");
-        this.canvasTool.setView(0,200,500);
         var addSampleGraphics = false;
         if (addSampleGraphics) {
             var n = 0;
@@ -75,10 +76,15 @@ class KinAudioApp {
             }
         }
         this.canvasTool.start();
+        this.canvasTool.setView(0,1,5);
     }
 
-    initSkelApp() {
-        this.skelApp = new CanvasSkelWatcher({ canvasTool: this.canvasTool });
+    initLeapWatcher() {
+        this.leapWatcher = new CanvasLeapWatcher({ canvasTool: this.canvasTool })
+    }
+
+    initSkelWatcher() {
+        this.skelWatcher = new CanvasSkelWatcher({ canvasTool: this.canvasTool });
     }
 
     setupGUIBindings() {
