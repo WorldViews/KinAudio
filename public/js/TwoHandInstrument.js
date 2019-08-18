@@ -36,6 +36,12 @@ class TwoHandInstrument extends AudioProgram {
         this.part = part1; // part1 as default
         this.drumPart = null;
         this.initGUI();
+
+        this.msg = this.rvWatcher.msg;
+        this.maxPartNo = 5;
+        this.minX = 900;
+        this.maxX = 1400; // min-max X axis for right hand range
+        this.Xstep = (this.maxX - this.minX)/this.maxPartNo;
     }
 
     //***** GUI driven acctions *****/
@@ -45,6 +51,7 @@ class TwoHandInstrument extends AudioProgram {
 
         $("#startDrums").click(() => inst.startDrums());
         $("#stopDrums").click(() => inst.stopDrums());
+        $("#leftUp").click(() => inst.leftUp());
         $("#changePart").on('input', () => inst.changeDrumPart());
         $("#changeTempo").on('input', () => inst.changeDrumsTempo());
     }
@@ -61,8 +68,72 @@ class TwoHandInstrument extends AudioProgram {
         var rv = this.rvWatcher;
         console.log("speed:", rv.playSpeed);
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
-        //this.handleBodies();
+        this.handleBodies();
         this.updateStatus();
+        this.updateParts();
+    }
+
+    //TODO: create GUI control for left hand trigger and right hand scroll
+
+    updateParts(){
+        var sw = this.skelWatcher;
+        var rv = this.rvWatcher;
+        var body = sw.bodies[0];
+        if (body.LEFT_UP.get() && !body.RIGHT_UP.get()){
+            var RHxy = rv.msg.controlPoints[0].pt;
+            var RHx = RHxy[0];
+            var RHy = RHxy[1];
+
+            var partNo = this.scaleRHx(RHx);
+        }
+        else
+        {
+            console("left hand is below head, no part change");
+            partNo = null;
+        }
+        this.changeDrumPart(partNo);
+    }
+
+    scaleRHx(x){
+        var partNo = ((x - this.minX)/this.Xstep)+1;
+        return partNo;
+    }
+
+    leftUp(){
+        var sw = this.skelWatcher;
+        var body = sw.bodies[0];
+        body.LEFT_UP = true;
+        this.RH_Slide();
+    }
+
+    leftDown(){
+        var sw = this.skelWatcher;
+        var body = sw.bodies[0];
+        body.LEFT_UP = false;
+    }
+
+    // ?: Do we need a left hand up checker in RH_Slider?
+    RH_Slide(){
+        var partNo = document.getElementById("RH_Slide").value;
+        this.changeDrumPart(partNo);
+    }
+
+    handleBodies() {
+        var sw = this.skelWatcher;
+        var J = JointType;
+        for (var bodyId in sw.bodies) {
+            var body = sw.bodies[bodyId];
+            console.log("body", bodyId, body);
+            console.log(" head pos", body.getWPos(J.head));
+            console.log(" head floor coordinates", body.getFloorXY(J.head));
+            console.log(" TRIGGER:", body.TRIGGER.get());
+            console.log(" LEFT_UP", body.LEFT_UP.get());
+            console.log(" LHAND", body.LHAND.get());
+            console.log(" RHAND", body.RHAND.get());
+            console.log(" RHAND tracking state", body.getTrackingState(J.handRight));
+            console.log(" RHAND joint", body.getJoint(J.handRight));
+            console.log(" Dist Left Right", body.DLR.get());
+        }
     }
 
 
@@ -124,8 +195,8 @@ class TwoHandInstrument extends AudioProgram {
         this.drumPart.loop = true;
     }
 
-    startDrums(){
-        if (this.drums == null){
+    startDrums() {
+        if (this.drums == null) {
             console.log("Creating drums ...");
             this.start();
         }
@@ -134,8 +205,8 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
-    stopDrums(){
-        if(this.drums == null){
+    stopDrums() {
+        if (this.drums == null) {
             console.log("No drums created");
             return;
         }
@@ -158,27 +229,36 @@ class TwoHandInstrument extends AudioProgram {
         this.toneTool.setTempo(tempo);
     }
 
-    changeDrumPart() {
+    changeDrumPart(partNo) {
         if (this.drumPart == null) {
             console.log("No drumPart created");
         }
         else {
-            var partNo = document.getElementById("changePart").value;
+            if(partNo == null)
+            {
+                partNo = document.getElementById("changePart").value;
+                console.log("partNo is assigned by slider value");
+            }
             var drumPart;
+            var beepSeq = ["C4"];
             partNo = Math.round(partNo);
             console.log("new part playing with part number", partNo);
             switch (partNo) {
                 case 1:
                     drumPart = part1;
+                    beepSeq = ["C4"];
                     break;
                 case 2:
                     drumPart = part2;
+                    beepSeq = ["C4", "C4"];
                     break;
                 case 3:
                     drumPart = part3;
+                    beepSeq = ["C4", "C4", "C4"];
                     break;
                 case 4:
                     drumPart = part4;
+                    beepSeq = ["C4", "C4", "C4", "C4"];
                     break;
                 case 5:
                     drumPart = part5;
@@ -186,6 +266,7 @@ class TwoHandInstrument extends AudioProgram {
                 default:
                     drumPart = part1;
             }
+            this.playBeep(partNo, beepSeq);
             this.setDrumPart(drumPart);
         }
     }
@@ -215,6 +296,21 @@ class TwoHandInstrument extends AudioProgram {
         this.tempo = tempo;
         this.toneTool.setTempo(tempo);
         console.log("tempo is set to ", tempo);
+    }
+
+    playBeep(no, seq) {
+        var beep = new Tone.Synth().toMaster();
+        var conga = this.toneTool.createConga();
+        if (no != 5) {
+            var beepSeq = new Tone.Sequence(function (time, note) {
+                beep.triggerAttackRelease(note, "16n", time)
+            }, seq, '4n');
+            beepSeq.loop = 0;
+            beepSeq.start();
+        }
+        else {
+            conga.triggerAttackRelease("C4", "2n");
+        }
     }
 
 }

@@ -48,6 +48,15 @@
         <input type="checkbox" checked id="handleRVMessagesCB" /> handle RV Messages
         </p>
     </div>
+    <h4 id="showHandControls">Hand Controls</h4>
+    <div id="handControls" style="padding:40px;">
+        <button id="leftUP" style="">Left Hand Up</button> &nbsp;    
+        <button id="leftDown" style="">Left Hand Down</button> &nbsp;    
+        <p>
+        <input type="range" id="RH_Slide" oninput="app.program.RH_Slide()" min="1" max="5" style="width:80%"/>
+        <label for="RH_Slide">Right Hand Slider</label>
+        </p>
+    </div>
     <pre id="status">
         waiting for start...
     </pre>
