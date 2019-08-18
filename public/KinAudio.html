@@ -32,9 +32,8 @@
 </head>
 
 <body>
-    <button id="startProgram">Start Program</button>
-    <h4 id="showAudioControls">Audio Controls</h4>
-    <div id="audioControls" style="padding:40px;">
+    <h4 id="showProgramControls">Program Controls</h4>
+    <div id="programControls" style="padding:40px;">
         <button id="loadAudio" style="">Load Audio</button> &nbsp;
         <p>
             <button id="addFilter">Add Filter</button> &nbsp;
@@ -50,27 +49,9 @@
                 <input type="checkbox" checked id="handleRVMessagesCB" /> handle RV Messages
             </p>
     </div>
-    <pre id="status">
-        waiting for start...
-    </pre>
-    <h4 id="showMessage">Show Message</h4>
-    <div id="messageDiv" style="height:160px"></div>
-    <div>
-        <h4 id="trackedBodiesInfo">Tracked Bodies</h4>
-        <pre id="bodyStatus" style="font-size: 16px" hidden></pre>
-    </div>
-    <h4 id="showTrackingCanvas">Tracking Canvas</h4>
-    <div id="canvasDiv">
-        <pre id="canvasStat"></pre>
-        <canvas id="trackingCanvas" width="720" height="480"
-            style="border-style: solid; border-width:2; width: 95%"></canvas>
-    </div>
+    <div id="museDiv"></div>
     <script>
-        var app = null;
-        $(document).ready(() => {
-            app = new KinAudioApp();
-            app.setProgramClass(Prog1);
-        });
+        $(document).ready(() => KinAudioApp.runApp({ program: Prog1 }));
     </script>
 </body>
 

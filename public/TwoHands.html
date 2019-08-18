@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>KinAudio Tool</title>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/libs/jquery-3.1.0.min.js"></script>
+    <script src="js/libs/sprintf.js"></script>
+    <script src="js/libs/resonance-audio.min.js"></script>
+    <script src="js/libs/tone/13.8.17/Tone.js"></script>
+    <script src="../js/MUSEPortal.js"></script>
+    <script src="../js/kinDefs.js"></script>
+    <script src="../js/LeapClient.js"></script>
+    <script src="../js/LeapRenderer.js"></script>
+    <script src="../js/libs/math3d.js"></script>
+    <script src="js/RVWatcher.js"></script>
+    <script src="js/Estimators.js"></script>
+    <script src="js/AppProxy.js"></script>
+    <script src="js/CanvasTool.js"></script>
+    <script src="js/SkelWatcher.js"></script>
+    <script src="js/CanvasSkelWatcher.js"></script>
+    <script src="js/CanvasLeapWatcher.js"></script>
+    <script src="js/KinAudioApp.js"></script>
+    <script src="js/AudioEffectsTool.js"></script>
+    <script src="js/BufferLoader.js"></script>
+    <script src="js/ToneTool.js"></script>
+    <script src="js/Program.js"></script>
+    <script src="js/TwoHandInstrument.js"></script>
+
+</head>
+
+<body>
+    <h4 id="showProgramControls">Program Controls</h4>
+    <div id="programControls">
+        <h5 id="showDrumsControls">Drums:</h5>
+        <div id="audioControls" style="padding:40px;">
+            <button id="startDrums" style="">Start Drums</button> &nbsp;
+            <button id="loadAudio" style="">Load Audio</button> &nbsp;
+            <button id="stopDrums" style="">Stop Drums</button> &nbsp;
+            <p>
+                <input type="range" id="changePart" oninput="app.program.changeDrumPart()" min="1" max="5"
+                    style="width:80%" />
+                <label for="changePart">change Part</label>
+                <input type="range" id="changeTempo" oninput="app.program.changeDrumsTempo()" min="30" max="256"
+                    style="width:80%" />
+                <label for="changeTempo">change Tempo</label>
+                <p>
+                    <input type="checkbox" checked id="handleRVMessagesCB" /> handle RV Messages
+                </p>
+        </div>
+        <h4 id="showHandControls">Hand Controls</h4>
+        <div id="handControls" style="padding:40px;">
+            <button id="leftUP" style="">Left Hand Up</button> &nbsp;
+            <button id="leftDown" style="">Left Hand Down</button> &nbsp;
+            <p>
+                <input type="range" id="RH_Slide" oninput="app.program.RH_Slide()" min="1" max="5" style="width:80%" />
+                <label for="RH_Slide">Right Hand Slider</label>
+            </p>
+        </div>
+    </div>
+    <div id="museDiv"></div>
+    <script>
+        $(document).ready(() => KinAudioApp.runApp({ program: TwoHandInstrument }));
+    </script>
+</body>
+
+</html>

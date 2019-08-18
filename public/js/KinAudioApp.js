@@ -1,3 +1,4 @@
+var app = null;
 
 class KinAudioApp {
     constructor(portal) {
@@ -33,13 +34,8 @@ class KinAudioApp {
                 alert("No Program Specified");
             }
         });
-       // $("#startButton").click(() => {
-       //     inst.initAudio();
-      //      //this.initProgram();
-        //});
         this.program = null;
         this.start();
-        //this.initProgram();
     }
 
     start() {
@@ -76,7 +72,7 @@ class KinAudioApp {
             }
         }
         this.canvasTool.start();
-        this.canvasTool.setView(0,1,5);
+        this.canvasTool.setView(0, 1, 5);
     }
 
     initLeapWatcher() {
@@ -116,6 +112,7 @@ class KinAudioApp {
         }
         rigCollapsableDiv("#trackedBodiesInfo", "#bodyStatus");
         rigCollapsableDiv("#showAudioControls", "#audioControls");
+        rigCollapsableDiv("#showProgramControls", "#programControls");
         //rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
         rigCollapsableDiv("#showTrackingCanvas", "#canvasDiv");
         rigCollapsableDiv("#showMessage", "#messageDiv");
@@ -170,29 +167,6 @@ class KinAudioApp {
         this.toneTool.defaultBpm = 44;
     }
 
-    /*
-    changeFilterParam(energy) {
-        if (this.audioEffects.biquad == null) {
-            console.log("No filter added yet");
-            return;
-        }
-        return;
-        if (energy > maxEnergy) {
-            energy = maxEnergy;
-        }
-        if (energy <= energyThreshold) {
-            fc = maxFc - energy * 8;
-        }
-        else {
-            fc = midFc - (energy - energyThreshold);
-        }
-        this.audioEffects.biquad.frequency.value = fc;
-        this.audioEffects.biquad.freq = fc;
-        console.log("Changing audioEffects.biquad.freq to ",
-            fc, this.audioEffects.biquad.freq, this.audioEffects.biquad.frequency);
-    }
-    */
-
     onConnect(msg) {
         console.log("***** onConect ****")
     }
@@ -208,7 +182,7 @@ class KinAudioApp {
     setProgram(program) {
         this.initAudio();
         if (this.program) {
-            this.program.stop();
+            this.program.finish();
         }
         this.program = program;
         if (program) {
@@ -217,7 +191,7 @@ class KinAudioApp {
     }
 
     loadApp(name) {
-        var url = "Programs/"+name+".html";
+        var url = "Programs/" + name + ".html";
         this.loadAppURL(url);
     }
 
@@ -229,6 +203,15 @@ class KinAudioApp {
         }
         $("#audioControls").load(url);
     }
+
+    static runApp(opts) {
+        console.log("starting...");
+        $("#museDiv").load("museDiv.html", () => {
+            app = new KinAudioApp();
+            app.setProgramClass(opts.program);
+        });
+    }
 }
+
 
 
