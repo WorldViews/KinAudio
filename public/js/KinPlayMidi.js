@@ -2,55 +2,81 @@ var CW = {
     tempoOffset: 0
 };
 
-function makeSong(midi){
-    Tone.Transport.PPQ = midi.header.ppq
-    const numofVoices = midi.tracks.length 
-    const synths = [] 
-
-    //************** Tell Transport about Time Signature changes  ********************
-    for (let i=0; i < midi.header.timeSignatures.length; i++) {
-        Tone.Transport.schedule(function(time){
-            Tone.Transport.timeSignature = midi.header.timeSignatures[i].timeSignature;
-            console.log(midi.header.timeSignatures[i].timeSignature, Tone.Transport.timeSignature,
-                Tone.Transport.position)
-        }, midi.header.timeSignatures[i].ticks + "i");    
+class Song {
+    constructor(midi) {
+        this.midi = midi;
+        this.synths = [];
+        this.parts = [];
     }
 
-    //************** Tell Transport about bpm changes  ********************
-    for (let i=0; i < midi.header.tempos.length; i++) {
-        Tone.Transport.schedule(function(time){
-            Tone.Transport.bpm.value = midi.header.tempos[i].bpm + CW.tempoOffset;
-        }, midi.header.tempos[i].ticks + "i");    
+    init() {
+        var midi = this.midi;
+        Tone.Transport.PPQ = midi.header.ppq
+        const numofVoices = midi.tracks.length
+        var synths = this.synths;
+
+        //************** Tell Transport about Time Signature changes  ********************
+        for (let i = 0; i < midi.header.timeSignatures.length; i++) {
+            Tone.Transport.schedule(function (time) {
+                Tone.Transport.timeSignature = midi.header.timeSignatures[i].timeSignature;
+                console.log(midi.header.timeSignatures[i].timeSignature, Tone.Transport.timeSignature,
+                    Tone.Transport.position)
+            }, midi.header.timeSignatures[i].ticks + "i");
+        }
+
+        //************** Tell Transport about bpm changes  ********************
+        for (let i = 0; i < midi.header.tempos.length; i++) {
+            Tone.Transport.schedule(function (time) {
+                Tone.Transport.bpm.value = midi.header.tempos[i].bpm + CW.tempoOffset;
+            }, midi.header.tempos[i].ticks + "i");
+        }
+
+        //************ Change time from seconds to ticks in each part  *************
+        for (let i = 0; i < numofVoices; i++) {
+            midi.tracks[i].notes.forEach(note => {
+                note.time = note.ticks + "i"
+            })
+        }
+
+        //************** Create Synths and Parts, one for each track  ********************
+        for (let i = 0; i < numofVoices; i++) {
+            synths[i] = new Tone.PolySynth().toMaster()
+
+            //var part = new Tone.Part(function (time, value) {
+            //    synths[i].triggerAttackRelease(value.name, value.duration, time, value.velocity)
+            //}, midi.tracks[i].notes).start()
+            var part = new Tone.Part(function (time, value) {
+                synths[i].triggerAttackRelease(value.name, value.duration, time, value.velocity)
+            }, midi.tracks[i].notes);
+            this.parts[i] = part;
+        }
+        //setupPlayer(midi)  //only does this once makeSong finished
     }
 
-    //************ Change time from seconds to ticks in each part  *************
-    for (let i = 0; i < numofVoices; i++) {
-        midi.tracks[i].notes.forEach(note => {
-            note.time = note.ticks + "i"
-        })
+    start() {
+        this.parts.forEach(part => part.start());
     }
-    
-    //************** Create Synths and Parts, one for each track  ********************
-    for (let i = 0; i < numofVoices; i++) {
-        synths[i] = new Tone.PolySynth().toMaster()
 
-        var part = new Tone.Part(function(time,value){
-            synths[i].triggerAttackRelease(value.name, value.duration, time, value.velocity)
-        },midi.tracks[i].notes).start()                  
-    }  
+    stop() {
+        this.parts.forEach(part => part.stop());
+    }
 
-    //setupPlayer(midi)  //only does this once makeSong finished
+    static async getSong(url) {
+        var url = url || "/rvaudio/midi/wtc0.midi.json";
+        console.log("getSong "+url);
+        var mobj = await loadJSON(url);
+        var jstr = JSON.stringify(mobj, null, 3);
+        console.log("midi:" + jstr);
+        return new Song(mobj);
+    }
 }
 
-var mobj = null;
+var song = null;
+
 async function startMidi() {
-    console.log("startMidi...");
     var url = "/rvaudio/midi/wtc0.midi.json";
-    mobj = await loadJSON(url);
-    jstr = JSON.stringify(mobj, null, 3);
-    console.log("midi:" + JSON.stringify(mobj, null, 3));
-    makeSong(mobj);
-    Tone.Transport.start();
+    song = await Song.getSong(url);
+    song.init();
 }
 
 
@@ -69,6 +95,8 @@ class KinMidiPlay extends AudioProgram {
         $("#tempo").on('input', () => inst.changeTempoFromSlider());
         $("#start").click(() => Tone.Transport.start());
         $("#stop").click(() => Tone.Transport.stop());
+        $("#startMidi").click(() => song.start());
+        $("#stopMidi").click(() => song.stop());
     }
 
     updateStatus() {
@@ -140,7 +168,7 @@ class KinMidiPlay extends AudioProgram {
         var tempoMax = 200;
         var v = document.getElementById("tempo").value;
         console.log("v:", v);
-        var tempo = tempoMin + (v/1000.0) * (tempoMax - tempoMin);
+        var tempo = tempoMin + (v / 1000.0) * (tempoMax - tempoMin);
         console.log("tempo is now ", tempo);
         this.tempo = tempo;
         this.toneTool.setTempo(tempo);
