@@ -10,7 +10,7 @@ class ToneTool {
         this.Tone = new Tone();
         this.Tone.Context(audioContext); // this could be a different AudioContext, up to 6 per tab for Chrome, depending on the browser
         console.log('Creating Tone.js Tool for audioContext', this.audioContext);
-        
+
         this.defaultBpm = 44; // default
         this.curentBpm = this.defaultBpm;
         Tone.Transport.bpm.value = this.bpm;
@@ -33,7 +33,7 @@ class ToneTool {
             }
         }).toMaster();
         drumSynth.volume.value = -24;
-        return drumSynth;   
+        return drumSynth;
     }
 
     gainControl(synth, newGain){
@@ -90,8 +90,99 @@ class ToneTool {
 				"decay" : 0.5,
                 "sustain" : 0
             }
-        }).toMaster();       
+        }).toMaster();
         return conga;
+    }
+
+    createBass(){
+      var bass = new Tone.FMSynth({
+        "harmonicity" : 1,
+        "modulationIndex" : 1.5,
+        "carrier" : {
+        "oscillator" : {
+          "type" : "custom",
+          "partials" : [0, 3, 0, 2]
+        },
+          "envelope" : {
+            "attack" : 0.58,
+            "decay" : 0.4,
+            "sustain" : 0,
+          },
+        },
+      "modulator" : {
+        "oscillator" : {
+          "type" : "square"
+        },
+          "envelope" : {
+            "attack" : 0.1,
+            "decay" : 0.9,
+            "sustain" : 0.3,
+            "release" : 0.01
+          },
+        }
+      }).toMaster();
+      return bass;
+    }
+
+    createVoice(){
+      var voice = new Tone.DuoSynth({
+  			"vibratoAmount" : 0.2,
+  			"vibratoRate" : 2,
+  			"portamento" : 0.1,
+  			"harmonicity" : 1.005,
+  			"volume" : 5,
+  			"voice0" : {
+  				"volume" : -2,
+  				"oscillator" : {
+  					"type" : "sawtooth"
+  				},
+  				"filter" : {
+  					"Q" : 1,
+  					"type" : "lowpass",
+  					"rolloff" : -24
+  				},
+  				"envelope" : {
+  					"attack" : 0.01,
+  					"decay" : 0.001,
+  					"sustain" : 0.2,
+  					"release" : 0.2
+  				},
+  				"filterEnvelope" : {
+  					"attack" : 0.001,
+  					"decay" : 0.05,
+  					"sustain" : 0.3,
+  					"release" : 2.2,
+  					"baseFrequency" : 10,
+  					"octaves" : 2
+  				}
+  			},
+  			"voice1" : {
+  				"volume" : -10,
+  				"oscillator" : {
+  					"type" : "sawtooth"
+  				},
+  				"filter" : {
+  					"Q" : 2,
+  					"type" : "bandpass",
+  					"rolloff" : -12
+  				},
+  				"envelope" : {
+  					"attack" : 0.25,
+  					"decay" : 4,
+  					"sustain" : 0.1,
+  					"release" : 0.8
+  				},
+  				"filterEnvelope" : {
+  					"attack" : 0.05,
+  					"decay" : 0.05,
+  					"sustain" : 0.7,
+  					"release" : 2,
+  					"baseFrequency" : 5000,
+  					"octaves" : -1.5
+  				}
+  			}
+		    }).toMaster();
+        return voice;
     }
 
     createLoopBeat(loop, measureNo, bpm){
@@ -124,7 +215,7 @@ class ToneTool {
         {
             bpm = (speed-1)/maxSpeed * (defaultBpm-minBpm) + defaultBpm;
         }
-        return bpm;    
+        return bpm;
     }
 
     getClosestTempo(bpm) {
