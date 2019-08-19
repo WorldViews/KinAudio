@@ -32,10 +32,12 @@ class CanvasLeapWatcher {
         this.canvasTool.addGraphic(this.handsGraphic);
 
         this.RHAND =            new V3State("RHAND");
+        this.LWRIST =           new V3State("LWRIST");
+        this.RWRIST =           new V3State("RWRIST");
         //this.LHAND =            new KinematicState("LHAND");
         this.LHAND =            new V3State("LHAND");
         this.DLR =              new State("DLR"); // dist Left to Right
-
+        this.DLRW =              new State("DLRW"); // dist Left to Right
     }
 
     handleFrame(frame) {
@@ -46,17 +48,21 @@ class CanvasLeapWatcher {
             if (hand.type == "left") {
                 //console.log("left hand", hand.palmPosition);
                 this.LHAND.observe(hand.palmPosition);
+                this.LWRIST.observe(hand.wrist);
             }
             if (hand.type == "right") {
                 //console.log("right hand", hand.palmPosition);
                 this.RHAND.observe(hand.palmPosition);
+                this.RWRIST.observe(hand.wrist);
             }
             saw[hand.type] = true;
         });
         if (saw.left && saw.right) {
-            var dlr = dist(this.LHAND.get(), this.RHAND.get());
+            var dlrh = dist(this.LHAND.get(), this.RHAND.get());
             //console.log("dlr", dlr);
-            this.DLR.observe(dlr/1000.0);
+            this.DLR.observe(dlrh/1000.0);
+            var dlrw = dist(this.LWRIST.get(), this.RWRIST.get());
+            this.DLRW.observe(dlrw/1000.0);
         }
 
         $("#handsStatus").html(this.statusStr());
@@ -68,11 +74,11 @@ class CanvasLeapWatcher {
         if (!l || !r) {
             return "hands not tracked";
         }
-        return "       LHAND                  RHAND               DLR\n" +
-               sprintf(" %6.1f %6.1f %6.1f   %6.1f %6.1f %6.1f    %6.3f",
+        return "       LHAND                  RHAND               DLR   DLRW\n" +
+               sprintf(" %6.1f %6.1f %6.1f   %6.1f %6.1f %6.1f    %6.3f %6.3f",
                         l[0], l[1], l[2],
                         r[0], r[1], r[2],
-                        this.DLR.get());
+                        this.DLR.get(), this.DLRW.get());
     }
 
 }

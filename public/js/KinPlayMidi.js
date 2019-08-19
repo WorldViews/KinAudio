@@ -86,6 +86,7 @@ class KinMidiPlay extends AudioProgram {
         this.counter = 0;
         this.tickNum = 0;
         this.initGUI();
+
     }
 
     //***** GUI driven acctions *****/
@@ -112,7 +113,7 @@ class KinMidiPlay extends AudioProgram {
         //console.log("speed:", rv.playSpeed);
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.handleBodies();
-        this.changeTempoFromLeap();
+        this.updateLeapInfo();
         this.updateStatus();
     }
 
@@ -157,6 +158,10 @@ class KinMidiPlay extends AudioProgram {
         tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
         this.tempo = tempo;
         this.toneTool.setTempo(tempo);
+    }
+
+    updateLeapInfo() {
+        this.changeTempoFromLeap();
     }
 
     changeTempoFromLeap() {
