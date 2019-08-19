@@ -9,6 +9,8 @@ function dist2(v1, v2) {
     return d2;
 }
 
+function dist(v1, v2) { return Math.sqrt(dist2(v1,v2))};
+
 function vecStr(vec, fmt) {
     //console.log("vec", vec);
     fmt = fmt || "%5.2f %5.2f %5.2f"

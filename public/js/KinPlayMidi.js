@@ -109,9 +109,10 @@ class KinMidiPlay extends AudioProgram {
 
     update() {
         var rv = this.rvWatcher;
-        console.log("speed:", rv.playSpeed);
+        //console.log("speed:", rv.playSpeed);
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.handleBodies();
+        this.changeTempoFromLeap();
         this.updateStatus();
     }
 
@@ -158,6 +159,14 @@ class KinMidiPlay extends AudioProgram {
         this.toneTool.setTempo(tempo);
     }
 
+    changeTempoFromLeap() {
+        if (app.leapWatcher) {
+            var d = app.leapWatcher.DLR.get();
+            var tempoMin = 40;
+            var tempo = tempoMin + 200*d;
+            this.toneTool.setTempo(tempo);
+        }
+    }
 
     changeTempoFromSlider() {
         if (!this.toneTool) {
