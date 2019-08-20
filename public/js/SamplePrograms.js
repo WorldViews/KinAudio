@@ -6,8 +6,8 @@ var sweepEnv = null;
 var tempo = 44;
 let fc = null;
 
-const energyThreshold = 100;
-const maxEnergy = 300;
+const errorThreshold = 100;
+const maxError = 300;
 const midFc = 200;
 const maxFc = 1000;
 

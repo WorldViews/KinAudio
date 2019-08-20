@@ -5,8 +5,8 @@ var sweepEnv = null;
 var tempo = 44;
 var atwiddle = null;
 
-var energyThreshold = 100;
-var maxEnergy = 300;
+var errorThreshold = 100;
+var maxError = 300;
 var midFc = 200;
 var maxFc = 1000;
 

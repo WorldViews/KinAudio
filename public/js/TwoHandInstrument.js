@@ -22,8 +22,8 @@ var sweepEnv = null;
 var tempo = 44;
 let fc = null;
 
-const energyThreshold = 100;
-const maxEnergy = 300;
+const errorThreshold = 100;
+const maxError = 300;
 const midFc = 200;
 const maxFc = 1000;
 
@@ -112,7 +112,7 @@ class TwoHandInstrument extends AudioProgram {
         body.LEFT_UP = false;
     }
 
-    // ?: Do we need a left hand up checker in RH_Slider?
+    // ?: Do we need a left hand up checker in RH_Slider ?
     RH_Slide(){
         var partNo = document.getElementById("RH_Slide").value;
         this.changeDrumPart(partNo);

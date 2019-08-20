@@ -4,10 +4,10 @@ var toneGain = null;
 var sweepEnv = null;
 
 var tempo = 44;
-//let fc = null;
+let fc = null;
 
-var energyThreshold = 100;
-var maxEnergy = 300;
+var errorThreshold = 100;
+var maxError = 300;
 var midFc = 200;
 var maxFc = 1000;
 
@@ -15,7 +15,7 @@ try {
     console.log("delete Prog1");
     delete Prog1;
 }
-catch (e) {};
+catch (e) { };
 
 var Prog1 = class extends AudioProgram {
     constructor(app, opts) {
@@ -34,10 +34,10 @@ var Prog1 = class extends AudioProgram {
         this.initGUI();
     }
 
-    triggerDrums(onset, notes, duration, time, volume){
-        if (this.counter % 8 == onset){
-            this.drums.triggerAttackRelease(notes[0],duration,time,volume);
-            this.drums2.triggerAttackRelease(notes[1],duration,time,volume);
+    triggerDrums(onset, notes, duration, time, volume) {
+        if (this.counter % 8 == onset) {
+            this.drums.triggerAttackRelease(notes[0], duration, time, volume);
+            this.drums2.triggerAttackRelease(notes[1], duration, time, volume);
             //console.log(counter);
         }
     }
@@ -79,6 +79,9 @@ var Prog1 = class extends AudioProgram {
         let reverb = this.toneTool.addReverb(delay, 0.2);
         this.bell.chain(delay, reverb, Tone.Master);
 
+        // load audio
+        this.loadAudio();
+
         /*
         churchBell = toneTool.createBell(100, 100, 250, 8, -20);
         let delay2 = toneTool.addFeedbackDelay(churchBell, 0.05, 0.5);
@@ -92,6 +95,7 @@ var Prog1 = class extends AudioProgram {
         var rv = this.rvWatcher;
         console.log("speed:", rv.playSpeed);
         this.changePartTempo(rv.playSpeed, rv.smooSpeed);
+        this.changeFilterParam(rv.poseError);
         this.handleBodies();
         this.updateStatus();
     }
@@ -118,7 +122,7 @@ var Prog1 = class extends AudioProgram {
 
     loadAudio() {
         console.log("loadAudio");
-       var url = '../Audio/samples/RVSoundscapeV2.wav';
+        var url = '../Audio/samples/RVSoundscapeV2.wav';
         var startTime = 0;
         console.log("loading audio", url, startTime);
         this.audioEffects.loadAudio(url, () => {
@@ -167,6 +171,27 @@ var Prog1 = class extends AudioProgram {
         $("#filterFrequency").on('input', () => inst.changeFilterFrequency());
         $("#detune").on('input', () => inst.changeFilterDetune());
         $("#Q").on('input', () => inst.changeFilterQ());
+    }
+
+
+    changeFilterParam(error) {
+        if (this.audioEffects.biquad == null) {
+            console.log("No filter added yet");
+        }
+        else {
+            if (error > maxError) {
+                error = maxError;
+            }
+            if (error <= errorThreshold) {
+                fc = maxFc - error * 8;
+            }
+            else {
+                fc = midFc - (error - errorThreshold);
+            }
+            this.audioEffects.biquad.frequency.value = fc;
+            this.audioEffects.biquad.freq = fc;
+            console.log("Changing audioEffects.biquad.freq to ", fc, this.audioEffects.biquad.freq, this.audioEffects.biquad.frequency);
+        }
     }
 
     changeFilterFrequency() {
