@@ -42,6 +42,9 @@ class TwoHandInstrument extends AudioProgram {
         this.minX = 900;
         this.maxX = 1400; // min-max X axis for right hand range
         this.Xstep = (this.maxX - this.minX)/this.maxPartNo;
+
+        this.driver = null;
+        this.driverId = null;
     }
 
     //***** GUI driven acctions *****/
@@ -101,14 +104,14 @@ class TwoHandInstrument extends AudioProgram {
 
     leftUp(){
         var sw = this.skelWatcher;
-        var body = sw.bodies[0];
+        var body = this.getDriver();
         body.LEFT_UP = true;
         this.RH_Slide();
     }
 
     leftDown(){
         var sw = this.skelWatcher;
-        var body = sw.bodies[0];
+        var body = this.getDriver();
         body.LEFT_UP = false;
     }
 
@@ -123,6 +126,12 @@ class TwoHandInstrument extends AudioProgram {
         var J = JointType;
         for (var bodyId in sw.bodies) {
             var body = sw.bodies[bodyId];
+            if (body.TRIGGER.get()){
+              this.driverId = bodyId;
+              this.driver = body;
+            }
+
+            /*
             console.log("body", bodyId, body);
             console.log(" head pos", body.getWPos(J.head));
             console.log(" head floor coordinates", body.getFloorXY(J.head));
@@ -133,7 +142,30 @@ class TwoHandInstrument extends AudioProgram {
             console.log(" RHAND tracking state", body.getTrackingState(J.handRight));
             console.log(" RHAND joint", body.getJoint(J.handRight));
             console.log(" Dist Left Right", body.DLR.get());
+            */
         }
+    }
+
+    getDriver(){
+      if (this.driver == null){
+        console.log("No driver");
+        return;
+      }
+      else{
+        var driver = this.driver;
+      }
+    return driver;
+    }
+
+    getDriverId(){
+      if (this.driver == null){
+        console.log("No driver");
+        return;
+      }
+      else{
+        var driverId = this.driverId;
+      }
+    return driverId;
     }
 
 
