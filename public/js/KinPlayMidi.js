@@ -1,3 +1,10 @@
+var MIDI_URLS = [
+    "/rvaudio/midi/wtc0.midi.json",
+    "/rvaudio/midi/shimauta.midi.json",
+    "/rvaudio/midi/NA_6-8_NmlStr_Congas_195.midi.json",
+    "/rvaudio/midi/NA_12-8_NmlStr_T167_FullKit_158.midi.json"
+];
+
 var CW = {
     tempoOffset: 0
 };
@@ -71,12 +78,13 @@ class Song {
     }
 }
 
-var song = null;
+var song1 = null;
+var song2 = null;
 
-async function startMidi() {
-    var url = "/rvaudio/midi/wtc0.midi.json";
-    song = await Song.getSong(url);
+async function startMidi(url) {
+    var song = await Song.getSong(url);
     song.init();
+    return song;
 }
 
 
@@ -85,6 +93,7 @@ class KinMidiPlay extends AudioProgram {
         super(app, opts);
         this.counter = 0;
         this.tickNum = 0;
+        this.songs = [];
         this.initGUI();
 
     }
@@ -96,8 +105,14 @@ class KinMidiPlay extends AudioProgram {
         $("#tempo").on('input', () => inst.changeTempoFromSlider());
         $("#start").click(() => Tone.Transport.start());
         $("#stop").click(() => Tone.Transport.stop());
-        $("#startMidi").click(() => song.start());
-        $("#stopMidi").click(() => song.stop());
+        $("#startMidi1").click(() => inst.songs[0].start());
+        $("#stopMidi1").click(() => inst.songs[0].stop());
+        $("#startMidi2").click(() => inst.songs[1].start());
+        $("#stopMidi2").click(() => inst.songs[1].stop());
+        $("#startMidi3").click(() => inst.songs[2].start());
+        $("#stopMidi3").click(() => inst.songs[2].stop());
+        $("#startMidi4").click(() => inst.songs[3].start());
+        $("#stopMidi4").click(() => inst.songs[3].stop());
     }
 
     updateStatus() {
@@ -120,7 +135,15 @@ class KinMidiPlay extends AudioProgram {
 
     start() {
         this.toneTool.currentBpm = tempo;
-        startMidi();
+        this.initMidis(MIDI_URLS);
+   }
+
+    async initMidis(urls) {
+        for (var i=0; i<urls.length; i++) {
+            if (!this.songs[i]) {
+                this.songs[i] = await startMidi(urls[i]);
+            }
+        }
         Tone.Transport.start();
     }
 
