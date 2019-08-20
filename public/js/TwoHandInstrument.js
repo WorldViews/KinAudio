@@ -43,10 +43,15 @@ class TwoHandInstrument extends AudioProgram {
         this.maxX = 800; // min-max X axis for right hand range
         //this.Xstep = (this.maxX - this.minX) / this.maxPartNo;
         this.rhxstep = 75;
+        this.rhxLeapStep = 50;
         this.RHx = null;
+        this.RHxLeap = null;
+        this.LHzLeap = null;
 
         this.driver = null;
         this.driverId = null;
+        this.leapDriver = null;
+        this.leapDriverId = null;
     }
 
     //***** GUI driven acctions *****/
@@ -74,10 +79,34 @@ class TwoHandInstrument extends AudioProgram {
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         this.handleBodies();
         this.updateStatus();
-        this.updateDrumPart();
+        //this.updateDrumPart();
+        this.updateLeapInfo();
     }
 
-    //TODO: create GUI control for left hand trigger and right hand scroll
+    updateLeapInfo(){
+        this.updateDrumPartFromLeap();
+    }
+
+    updateDrumPartFromLeap(){
+        if (app.leapWatcher) {
+            var lz = this.LHzLeap;
+            var rx = this.RHxLeap;
+            var th = this.lhzTreshold;
+            if (lz > th){
+                var partNo = this.scaleRHxFromLeap(rx);
+                this.changeDrumPart(partNo);
+            }
+            else {
+                console.log("***** Lift the left hand higher to change the drum part!! *****");
+                return;
+            }
+        }
+    }
+    scaleRHxFromLeap(x){
+        var partNo = Math.floor((x/this.rhxLeapStep) -1) + 3;
+        console.log("partNo ", partNo);
+        return partNo;
+    }
 
     updateDrumPart() {
         var sw = this.skelWatcher;
@@ -108,7 +137,6 @@ class TwoHandInstrument extends AudioProgram {
     }
 
 
-
     scaleRHx(x) {
         //var partNo = ((x - this.minX) / this.Xstep) + 1;
         var partNo = Math.floor((x - this.RHx)/this.rhxstep) + 3;
@@ -136,6 +164,9 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     handleBodies() {
+        var leapLastFrame = app.leapWatcher.leapClient.lastFrame;
+        this.leapDriver = app.leapWatcher.leapClient;
+        this.leapDriverId = leapLastFrame.id;
         var rv = this.rvWatcher;
         var sw = this.skelWatcher;
         var J = JointType;
@@ -148,7 +179,6 @@ class TwoHandInstrument extends AudioProgram {
                 console.log("TwoHandInstrument driver is set with id and body number, ", this.driverId, this.bodyNum);
                 this.RHx = rv.prevMsg.controlPoints[0].pt[0];
             }
-
             /*
             console.log("body", bodyId, body);
             console.log(" head pos", body.getWPos(J.head));
@@ -161,6 +191,13 @@ class TwoHandInstrument extends AudioProgram {
             console.log(" RHAND joint", body.getJoint(J.handRight));
             console.log(" Dist Left Right", body.DLR.get());
             */
+        }
+        if(leapLastFrame.hands.length){
+            this.RHFromLeap = app.leapWatcher.RHAND.get();
+            this.LHFromLeap = app.leapWatcher.LHAND.get();
+            this.RHxLeap = this.RHFromLeap[0];
+            this.LHzLeap = this.LHFromLeap[1];
+            this.lhzTreshold = 180;
         }
     }
 
