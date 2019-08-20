@@ -27,7 +27,7 @@
     <script src="js/BufferLoader.js"></script>
     <script src="js/ToneTool.js"></script>
     <script src="js/Program.js"></script>
-    <script src="js/Prog1.js"></script>
+    <script src="js/RVAudioFeedback.js"></script>
 </head>
 <body>
     <button id="startProgram">Start Program</button>
@@ -67,7 +67,7 @@
     var app = null;
         $(document).ready(() => {
             app = new KinAudioApp();
-            app.setProgramClass(Prog1);
+            app.setProgramClass(RVAudioFeedback);
         });
     </script>
 </body>

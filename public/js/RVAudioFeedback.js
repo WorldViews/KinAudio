@@ -17,7 +17,7 @@ try {
 }
 catch (e) { };
 
-var Prog1 = class extends AudioProgram {
+var RVAudioFeedback = class extends AudioProgram {
     constructor(app, opts) {
         console.log("create Prog1");
         super(app, opts);
