@@ -216,6 +216,70 @@ class AudioEffectsTool{
         this.osc3.stop(this.audioContext.currentTime + dur);
     }
 
+    createAuraTone(numOscs, maxOverTone, f0){
+        this.SinOscs = [];
+        this.oscOuts = [];
+        this.outGains = [];
+        for (var i=0;i<numOscs;i++){
+            this.oscOuts[i] = this.audioContext.createGain();
+            this.SinOscs[i] = [];
+           for (var j=0;j<maxOverTone;j++){
+               var osc = this.audioContext.createOscillator();
+               var oscNum = i*maxOverTone + j;
+               osc.type = 'sine';
+               osc.frequency.value = f0;
+               this.SinOscs[i][j] = osc;
+               this.SinOscs[i][j].oscNum = oscNum;
+               this.SinOscs[i][j].connect(this.oscOuts[i]);
+           } 
+           this.outGains[i] = this.audioContext.createGain();
+           this.oscOuts[i].connect(this.outGains[i]); 
+           this.oscOuts[i].gain.gain = 0.2; 
+           this.outGains[i].gain.gain = 0.2;
+        }
+    }
+
+    connectAuraTone(){
+        for (var out in this.outGains){
+            this.outGains[out].connect(this.audioContext.destination);
+        }
+    }
+
+    // TODO: add fade in and fade out envelopes
+    playAuraTone(){
+        this.connectAuraTone();
+        if (this.SinOscs != null){
+            for (var tone in this.SinOscs){
+                for (var osc in this.SinOscs[tone]){
+                    this.SinOscs[tone][osc].start();
+                }
+            }
+        }
+        else {
+            console.log("No aura tone!");
+            return;
+        } 
+    }
+
+    stopAuraTone(){
+        if (this.SinOscs != null){
+            for (var tone in this.SinOscs){
+                for (var osc in this.SinOscs[tone]){
+                    this.SinOscs[tone][osc].stop();
+                }
+            }
+        }
+        else {
+            console.log("No aura tone!");
+            return;
+        } 
+    }
+
+    //TODO: add detune, timbre control
+    tuneAuraTone(detune){
+
+    }
+
     loadAudio(url, onLoaded){
         this.onLoaded = onLoaded;
         var inst = this;

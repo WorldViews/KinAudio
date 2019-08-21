@@ -62,6 +62,9 @@ class TwoHandInstrument extends AudioProgram {
         $("#startDrums").click(() => inst.startDrums());
         $("#stopDrums").click(() => inst.stopDrums());
         $("#leftUp").click(() => inst.leftUp());
+        $("#playAuraTone").click(() => inst.playAuraTone());
+        $("#stopAuraTone").click(() => inst.stopAuraTone());
+        $("#createAuraTone").click(() => inst.createAuraTone());
         $("#changePart").on('input', () => inst.changeDrumPart());
         $("#changeTempo").on('input', () => inst.changeDrumsTempo());
     }
@@ -136,6 +139,8 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
+    createAuraTone(){
+    }
 
     scaleRHx(x) {
         //var partNo = ((x - this.minX) / this.Xstep) + 1;
@@ -397,6 +402,16 @@ class TwoHandInstrument extends AudioProgram {
         else {
             conga.triggerAttackRelease("C4", "2n");
         }
+    }
+
+    playAuraTone(){
+        this.audioEffects.playAuraTone();
+    }
+    stopAuraTone(){
+        this.audioEffects.stopAuraTone();
+    }
+    createAuraTone(){
+        this.audioEffects.createAuraTone(2,2,400);
     }
 
 }

@@ -61,6 +61,19 @@
                 <label for="RH_Slide">Right Hand Slider</label>
             </p>
         </div>
+        <h4 id="ShowAuraToneControls">Aura Tone Controls</h4>
+        <div id="auraToneControls" style="padding:40px;">
+            <button id="createAuraTone" style="">Create Aura Tone</button> &nbsp;
+            <button id="playAuraTone" style="">Play Aura Tone</button> &nbsp;
+            <button id="stopAuraTone" style="">Stop Aura Tone</button> &nbsp;
+            <p>
+                <input type="range" id="DLR" oninput="app.program.getDLR()" min="0" max="10" style="width:80%" />
+                <label for="DLR">Hands distance</label>
+                <input type="range" id="velocity" oninput="app.program.velocity()" min="0" max="10" style="width:80%" />
+                <label for="velocity">Hands velocity</label>
+            </p>
+        </div>
+        
     </div>
     <div id="museDiv"></div>
     <script>
