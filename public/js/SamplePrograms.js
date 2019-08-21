@@ -133,6 +133,19 @@ class Prog1 extends AudioProgram {
         $("#filterFrequency").on('input', () => inst.changeFilterFrequency());
         $("#detune").on('input', () => inst.changeFilterDetune());
         $("#Q").on('input', () => inst.changeFilterQ());
+        $("#showAuras").click(() => inst.showAuras());
+    }
+
+    showAuras() {
+        console.log("showAuras");
+        var portal = app.skelWatcher.portal;
+        var auras = [
+                {name: "hands", rgb: [255,50,0], aMax: 0.9,
+                 joints: [JointType.handLeft, JointType.handRight]}
+        ];
+        var msg = {'type':'setProps', auras};
+        console.log("msg", msg);
+        portal.sendMessage(msg);
     }
 
     changeFilterFrequency() {
