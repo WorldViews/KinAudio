@@ -229,7 +229,7 @@ class AudioEffectsTool {
             for (var j = 0; j < maxOverTone; j++) {
                 var osc = this.audioContext.createOscillator();
                 var oscNum = i * maxOverTone + j;
-                osc.type = 'triangle';
+                osc.type = 'sine';
                 osc.frequency.value = f0;
                 var oscGain = this.audioContext.createGain();
                 oscGain.gain.setValueAtTime(0,this.audioContext.currentTime);
@@ -319,12 +319,12 @@ class AudioEffectsTool {
         this.auraTone.overToneScale = (maxDLR - DLR) / maxDLR;
         //this.auraTone.overToneScale = 1;
         var detune = velocity / maxVLR * 0.001;
-        detune = 0.001;
+        detune = 0.002;
         var timbre = 0.98;
 
         console.log("DLR in tuneAuraTone, ", DLR);
         
-        if (DLR > 25) {
+        if (DLR > 35) {
             this.auraTone.masterGain += DLR*0.01 / attackCoef;
         }
         else {
@@ -346,9 +346,8 @@ class AudioEffectsTool {
                 if(freq < this.auraTone.f0/2){
                     freq = this.auraTone.f0/2;
                 }
-                if (freq > this.auraTone.f0*4){
-                    freq = this.auraTone.f0*4;
-                }
+                
+                console.log("oscillator frequencies", freq);
                 this.SinOscs[tone][osc].frequency.setValueAtTime(freq, this.audioContext.currentTime);
             }
             var outGain = (1+ (DLR/maxDLR)*Math.cos(2*3.14*tone/this.auraTone.numOscs + (maxDLR-DLR)))/(2*this.auraTone.numOscs);

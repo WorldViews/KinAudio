@@ -433,7 +433,7 @@ class TwoHandInstrument extends AudioProgram {
         this.audioEffects.stopAuraTone();
     }
     createAuraTone(){
-        this.audioEffects.createAuraTone(5,3,110);
+        this.audioEffects.createAuraTone(6,6,110);
     }
 
     updateAuraTone(){
