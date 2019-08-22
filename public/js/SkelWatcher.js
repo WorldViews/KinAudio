@@ -2,6 +2,7 @@
 //
 function dist2(v1, v2) {
     var d2 = 0;
+    //var N = 3;
     for (var i=0; i<v1.length; i++) {
         var d = v1[i]-v2[i];
         d2 += d*d;

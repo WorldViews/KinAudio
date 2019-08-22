@@ -7,10 +7,10 @@
 // state is observed.
 //
 class State {
-    constructor(name) {
+    constructor(name, initialState) {
         console.log("State " + name);
         this.name = name;
-        this.state = null;
+        this.state = initialState;
         this.lastObservedState = null;
         this.lastChangeTime = getClockTime();
         this.minChangeTime = 0.2;
@@ -36,6 +36,11 @@ class State {
 }
 
 class V3State extends State {
+    constructor(name, initialState) {
+        initialState = initialState || [0,0,0];
+        super(name, initialState);
+    }
+
     observe(state) {
         this.state = state;
     }
@@ -46,8 +51,8 @@ class V3State extends State {
 }
 
 class KinematicState extends State {
-    constructor() {
-        super();
+    constructor(name) {
+        super(name, [0,0,0]);
         this.prevT = getClockTime();
         this.t = this.prevT;
         this.prevState = [0,0,0];
@@ -63,7 +68,8 @@ class KinematicState extends State {
     get() {
         var p = this.getPos();
         var v = this.getVel();
-        return {x: p[0], y: p[1], z: p[2], vx: v[0], vy: v[1], vz: [2]}
+        //return {x: p[0], y: p[1], z: p[2], vx: v[0], vy: v[1], vz: [2]}
+        return [p[0], p[1], p[2], v[0], v[1], v[2] ];
     }
 
     getPos() {
