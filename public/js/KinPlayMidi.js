@@ -128,6 +128,11 @@ class KinMidiPlay extends AudioProgram {
         //console.log("speed:", rv.playSpeed);
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.handleBodies();
+        var dlr = app.leapWatcher.DLR.get();
+        console.log("dlr", dlr);
+        if (dlr) {
+            this.aura.r = dlr;
+        }
         this.updateLeapInfo();
         this.updateStatus();
     }
@@ -136,6 +141,9 @@ class KinMidiPlay extends AudioProgram {
     start() {
         this.toneTool.currentBpm = tempo;
         this.initMidis(MIDI_URLS);
+        this.aura = new CanvasTool.CloudGraphic(this, 0.0, 0.8, .25)
+        app.canvasTool.addGraphic(this.aura);
+
    }
 
     async initMidis(urls) {

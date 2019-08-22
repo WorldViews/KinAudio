@@ -143,7 +143,7 @@ class CanvasTool {
         this.sy = 1;
         this.tx = 0;
         this.ty = 0;
-        this.zf = .99;
+        this.zf = .95;
     }
 
     zoom(zf) {
@@ -183,6 +183,7 @@ class CanvasTool {
     setView(x, y, w, h) {
         if (typeof x == "object") {
             var v = x;
+            var inst = this;
             return this.setView(v.center.x, v.center.y, v.width);
         }
         console.log("setView", x, y, w, h);
@@ -242,8 +243,8 @@ class CanvasTool {
 
     resize() {
         //console.log("resizing the canvas...");
-        //var view = this.getView();
-        //console.log("view:", view);
+        var view = this.getView();
+        console.log("view:", view);
         let canvasWidth = this.canvas.clientWidth;
         let canvasHeight = this.canvas.clientHeight;
         /*
@@ -256,7 +257,7 @@ class CanvasTool {
         */
         this.canvas.width = canvasWidth;
         this.canvas.height = canvasHeight;
-        //this.setView(view);
+        this.setView(view);
         this.draw();
     }
 
@@ -319,6 +320,17 @@ CanvasTool.Graphic = class {
         this.drawCircle(canvas, ctx, this.radius, this.x, this.y);
     }
 
+    drawRect(canvas, ctx, x, y, w, h) {
+        ctx.lineWidth = this.lineWidth;
+        ctx.strokeStyle = this.strokeStyle;
+        ctx.fillStyle = this.fillStyle;
+        ctx.beginPath();
+        if (this.fillStyle)
+            ctx.fillRect(x-w/2, y-h/2, w, h);
+         ctx.rect(x-w/2, y-h/2, w, h);
+         ctx.stroke();
+    }
+
     drawCircle(canvas, ctx, r, x, y) {
         ctx.lineWidth = this.lineWidth;
         ctx.strokeStyle = this.strokeStyle;
@@ -371,6 +383,43 @@ CanvasTool.IconGraphic = class extends CanvasTool.Graphic {
         let y = this.y * canvas.height - radiusInPixels;
         ctx.drawImage(
             this.icon, x, y, radiusInPixels * 2, radiusInPixels * 2);
+    }
+}
+
+CanvasTool.CloudGraphic = class extends CanvasTool.Graphic {
+    constructor(id, x, y, r) {
+        super(id,x, y);
+        this.r = r || .2;
+        this.a0 = .2;
+        this.a1 = 0;
+        this.rgb = [200,0,0];
+    }
+
+    draw(canvas, ctx) {
+        this.drawCloud(canvas, ctx, [this.x, this.y], this.r, this.rgb, this.a0, this.a1)
+    }
+
+    drawCloud(canvas, ctx, pt, rad, rgb, a0, a1) {
+        rad = rad;
+        var r,g,b;
+        [r,g,b] = rgb;
+        if (a0 == null)
+            a0 = .2;
+        if (a1 == null)
+            a1 = 0;
+        var color0 = sprintf('rgba(%d,%d,%d,%f)', r,g,b,a0);
+        var color1 = sprintf('rgba(%d,%d,%d,%f)', r,g,b,a1);
+        var x = pt[0];
+        var y = pt[1];
+
+        var innerRadius = 0.01*rad;
+        var outerRadius = rad;
+        var gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
+        gradient.addColorStop(0, color0);
+        gradient.addColorStop(1, color1);
+        ctx.arc(x, y, r, 0, 2 * Math.PI);
+        ctx.fillStyle = gradient;
+        ctx.fill();
     }
 }
 

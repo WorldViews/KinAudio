@@ -6,15 +6,20 @@ class HandsGraphic extends CanvasTool.Graphic {
         this.leap = watcher.leapClient;
         this.canvas = watcher.canvasTool.canvas;
         this.leapRenderer = new LeapRenderer(this.canvas);
+        this.width = .1;
+        this.height = .05;
+        this.strokeStyle = "#CCC";
+        this.fillStyle = "#AAA";
     }
 
     draw(canvas, ctx) {
-        super.draw(canvas, ctx);
+        super.drawRect(canvas, ctx, this.x, this.y, this.width, this.height);
         var frame = this.watcher.lastFrame;
         if (frame) {
             var s = 0.001;
-            ctx.lineWidth = 5;
+            ctx.lineWidth = 3;
             ctx.save();
+            ctx.translate(this.x, this.y);
             ctx.scale(-s,s);
             this.leapRenderer.draw(frame);
             ctx.restore();
@@ -28,7 +33,7 @@ class CanvasLeapWatcher {
         this.canvasTool = opts.canvasTool;
         this.leapClient = new LeapClient();
         this.leapClient.poseWatcher = (frame) => inst.handleFrame(frame);
-        this.handsGraphic = new HandsGraphic(this, -1, 2)
+        this.handsGraphic = new HandsGraphic(this, 0.0, 0.8)
         this.canvasTool.addGraphic(this.handsGraphic);
 
         this.RHAND =            new V3State("RHAND");

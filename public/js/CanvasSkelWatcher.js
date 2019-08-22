@@ -3,6 +3,13 @@ class KinectCameraGraphic extends CanvasTool.Graphic {
     constructor(id, x, y) {
         super(id, x, y);
         this.radius = .2;
+        this.width = .3;
+        this.height = .15;
+        this.fillStyle = "#444";
+    }
+
+    draw(canvas, ctx) {
+        this.drawRect(canvas, ctx, this.x, this.y, this.width, this.height);
     }
 }
 
