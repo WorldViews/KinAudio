@@ -42,7 +42,8 @@ class CanvasLeapWatcher {
         this.LHAND =            new KinematicState("LHAND");
         //this.LHAND =            new V3State("LHAND");
         this.DLR =              new State("DLR"); // dist Left to Right
-        this.DLRW =              new State("DLRW"); // dist Left to Right
+        this.DLRW =             new State("DLRW"); // dist Left to Right
+
     }
 
     handleFrame(frame) {
@@ -69,22 +70,23 @@ class CanvasLeapWatcher {
             var dlrw = dist(this.LWRIST.get(), this.RWRIST.get());
             this.DLRW.observe(dlrw/1000.0);
         }
-        console.log("RHAND", this.RHAND.get());
-        console.log("LHAND", this.LHAND.get());
+        //console.log("RHAND", this.RHAND.get());
+        //console.log("LHAND", this.LHAND.get());
         $("#handsStatus").html(this.statusStr());
     }
 
     statusStr() {
         var l = this.LHAND.get();
         var r = this.RHAND.get();
+        var VLR = (Math.abs(l[3]) + Math.abs(r[3]))/2;
         if (!l || !r) {
             return "hands not tracked";
         }
-        return "       LHAND                  RHAND             VRHAND             DLR   DLRW\n" +
-               sprintf(" %6.1f %6.1f %6.1f   %6.1f %6.1f %6.1f  %6.1f %6.1f %6.1f    %6.3f %6.3f",
+        return "       LHAND                  RHAND              VLR        DLR   DLRW\n" +
+               sprintf(" %6.1f %6.1f %6.1f   %6.1f %6.1f %6.1f  %6.3f      %6.3f %6.3f",
                         l[0], l[1], l[2],
-                        r[0], r[1], r[2], r[3], r[4], r[5],
-                        this.DLR.get(), this.DLRW.get());
+                        r[0], r[1], r[2], 
+                        VLR, this.DLR.get(), this.DLRW.get());
     }
 
 }
