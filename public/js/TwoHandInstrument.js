@@ -67,6 +67,9 @@ class TwoHandInstrument extends AudioProgram {
         $("#createAuraTone").click(() => inst.createAuraTone());
         $("#changePart").on('input', () => inst.changeDrumPart());
         $("#changeTempo").on('input', () => inst.changeDrumsTempo());
+        $("#DLR").on('input', () => inst.updateAuraTone());
+        $("#velocity").on('input', () => inst.updateAuraTone());
+
     }
 
     updateStatus() {
@@ -139,8 +142,6 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
-    createAuraTone(){
-    }
 
     scaleRHx(x) {
         //var partNo = ((x - this.minX) / this.Xstep) + 1;
@@ -414,4 +415,9 @@ class TwoHandInstrument extends AudioProgram {
         this.audioEffects.createAuraTone(2,2,400);
     }
 
+    updateAuraTone(){
+        var DLR = document.getElementById("DLR").value;
+        var velocity = document.getElementById("velocity").value;
+        this.audioEffects.tuneAuraTone(velocity, DLR);
+    }
 }

@@ -1,18 +1,18 @@
 // This class is for digital audio effects and processing. 
 
-class AudioEffectsTool{
-    constructor(audioContext){
+class AudioEffectsTool {
+    constructor(audioContext) {
         this.audioContext = audioContext;
         this.scene = new ResonanceAudio(this.audioContext, {
             ambisonicOrder: 3,
-          }); // resonance audio
+        }); // resonance audio
         //this.audioElementSource = audioElementSource; // audioNode
         this.audioElementSource = null;
         this.soundSource = this.scene.createSource(); // source model to spatialze an audio buffer
         this.id = null;
         this.onLoaded = null;
         this.sources = {};
-        this.source = null; 
+        this.source = null;
 
         this.bufferLoader = null;
 
@@ -23,6 +23,8 @@ class AudioEffectsTool{
         this.osc1 = null;
         this.osc2 = null;
         this.osc3 = null;
+
+        this.auraTone = null;
 
         console.log('Creating AudioEffectsTool ...');
 
@@ -49,20 +51,19 @@ class AudioEffectsTool{
         this.biquad.connect(this.audioContext.destination);
     }
 
-    removeBiquad(source, filter){
-        if (this.biquad == null)
-        {
+    removeBiquad(source, filter) {
+        if (this.biquad == null) {
             console.log("audioEffects.biquad is null. Nothing to remove!");
         }
-        else{
+        else {
             this.source.disconnect(filter);
             filter.disconnect(this.audioContext.destination);
             this.source.connect(this.audioContext.destination);
         }
     }
 
-    createVibrato(depth, freq, osc){
-        var vibrato = this.audioContext.createGain(); 
+    createVibrato(depth, freq, osc) {
+        var vibrato = this.audioContext.createGain();
         var linDepth = this.db2linear(depth);
         vibrato.gain.value = linDepth;
 
@@ -77,9 +78,9 @@ class AudioEffectsTool{
         this.vibrato.vibrato = vibrato; // gainNode
         this.vibrato.lfo = lfo;
         return osc; // do we need the connection here?
-    }    
+    }
 
-    createTremolo(depth, freq){ // depth in dB, freq in Hz
+    createTremolo(depth, freq) { // depth in dB, freq in Hz
         var lfo = this.audioContext.createOscillator();
         lfo.frequency.value = freq;
         lfo.type = 'sine';
@@ -103,9 +104,8 @@ class AudioEffectsTool{
     }
 
     // need to create a gain node!!!
-    gainControl(source, newGain){
-        if (source != null)
-        {
+    gainControl(source, newGain) {
+        if (source != null) {
             source.gain.value = newGain;
         }
         else {
@@ -113,9 +113,8 @@ class AudioEffectsTool{
         }
     }
 
-    getGain(source){
-        if (source != null)
-        {
+    getGain(source) {
+        if (source != null) {
             var gain = source.gain;
         }
         else {
@@ -123,20 +122,20 @@ class AudioEffectsTool{
         }
         return gain;
     }
-    
 
-    db2linear(dbLevel){
-        var linear = Math.pow(10, (dbLevel/20));
+
+    db2linear(dbLevel) {
+        var linear = Math.pow(10, (dbLevel / 20));
         return linear;
     }
 
-    linear2db(level){
-        var dbLevel = 20*Math.log10(level);
-        return dbLevel;    
+    linear2db(level) {
+        var dbLevel = 20 * Math.log10(level);
+        return dbLevel;
     }
 
     // Sweep Envelope - Attack, Sustain, Release
-    createSweepEnv(){
+    createSweepEnv() {
         let sweepEnv = this.audioContext.createGain();
         sweepEnv.gain.cancelScheduledValues(this.audioContext.currentTime);
         sweepEnv.gain.setValueAtTime(0, this.audioContext.currentTime);
@@ -145,31 +144,31 @@ class AudioEffectsTool{
         return sweepEnv;
     }
 
-    triggerLinearSweepEnv(attackTime, releaseTime, sweepLength, sweepEnv){
+    triggerLinearSweepEnv(attackTime, releaseTime, sweepLength, sweepEnv) {
         sweepEnv.gain.linearRampToValueAtTime(0.8, this.audioContext.currentTime + attackTime);
         sweepEnv.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + sweepLength - releaseTime);
     }
 
-    triggerLinearADSR(attackTime, decayTime, decayLevel, sustain, releaseTime, sweepEnv){
+    triggerLinearADSR(attackTime, decayTime, decayLevel, sustain, releaseTime, sweepEnv) {
         sweepEnv.gain.linearRampToValueAtTime(0.8, this.audioContext.currentTime + attackTime);
         sweepEnv.gain.linearRampToValueAtTime(decayLevel, this.audioContext.currentTime + decayTime);
         sweepEnv.gain.setValueAtTime(decayLevel, this.audioContext.currentTime + sustain);
         sweepEnv.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + releaseTime);
     }
 
-    triggerExpADSR(attackTime, decayTime, decayLevel, sustain, releaseTime, sweepEnv){
+    triggerExpADSR(attackTime, decayTime, decayLevel, sustain, releaseTime, sweepEnv) {
         sweepEnv.gain.exponentialRampToValueAtTime(0.8, this.audioContext.currentTime + attackTime);
         sweepEnv.gain.exponentialRampToValueAtTime(decayLevel, this.audioContext.currentTime + decayTime);
         sweepEnv.gain.setValueAtTime(decayLevel, this.audioContext.currentTime + sustain);
         sweepEnv.gain.exponentialRampToValueAtTime(0, this.audioContext.currentTime + releaseTime);
     }
 
-    triggerCustomADSR(props, sweepEnv){
-        for (var val in props){
-            if (props[val].type == 'linear'){
+    triggerCustomADSR(props, sweepEnv) {
+        for (var val in props) {
+            if (props[val].type == 'linear') {
                 sweepEnv.gain.linearRampToValueAtTime(props[val].level, this.audioContext.currentTime + props[val].time)
             }
-            else if (props[val].type == 'exp'){
+            else if (props[val].type == 'exp') {
                 sweepEnv.gain.exponentialRampToValueAtTime(props[val].level, this.audioContext.currentTime + props[val].time);
             }
             else {
@@ -178,7 +177,7 @@ class AudioEffectsTool{
         }
     }
 
-    createTriTone(root, h1, h2, fc){
+    createTriTone(root, h1, h2, fc) {
         this.osc1 = this.audioContext.createOscillator();
         this.osc2 = this.audioContext.createOscillator();
         this.osc3 = this.audioContext.createOscillator();
@@ -187,7 +186,7 @@ class AudioEffectsTool{
         this.osc3.type = 'triangle';
         this.osc1.frequency.value = root;
         this.osc2.frequency.value = h1;
-        this.osc3.frequency.value = h2; 
+        this.osc3.frequency.value = h2;
 
         var bandpass = this.audioContext.createBiquadFilter();
         bandpass.type = 'bandpass';
@@ -204,90 +203,152 @@ class AudioEffectsTool{
         return toneGain; // return an audioNode
     }
 
-    startTriTone(){
+    startTriTone() {
         this.osc1.start();
         this.osc2.start();
         this.osc3.start();
     }
 
-    stopTriTone(dur){
+    stopTriTone(dur) {
         this.osc1.stop(this.audioContext.currentTime + dur);
         this.osc2.stop(this.audioContext.currentTime + dur);
         this.osc3.stop(this.audioContext.currentTime + dur);
     }
 
-    createAuraTone(numOscs, maxOverTone, f0){
+    createAuraTone(numOscs, maxOverTone, f0) {
         this.SinOscs = [];
+        this.SinOscGains = [];
         this.oscOuts = [];
         this.outGains = [];
-        for (var i=0;i<numOscs;i++){
+        for (var i = 0; i < numOscs; i++) {
             this.oscOuts[i] = this.audioContext.createGain();
             this.SinOscs[i] = [];
-           for (var j=0;j<maxOverTone;j++){
-               var osc = this.audioContext.createOscillator();
-               var oscNum = i*maxOverTone + j;
-               osc.type = 'sine';
-               osc.frequency.value = f0;
-               this.SinOscs[i][j] = osc;
-               this.SinOscs[i][j].oscNum = oscNum;
-               this.SinOscs[i][j].connect(this.oscOuts[i]);
-           } 
-           this.outGains[i] = this.audioContext.createGain();
-           this.oscOuts[i].connect(this.outGains[i]); 
-           this.oscOuts[i].gain.gain = 0.2; 
-           this.outGains[i].gain.gain = 0.2;
+            this.SinOscGains[i] = [];
+            for (var j = 0; j < maxOverTone; j++) {
+                var osc = this.audioContext.createOscillator();
+                var oscNum = i * maxOverTone + j;
+                osc.type = 'sine';
+                osc.frequency.value = f0;
+                var oscGain = this.audioContext.createGain();
+                oscGain.gain.setValueAtTime(0,this.audioContext.currentTime);
+                this.SinOscs[i][j] = osc;
+                this.SinOscGains[i][j] = oscGain;
+                this.SinOscs[i][j].oscNum = oscNum;
+                this.SinOscs[i][j].connect(this.SinOscGains[i][j]);
+                this.SinOscGains[i][j].connect(this.oscOuts[i]);
+            }
+            this.outGains[i] = this.audioContext.createGain();
+            this.oscOuts[i].connect(this.outGains[i]);
+            this.oscOuts[i].gain.setValueAtTime(0,this.audioContext.currentTime);
+            this.outGains[i].gain.setValueAtTime(0,this.audioContext.currentTime);
         }
+        this.auraTone = this.outGains;
+        this.auraTone.numOscs = numOscs;
+        this.auraTone.numOverTones = maxOverTone;
+        this.auraTone.f0 = f0;
+        this.auraTone.masterGain = 0;
+        this.auraTone.targetGain = 0.3;
+
     }
 
-    connectAuraTone(){
-        for (var out in this.outGains){
-            this.outGains[out].connect(this.audioContext.destination);
+    connectAuraTone() {
+        for (var i = 0; i < this.outGains.length; i++) {
+            this.outGains[i].connect(this.audioContext.destination);
         }
     }
 
     // TODO: add fade in and fade out envelopes
-    playAuraTone(){
+    playAuraTone() {
         this.connectAuraTone();
-        if (this.SinOscs != null){
-            for (var tone in this.SinOscs){
-                for (var osc in this.SinOscs[tone]){
+        if (this.SinOscs != null) {
+            for (var tone in this.SinOscs) {
+                for (var osc in this.SinOscs[tone]) {
                     this.SinOscs[tone][osc].start();
                 }
+                this.fadein(this.SinOscGains[tone]);
+                this.fadein(this.oscOuts);
             }
         }
         else {
             console.log("No aura tone!");
             return;
-        } 
+        }
+        this.fadein(this.outGains);
     }
 
-    stopAuraTone(){
-        if (this.SinOscs != null){
-            for (var tone in this.SinOscs){
-                for (var osc in this.SinOscs[tone]){
-                    this.SinOscs[tone][osc].stop();
+
+    stopAuraTone() {
+        this.fadeout(this.outGains);
+        if (this.SinOscs != null) {
+            for (var tone in this.SinOscs) {
+                for (var osc in this.SinOscs[tone]) {
+                    this.SinOscs[tone][osc].stop(this.audioContext.currentTime + 1);
                 }
             }
         }
         else {
             console.log("No aura tone!");
             return;
-        } 
+        }
+    }
+
+    fadein(gain) {
+        var target = this.auraTone.targetGain;
+        for (var i = 0; i < gain.length; i++) {
+            gain[i].gain.linearRampToValueAtTime(target, this.audioContext.currentTime + 1);
+        }
+    }
+
+    fadeout(gain) {
+        this.auraTone.targetGain = 0.001;
+        var target = this.auraTone.targetGain;
+        for (var i = 0; i < gain.length; i++) {
+            gain[i].gain.linearRampToValueAtTime(target, this.audioContext.currentTime + 1);
+        }
     }
 
     //TODO: add detune, timbre control
-    tuneAuraTone(detune){
+    tuneAuraTone(velocity, DLR) {
+        this.auraTone.velocity = velocity;
+        var attackCoef = 5;
+        var relaseCoef = 0.98;
+        var maxDLR = 10;
+        this.auraTone.overToneScale = (maxDLR - DLR) / maxDLR;
+        var detune = velocity / 30 * 0.1;
+        var timbre = 0.98;
 
+        if (velocity < 10) {
+            this.auraTone.masterGain += velocity / attackCoef;
+        }
+        else {
+            this.auraTone.masterGain *= relaseCoef;
+        }
+        console.log("auraTone.masterGain, ", this.auraTone.masterGain);
+        for (var i=0; i< this.oscOuts.length; i++) {
+            this.oscOuts[i].gain.setValueAtTime(this.auraTone.masterGain / 2.0, this.audioContext.currentTime);
+        }
+
+        for (var tone in this.SinOscs) {
+            for (var osc in this.SinOscs[tone]) {
+                var oscGain = 1 / (Math.pow((osc + 1), this.auraTone.overToneScale) / ( this.auraTone.numOverTones/ 2));
+                console.log("each osc gain, ", oscGain);
+                this.SinOscGains[tone][osc].gain.setValueAtTime(oscGain, this.audioContext.currentTime);
+                var freq = this.auraTone.f0/this.auraTone.maxOverTone * Math.pow((osc+1),(Math.pow(timbre,this.numOscs/2)+1)) * (detune*tone +1);
+                this.SinOscs[tone][osc].frequency.setValueAtTime(freq, this.audioContext.currentTime);
+            }
+            var outGain = (1+ 0.5*Math.cos(3.14*tone/this.auraTone.numOscs + DLR/maxDLR))/(2*this.auraTone.numOscs);
+            this.outGains[tone].gain.setValueAtTime(outGain, this.audioContext.currentTime);
+        }
     }
 
-    loadAudio(url, onLoaded){
+    loadAudio(url, onLoaded) {
         this.onLoaded = onLoaded;
         var inst = this;
         this.bufferLoader = new BufferLoader(this.audioContext, [url], (buffer) => inst.finishedLoading(buffer));
         this.bufferLoader.load();
     }
 
-    finishedLoading(buffer){
+    finishedLoading(buffer) {
         console.log("*** finished loading");
         var source = this.audioContext.createBufferSource();
         source.buffer = buffer[0];
@@ -299,8 +360,8 @@ class AudioEffectsTool{
             this.onLoaded();
     }
 
-    startAudio(source){
-        if (source != null){
+    startAudio(source) {
+        if (source != null) {
             source.start(0);
         }
         else {
