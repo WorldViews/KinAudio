@@ -25,6 +25,8 @@ class AudioEffectsTool {
         this.osc3 = null;
 
         this.auraTone = null;
+        this.maxDLR = 50;
+        this.maxVLR = 50;
 
         console.log('Creating AudioEffectsTool ...');
 
@@ -227,7 +229,7 @@ class AudioEffectsTool {
             for (var j = 0; j < maxOverTone; j++) {
                 var osc = this.audioContext.createOscillator();
                 var oscNum = i * maxOverTone + j;
-                osc.type = 'sine';
+                osc.type = 'triangle';
                 osc.frequency.value = f0;
                 var oscGain = this.audioContext.createGain();
                 oscGain.gain.setValueAtTime(0,this.audioContext.currentTime);
@@ -246,7 +248,7 @@ class AudioEffectsTool {
         this.auraTone.numOscs = numOscs;
         this.auraTone.numOverTones = maxOverTone;
         this.auraTone.f0 = f0;
-        this.auraTone.masterGain = 0;
+        this.auraTone.masterGain = 0.1;
         this.auraTone.targetGain = 0.3;
 
     }
@@ -260,6 +262,7 @@ class AudioEffectsTool {
     // TODO: add fade in and fade out envelopes
     playAuraTone() {
         this.connectAuraTone();
+        this.tuneAuraTone(0,0);
         if (this.SinOscs != null) {
             for (var tone in this.SinOscs) {
                 for (var osc in this.SinOscs[tone]) {
@@ -307,36 +310,49 @@ class AudioEffectsTool {
         }
     }
 
-    //TODO: add detune, timbre control
-    tuneAuraTone(velocity, DLR) {
+       tuneAuraTone(velocity, DLR) {
         this.auraTone.velocity = velocity;
         var attackCoef = 5;
-        var relaseCoef = 0.98;
-        var maxDLR = 10;
+        var relaseCoef = 0.99;
+        var maxDLR = this.maxDLR;
+        var maxVLR = this.maxVLR;
         this.auraTone.overToneScale = (maxDLR - DLR) / maxDLR;
-        var detune = velocity / 30 * 0.1;
+        //this.auraTone.overToneScale = 1;
+        var detune = velocity / maxVLR * 0.001;
+        detune = 0.001;
         var timbre = 0.98;
 
-        if (velocity < 10) {
-            this.auraTone.masterGain += velocity / attackCoef;
+        console.log("DLR in tuneAuraTone, ", DLR);
+        
+        if (DLR > 25) {
+            this.auraTone.masterGain += DLR*0.01 / attackCoef;
         }
         else {
             this.auraTone.masterGain *= relaseCoef;
         }
-        console.log("auraTone.masterGain, ", this.auraTone.masterGain);
+        if (this.auraTone.masterGain > this.oscOuts.length){
+            this.auraTone.masterGain = this.oscOuts.length
+        }
         for (var i=0; i< this.oscOuts.length; i++) {
-            this.oscOuts[i].gain.setValueAtTime(this.auraTone.masterGain / 2.0, this.audioContext.currentTime);
+            this.oscOuts[i].gain.setValueAtTime(this.auraTone.masterGain / (i+2), this.audioContext.currentTime);
+            console.log("auraTone.masterGain, ", this.auraTone.masterGain/(i+2));
         }
 
         for (var tone in this.SinOscs) {
             for (var osc in this.SinOscs[tone]) {
-                var oscGain = 1 / (Math.pow((osc + 1), this.auraTone.overToneScale) / ( this.auraTone.numOverTones/ 2));
-                console.log("each osc gain, ", oscGain);
+                var oscGain = 1 / Math.pow((osc + 1), this.auraTone.overToneScale) / ( this.auraTone.numOverTones);
                 this.SinOscGains[tone][osc].gain.setValueAtTime(oscGain, this.audioContext.currentTime);
-                var freq = this.auraTone.f0/this.auraTone.maxOverTone * Math.pow((osc+1),(Math.pow(timbre,this.numOscs/2)+1)) * (detune*tone +1);
+                var freq = this.auraTone.f0/this.auraTone.numOverTones * Math.pow((osc+1),(Math.pow(timbre,this.auraTone.numOscs/2))) * (detune*tone +1);
+                if(freq < this.auraTone.f0/2){
+                    freq = this.auraTone.f0/2;
+                }
+                if (freq > this.auraTone.f0*4){
+                    freq = this.auraTone.f0*4;
+                }
                 this.SinOscs[tone][osc].frequency.setValueAtTime(freq, this.audioContext.currentTime);
             }
-            var outGain = (1+ 0.5*Math.cos(3.14*tone/this.auraTone.numOscs + DLR/maxDLR))/(2*this.auraTone.numOscs);
+            var outGain = (1+ (DLR/maxDLR)*Math.cos(2*3.14*tone/this.auraTone.numOscs + (maxDLR-DLR)))/(2*this.auraTone.numOscs);
+            console.log("gain cosine frequency, ", 2*3.14*tone/this.auraTone.numOscs + (maxDLR-DLR));
             this.outGains[tone].gain.setValueAtTime(outGain, this.audioContext.currentTime);
         }
     }
