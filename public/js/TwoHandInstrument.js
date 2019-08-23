@@ -90,7 +90,25 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     updateLeapInfo(){
-        this.updateDrumPartFromLeap();
+        //this.updateDrumPartFromLeap();
+        var inst = this;
+       // setInterval(() => inst.updateAuraToneFromLeap(), 100);
+        this.updateAuraToneFromLeap();
+    }
+
+    updateAuraToneFromLeap(){
+        var rhXvel = this.RHFromLeap[3];
+        var lhXvel = this.LHFromLeap[3];
+        var DLR = this.DLRFromLeap;
+        var aveVLR = (Math.abs(rhXvel) + Math.abs(lhXvel))/2;
+
+        if (aveVLR > this.audioEffects.maxVLR*10){
+            aveVLR = this.audioEffects.maxVLR*10;
+        }
+
+        console.log("aveVLR, ", aveVLR);
+
+        this.audioEffects.tuneAuraTone(aveVLR/10, DLR*100);
     }
 
     updateDrumPartFromLeap(){
@@ -198,12 +216,15 @@ class TwoHandInstrument extends AudioProgram {
             console.log(" Dist Left Right", body.DLR.get());
             */
         }
-        if(leapLastFrame.hands.length){
+        if(leapLastFrame.hands.length != 0){
             this.RHFromLeap = app.leapWatcher.RHAND.get();
             this.LHFromLeap = app.leapWatcher.LHAND.get();
+            this.DLRFromLeap = app.leapWatcher.DLR.get();
             this.RHxLeap = this.RHFromLeap[0];
             this.LHzLeap = this.LHFromLeap[1];
             this.lhzTreshold = 180;
+
+            //console.log("Average velocity", (Math.abs( this.LHFromLeap[3])+Math.abs( this.RHFromLeap[3]))/2);
         }
     }
 
@@ -412,7 +433,7 @@ class TwoHandInstrument extends AudioProgram {
         this.audioEffects.stopAuraTone();
     }
     createAuraTone(){
-        this.audioEffects.createAuraTone(2,2,400);
+        this.audioEffects.createAuraTone(6,6,110);
     }
 
     updateAuraTone(){
