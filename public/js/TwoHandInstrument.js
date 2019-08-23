@@ -664,7 +664,8 @@ class TwoHandInstrument extends AudioProgram {
 
     tuneAuraToneFromTone(velocity, DLR) {
         console.log("tuneAuraToneFromTone with DLR, ", DLR, " and velocity, ", velocity);
-        var count = this.maxVLR/5 - velocity;
+        var count = Math.floor(this.maxVLR/5 - velocity);
+        console.log("count", count);
         this.auraVoices.set({
             "oscillator": {
                 "spread": DLR,
