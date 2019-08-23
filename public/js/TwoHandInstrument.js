@@ -56,6 +56,7 @@ class TwoHandInstrument extends AudioProgram {
         this.auraTone = null;
         this.maxDLR = 50;
         this.maxVLR = 50;
+        this.auraVoices = null;
     }
 
     //***** GUI driven acctions *****/
@@ -93,34 +94,40 @@ class TwoHandInstrument extends AudioProgram {
         this.updateLeapInfo();
     }
 
-    updateLeapInfo(){
+    updateLeapInfo() {
         //this.updateDrumPartFromLeap();
         var inst = this;
-       // setInterval(() => inst.updateAuraToneFromLeap(), 100);
+        // setInterval(() => inst.updateAuraToneFromLeap(), 100);
         this.updateAuraToneFromLeap();
     }
 
-    updateAuraToneFromLeap(){
+    updateAuraToneFromLeap() {
         var rhXvel = this.RHFromLeap[3];
         var lhXvel = this.LHFromLeap[3];
-        var DLR = this.DLRFromLeap;
-        var aveVLR = (Math.abs(rhXvel) + Math.abs(lhXvel))/2;
+        var DLR = this.DLRFromLeap; // in mms
+        var aveVLR = (Math.abs(rhXvel) + Math.abs(lhXvel)) / 2;
 
-        if (aveVLR > this.maxVLR*10){
-            aveVLR = this.maxVLR*10;
+        if (aveVLR > this.maxVLR * 10) {
+            aveVLR = this.maxVLR * 10;
         }
 
-        console.log("aveVLR, ", aveVLR);
+        //console.log("aveVLR, ", aveVLR);
 
-        this.tuneAuraTone(aveVLR/10, DLR*100);
+        if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
+            //this.tuneAuraTone(aveVLR / 10, DLR * 100);
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.tuneAuraToneFromTone(Math.round(aveVLR/50), Math.round(DLR * 100));
+        }
+
     }
 
-    updateDrumPartFromLeap(){
+    updateDrumPartFromLeap() {
         if (app.leapWatcher) {
             var lz = this.LHzLeap;
             var rx = this.RHxLeap;
             var th = this.lhzTreshold;
-            if (lz > th){
+            if (lz > th) {
                 var partNo = this.scaleRHxFromLeap(rx);
                 this.changeDrumPart(partNo);
             }
@@ -130,8 +137,8 @@ class TwoHandInstrument extends AudioProgram {
             }
         }
     }
-    scaleRHxFromLeap(x){
-        var partNo = Math.floor((x/this.rhxLeapStep) -1) + 3;
+    scaleRHxFromLeap(x) {
+        var partNo = Math.floor((x / this.rhxLeapStep) - 1) + 3;
         console.log("partNo ", partNo);
         return partNo;
     }
@@ -156,8 +163,7 @@ class TwoHandInstrument extends AudioProgram {
                 var partNo = this.scaleRHx(RHx);
                 this.changeDrumPart(partNo);
             }
-            else
-            {
+            else {
                 console.log("left hand is below head, no part change");
                 partNo = null;
             }
@@ -167,7 +173,7 @@ class TwoHandInstrument extends AudioProgram {
 
     scaleRHx(x) {
         //var partNo = ((x - this.minX) / this.Xstep) + 1;
-        var partNo = Math.floor((x - this.RHx)/this.rhxstep) + 3;
+        var partNo = Math.floor((x - this.RHx) / this.rhxstep) + 3;
         console.log("partNo ", partNo);
         return partNo;
     }
@@ -220,7 +226,7 @@ class TwoHandInstrument extends AudioProgram {
             console.log(" Dist Left Right", body.DLR.get());
             */
         }
-        if(leapLastFrame.hands.length != 0){
+        if (leapLastFrame.hands.length != 0) {
             this.RHFromLeap = app.leapWatcher.RHAND.get();
             this.LHFromLeap = app.leapWatcher.LHAND.get();
             this.DLRFromLeap = app.leapWatcher.DLR.get();
@@ -430,19 +436,24 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
-    createAuraTone(){
-        this.generateAuraTone(6,6,110);
+    createAuraTone() {
+        if (!$("#usingToneTool").prop('checked') && $("#usingAudioEffects").prop('checked')) {
+            //this.generateAuraTone(6, 6, 110);
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.generateAuraTonefromTone();
+        }
     }
 
-    updateAuraTone(){
+    updateAuraTone() {
         var DLR = document.getElementById("DLR").value;
         var velocity = document.getElementById("velocity").value;
-        this.audioEffects.tuneAuraTone(velocity, DLR);
-    }
-
-    createAuraTonefromTone(){
-        // create a polyphonic synth
-        // create a vibrato and a tremolo
+        if (!$("#usingToneTool").prop('checked') && $("#usingAudioEffects").prop('checked')) {
+            //this.tuneAuraTone(velocity, DLR);
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.tuneAuraToneFromTone(velocity / 5, DLR * 2);
+        }
     }
 
     generateAuraTone(numOscs, maxOverTone, f0) {
@@ -477,7 +488,7 @@ class TwoHandInstrument extends AudioProgram {
 
     }
 
-    initiateAuraTone(numOscs, maxOverTone, f0){
+    initiateAuraTone(numOscs, maxOverTone, f0) {
         this.auraTone = [
             {
                 id: "SinOsc",
@@ -513,8 +524,26 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
-    // TODO: add fade in and fade out envelopes
     playAuraTone() {
+        if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
+            //this.playAuraToneFromAE();
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.playAuraToneFromTone();
+        }
+    }
+
+    stopAuraTone() {
+        if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
+            //this.stopAuraToneFromAE();
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.stopAuraToneFromTone();
+        }
+    }
+
+    // TODO: add fade in and fade out envelopes
+    playAuraToneFromAE() {
         this.connectAuraTone();
         this.tuneAuraTone(0, 0);
         if (this.SinOscs != null) {
@@ -534,7 +563,7 @@ class TwoHandInstrument extends AudioProgram {
     }
 
 
-    stopAuraTone() {
+    stopAuraToneFromAE() {
         this.audioEffects.fadeout(this.outGains);
         if (this.SinOscs != null) {
             for (var tone in this.SinOscs) {
@@ -551,7 +580,7 @@ class TwoHandInstrument extends AudioProgram {
 
     tuneAuraTone(velocity, DLR) {
 
-        if (this.auraTone == null){
+        if (this.auraTone == null) {
             console.log("Create AuraTone");
             return;
         }
@@ -591,9 +620,66 @@ class TwoHandInstrument extends AudioProgram {
                 }
                 this.SinOscs[tone][osc].frequency.setValueAtTime(freq, this.audioEffects.audioContext.currentTime);
             }
-            var outGain = (1 + (DLR / maxDLR) * Math.cos(2 * 3.14 * t * (tone+1) / this.auraTone.numOscs) / (2 * this.auraTone.numOscs));
+            var outGain = (1 + (DLR / maxDLR) * Math.cos(2 * 3.14 * t * (tone + 1) / this.auraTone.numOscs) / (2 * this.auraTone.numOscs));
             console.log("oscillator gains, ", outGain);
             this.outGains[tone].gain.setValueAtTime(outGain, this.audioEffects.audioContext.currentTime);
+        }
+    }
+
+    generateAuraTonefromTone() {
+        var voices = new Tone.PolySynth(8, Tone.Synth, {
+            "oscillator": {
+                "type": "fatsine",
+                "partials": [0, 2, 3, 4],
+                "partialCount": 1,
+                "spread": 60,
+                "count": 10
+            },
+            "envelope": {
+                "attackCurve": "sine",
+                "attack": 0.4,
+                "decayCurve": "exponential",
+                "decay": 0.1,
+                "sustain": 1,
+                "releaseCurve": "exponential",
+                "release": 0.4,
+            },
+            "filter": {
+                "type": "lowpass",
+                "frequency": "Ab2",
+                "rolloff": -12,
+                "Q": 1
+            }
+        }).toMaster();
+        // create a polyphonic synth
+        // create a vibrato and a tremolo by changing the spread and count
+        this.auraVoices = voices;
+        return voices;
+    }
+
+    tuneAuraToneFromTone(velocity, DLR) {
+        console.log("tuneAuraToneFromTone with DLR, ", DLR, " and velocity, ", velocity);
+        var count = this.maxVLR/5 - velocity;
+        this.auraVoices.set({
+            "oscillator": {
+                "spread": DLR,
+                "count": count
+            }
+        });
+    }
+
+    playAuraToneFromTone() {
+        this.auraVoices.triggerAttack(["Ab3", "C2"], this.audioEffects.currentTime);
+
+    }
+
+    stopAuraToneFromTone() {
+        if (this.auraVoices == null) {
+            console.log("No auraTone created");
+            return;
+        }
+        else {
+            this.auraVoices.triggerRelease(["Ab3", "C2"], this.audioEffects.currentTime);
         }
     }
 
