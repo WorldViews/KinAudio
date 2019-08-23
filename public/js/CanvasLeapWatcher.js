@@ -75,6 +75,15 @@ class CanvasLeapWatcher {
     }
 
     statusStr() {
+        try {
+            return this.statusStr_();
+        }
+        catch (e) {
+            return "Cannot get status";
+        }
+    }
+
+    statusStr_() {
         var l = this.LHAND.get();
         var r = this.RHAND.get();
         if (!l || !r) {
