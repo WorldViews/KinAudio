@@ -52,6 +52,11 @@ class TwoHandInstrument extends AudioProgram {
         this.driverId = null;
         this.leapDriver = null;
         this.leapDriverId = null;
+
+        this.auraTone = null;
+        this.maxDLR = 50;
+        this.maxVLR = 50;
+        this.auraVoices = null;
     }
 
     //***** GUI driven acctions *****/
@@ -89,34 +94,40 @@ class TwoHandInstrument extends AudioProgram {
         this.updateLeapInfo();
     }
 
-    updateLeapInfo(){
+    updateLeapInfo() {
         //this.updateDrumPartFromLeap();
         var inst = this;
-       // setInterval(() => inst.updateAuraToneFromLeap(), 100);
+        // setInterval(() => inst.updateAuraToneFromLeap(), 100);
         this.updateAuraToneFromLeap();
     }
 
-    updateAuraToneFromLeap(){
+    updateAuraToneFromLeap() {
         var rhXvel = this.RHFromLeap[3];
         var lhXvel = this.LHFromLeap[3];
-        var DLR = this.DLRFromLeap;
-        var aveVLR = (Math.abs(rhXvel) + Math.abs(lhXvel))/2;
+        var DLR = this.DLRFromLeap; // in mms
+        var aveVLR = (Math.abs(rhXvel) + Math.abs(lhXvel)) / 2;
 
-        if (aveVLR > this.audioEffects.maxVLR*10){
-            aveVLR = this.audioEffects.maxVLR*10;
+        if (aveVLR > this.maxVLR * 10) {
+            aveVLR = this.maxVLR * 10;
         }
 
-        console.log("aveVLR, ", aveVLR);
+        //console.log("aveVLR, ", aveVLR);
 
-        this.audioEffects.tuneAuraTone(aveVLR/10, DLR*100);
+        if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
+            //this.tuneAuraTone(aveVLR / 10, DLR * 100);
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.tuneAuraToneFromTone(Math.round(aveVLR/50), Math.round(DLR * 100));
+        }
+
     }
 
-    updateDrumPartFromLeap(){
+    updateDrumPartFromLeap() {
         if (app.leapWatcher) {
             var lz = this.LHzLeap;
             var rx = this.RHxLeap;
             var th = this.lhzTreshold;
-            if (lz > th){
+            if (lz > th) {
                 var partNo = this.scaleRHxFromLeap(rx);
                 this.changeDrumPart(partNo);
             }
@@ -126,8 +137,8 @@ class TwoHandInstrument extends AudioProgram {
             }
         }
     }
-    scaleRHxFromLeap(x){
-        var partNo = Math.floor((x/this.rhxLeapStep) -1) + 3;
+    scaleRHxFromLeap(x) {
+        var partNo = Math.floor((x / this.rhxLeapStep) - 1) + 3;
         console.log("partNo ", partNo);
         return partNo;
     }
@@ -152,8 +163,7 @@ class TwoHandInstrument extends AudioProgram {
                 var partNo = this.scaleRHx(RHx);
                 this.changeDrumPart(partNo);
             }
-            else
-            {
+            else {
                 console.log("left hand is below head, no part change");
                 partNo = null;
             }
@@ -163,7 +173,7 @@ class TwoHandInstrument extends AudioProgram {
 
     scaleRHx(x) {
         //var partNo = ((x - this.minX) / this.Xstep) + 1;
-        var partNo = Math.floor((x - this.RHx)/this.rhxstep) + 3;
+        var partNo = Math.floor((x - this.RHx) / this.rhxstep) + 3;
         console.log("partNo ", partNo);
         return partNo;
     }
@@ -216,7 +226,7 @@ class TwoHandInstrument extends AudioProgram {
             console.log(" Dist Left Right", body.DLR.get());
             */
         }
-        if(leapLastFrame.hands.length != 0){
+        if (leapLastFrame.hands.length != 0) {
             this.RHFromLeap = app.leapWatcher.RHAND.get();
             this.LHFromLeap = app.leapWatcher.LHAND.get();
             this.DLRFromLeap = app.leapWatcher.DLR.get();
@@ -426,19 +436,251 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
-    playAuraTone(){
-        this.audioEffects.playAuraTone();
-    }
-    stopAuraTone(){
-        this.audioEffects.stopAuraTone();
-    }
-    createAuraTone(){
-        this.audioEffects.createAuraTone(6,6,110);
+    createAuraTone() {
+        if (!$("#usingToneTool").prop('checked') && $("#usingAudioEffects").prop('checked')) {
+            //this.generateAuraTone(6, 6, 110);
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.generateAuraTonefromTone();
+        }
     }
 
-    updateAuraTone(){
+    updateAuraTone() {
         var DLR = document.getElementById("DLR").value;
         var velocity = document.getElementById("velocity").value;
-        this.audioEffects.tuneAuraTone(velocity, DLR);
+        if (!$("#usingToneTool").prop('checked') && $("#usingAudioEffects").prop('checked')) {
+            //this.tuneAuraTone(velocity, DLR);
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.tuneAuraToneFromTone(velocity / 5, DLR * 2);
+        }
     }
+
+    generateAuraTone(numOscs, maxOverTone, f0) {
+        var audioEffects = this.audioEffects;
+        this.SinOscs = [];
+        this.SinOscGains = [];
+        this.oscOuts = [];
+        this.outGains = [];
+        for (var i = 0; i < numOscs; i++) {
+            this.oscOuts[i] = audioEffects.audioContext.createGain();
+            this.SinOscs[i] = [];
+            this.SinOscGains[i] = [];
+            for (var j = 0; j < maxOverTone; j++) {
+                var osc = audioEffects.audioContext.createOscillator();
+                var oscNum = i * maxOverTone + j;
+                osc.type = 'sine';
+                osc.frequency.value = f0;
+                var oscGain = audioEffects.audioContext.createGain();
+                oscGain.gain.setValueAtTime(0, audioEffects.audioContext.currentTime);
+                this.SinOscs[i][j] = osc;
+                this.SinOscGains[i][j] = oscGain;
+                this.SinOscs[i][j].oscNum = oscNum;
+                this.SinOscs[i][j].connect(this.SinOscGains[i][j]);
+                this.SinOscGains[i][j].connect(this.oscOuts[i]);
+            }
+            this.outGains[i] = audioEffects.audioContext.createGain();
+            this.oscOuts[i].connect(this.outGains[i]);
+            this.oscOuts[i].gain.setValueAtTime(0, audioEffects.audioContext.currentTime);
+            this.outGains[i].gain.setValueAtTime(0, audioEffects.audioContext.currentTime);
+        }
+        this.initiateAuraTone(numOscs, maxOverTone, f0);
+
+    }
+
+    initiateAuraTone(numOscs, maxOverTone, f0) {
+        this.auraTone = [
+            {
+                id: "SinOsc",
+                type: "oscillatorNode",
+                element: this.SinOscs
+            },
+            {
+                id: "SinOscGains",
+                type: "gainNode",
+                element: this.SinOscGains
+            },
+            {
+                id: "oscOuts",
+                type: "gainNode",
+                element: this.oscOuts
+            },
+            {
+                id: "outGains",
+                type: "gainNode",
+                element: this.outGains
+            },
+        ];
+        this.auraTone.numOscs = numOscs;
+        this.auraTone.numOverTones = maxOverTone;
+        this.auraTone.f0 = f0;
+        this.auraTone.masterGain = 0.1;
+        this.auraTone.targetGain = 0.3;
+    }
+
+    connectAuraTone() {
+        for (var i = 0; i < this.outGains.length; i++) {
+            this.outGains[i].connect(this.audioEffects.audioContext.destination);
+        }
+    }
+
+    playAuraTone() {
+        if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
+            //this.playAuraToneFromAE();
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.playAuraToneFromTone();
+        }
+    }
+
+    stopAuraTone() {
+        if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
+            //this.stopAuraToneFromAE();
+        }
+        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            this.stopAuraToneFromTone();
+        }
+    }
+
+    // TODO: add fade in and fade out envelopes
+    playAuraToneFromAE() {
+        this.connectAuraTone();
+        this.tuneAuraTone(0, 0);
+        if (this.SinOscs != null) {
+            for (var tone in this.SinOscs) {
+                for (var osc in this.SinOscs[tone]) {
+                    this.SinOscs[tone][osc].start();
+                }
+                this.audioEffects.fadein(this.SinOscGains[tone]);
+                this.audioEffects.fadein(this.oscOuts);
+            }
+        }
+        else {
+            console.log("No aura tone!");
+            return;
+        }
+        this.audioEffects.fadein(this.outGains);
+    }
+
+
+    stopAuraToneFromAE() {
+        this.audioEffects.fadeout(this.outGains);
+        if (this.SinOscs != null) {
+            for (var tone in this.SinOscs) {
+                for (var osc in this.SinOscs[tone]) {
+                    this.SinOscs[tone][osc].stop(this.audioEffects.audioContext.currentTime + 1);
+                }
+            }
+        }
+        else {
+            console.log("No aura tone!");
+            return;
+        }
+    }
+
+    tuneAuraTone(velocity, DLR) {
+
+        if (this.auraTone == null) {
+            console.log("Create AuraTone");
+            return;
+        }
+        var attackCoef = 5;
+        var relaseCoef = 0.99;
+        var maxDLR = this.maxDLR;
+        var maxVLR = this.maxVLR;
+        this.auraTone.overToneScale = (maxDLR - DLR) / maxDLR;
+        //this.auraTone.overToneScale = 1;
+        var detune = velocity / maxVLR * 0.001;
+        var timbre = 0.98;
+        var t = this.audioEffects.audioContext.currentTime;
+
+        console.log("DLR in tuneAuraTone, ", DLR);
+
+        if (DLR > 45) {
+            this.auraTone.masterGain += DLR * 0.01 / attackCoef;
+        }
+        else {
+            this.auraTone.masterGain *= relaseCoef;
+        }
+        if (this.auraTone.masterGain > this.oscOuts.length) {
+            this.auraTone.masterGain = this.oscOuts.length;
+        }
+        for (var i = 0; i < this.oscOuts.length; i++) {
+            this.oscOuts[i].gain.setValueAtTime(this.auraTone.masterGain / (i + 2), this.audioEffects.audioContext.currentTime);
+            console.log("auraTone.masterGain, ", this.auraTone.masterGain / (i + 2));
+        }
+
+        for (var tone in this.SinOscs) {
+            for (var osc in this.SinOscs[tone]) {
+                var oscGain = 1 / Math.pow((osc + 1), this.auraTone.overToneScale) / (this.auraTone.numOverTones);
+                this.SinOscGains[tone][osc].gain.setValueAtTime(oscGain, this.audioEffects.audioContext.currentTime);
+                var freq = this.auraTone.f0 / this.auraTone.numOverTones * Math.pow((osc + 1), (Math.pow(timbre, this.auraTone.numOscs / 2))) * (detune * tone + 1);
+                if (freq < this.auraTone.f0 / 2) {
+                    freq = this.auraTone.f0 / 2;
+                }
+                this.SinOscs[tone][osc].frequency.setValueAtTime(freq, this.audioEffects.audioContext.currentTime);
+            }
+            var outGain = (1 + (DLR / maxDLR) * Math.cos(2 * 3.14 * t * (tone + 1) / this.auraTone.numOscs) / (2 * this.auraTone.numOscs));
+            console.log("oscillator gains, ", outGain);
+            this.outGains[tone].gain.setValueAtTime(outGain, this.audioEffects.audioContext.currentTime);
+        }
+    }
+
+    generateAuraTonefromTone() {
+        var voices = new Tone.PolySynth(8, Tone.Synth, {
+            "oscillator": {
+                "type": "fatsine",
+                "partials": [0, 2, 3, 4],
+                "partialCount": 1,
+                "spread": 60,
+                "count": 10
+            },
+            "envelope": {
+                "attackCurve": "sine",
+                "attack": 0.4,
+                "decayCurve": "exponential",
+                "decay": 0.1,
+                "sustain": 1,
+                "releaseCurve": "exponential",
+                "release": 0.4,
+            },
+            "filter": {
+                "type": "lowpass",
+                "frequency": "Ab2",
+                "rolloff": -12,
+                "Q": 1
+            }
+        }).toMaster();
+        // create a polyphonic synth
+        // create a vibrato and a tremolo by changing the spread and count
+        this.auraVoices = voices;
+        return voices;
+    }
+
+    tuneAuraToneFromTone(velocity, DLR) {
+        console.log("tuneAuraToneFromTone with DLR, ", DLR, " and velocity, ", velocity);
+        var count = this.maxVLR/5 - velocity;
+        this.auraVoices.set({
+            "oscillator": {
+                "spread": DLR,
+                "count": count
+            }
+        });
+    }
+
+    playAuraToneFromTone() {
+        this.auraVoices.triggerAttack(["Ab3", "C2"], this.audioEffects.currentTime);
+
+    }
+
+    stopAuraToneFromTone() {
+        if (this.auraVoices == null) {
+            console.log("No auraTone created");
+            return;
+        }
+        else {
+            this.auraVoices.triggerRelease(["Ab3", "C2"], this.audioEffects.currentTime);
+        }
+    }
+
 }
