@@ -55,7 +55,6 @@ class KinAudioApp {
         var view = {center: {x: 0, y: 0.8}, width: 1.0};
         var canvasTool = this.canvasTool;
         canvasTool.setView(view);
-        //setTimeout(() => canvasTool.setView(view), 1);
     }
 
     start() {

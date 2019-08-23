@@ -50,9 +50,7 @@ class TwoHandInstrument extends AudioProgram {
 
         this.driver = null;
         this.driverId = null;
-        this.leapDriver = null;
-        this.leapDriverId = null;
-
+        this.leapHandsCount = 0;
         this.auraTone = null;
         this.maxDLR = 50;
         this.maxVLR = 50;
@@ -102,6 +100,8 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     updateAuraToneFromLeap() {
+        if (this.leapHandsCount <= 0)
+            return;
         var rhXvel = this.RHFromLeap[3];
         var lhXvel = this.LHFromLeap[3];
         var DLR = this.DLRFromLeap; // in mms
@@ -198,10 +198,7 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     handleBodies() {
-        var leapLastFrame = app.leapWatcher.leapClient.lastFrame;
-        this.leapDriver = app.leapWatcher.leapClient;
-        this.leapDriverId = leapLastFrame.id;
-        var rv = this.rvWatcher;
+       var rv = this.rvWatcher;
         var sw = this.skelWatcher;
         var J = JointType;
         for (var bodyId in sw.bodies) {
@@ -226,7 +223,15 @@ class TwoHandInstrument extends AudioProgram {
             console.log(" Dist Left Right", body.DLR.get());
             */
         }
+        if (app.leapWatcher == null || app.leapWatcher.leapClient == null)
+            return;
+        var leapLastFrame = app.leapWatcher.leapClient.lastFrame;
+        if (leapLastFrame == null || leapLastFrame.hands == null)
+            return;
+        console.log("frame", leapLastFrame);
+        console.log("hands", leapLastFrame.hands);
         if (leapLastFrame.hands.length != 0) {
+            this.leapHandsCount++;
             this.RHFromLeap = app.leapWatcher.RHAND.get();
             this.LHFromLeap = app.leapWatcher.LHAND.get();
             this.DLRFromLeap = app.leapWatcher.DLR.get();
@@ -666,6 +671,7 @@ class TwoHandInstrument extends AudioProgram {
                 "count": count
             }
         });
+        console.log("returned from auraVoices.set");
     }
 
     playAuraToneFromTone() {
