@@ -146,10 +146,18 @@ class CanvasTool {
         this.zf = .95;
     }
 
+    /*
     zoom(zf) {
         zf = zf || .9;
         this.sx *= zf;
         this.sy *= zf;
+    }
+    */
+    zoom(zf) {
+        zf = zf || .9;
+        var view = this.getView();
+        view.width *= zf;
+        this.setView(view);
     }
 
     pan(dx, dy) {
@@ -187,9 +195,10 @@ class CanvasTool {
             return this.setView(v.center.x, v.center.y, v.width);
         }
         console.log("setView", x, y, w, h);
-        this.setViewCenter(x,y);
-        if (w != null)
+        if (w != null) {
             this.setViewWidth(w);
+        }
+        this.setViewCenter(x,y);
     }
     
     getView() {

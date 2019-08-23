@@ -14,13 +14,15 @@ class Program {
 class AudioProgram extends Program {
     constructor(app, opts) {
         super(app);
-        this.toneTool = app.toneTool;
-        this.audioEffects = app.audioEffects;
         this.rvWatcher = app.rvWatcher;
         this.skelWatcher = app.skelWatcher;
     }
 
 // Main lifecycle events...
+    init() {
+        this.toneTool = app.toneTool;
+        this.audioEffects = app.audioEffects;
+    }
 
     // This gets called once when the Program is started
     start() {
