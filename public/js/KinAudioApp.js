@@ -1,5 +1,15 @@
 var app = null;
 
+function rigCollapsableDiv(ctrlId, panelId) {
+    $(ctrlId).click(() => {
+        var v = $(panelId).is(":visible");
+        if (v)
+            $(panelId).hide({ duration: 500 });
+        else
+            $(panelId).show({ duration: 500 });
+    });
+}
+
 class KinAudioApp {
     constructor(portal) {
         console.log("creating KinAudioApp");
@@ -109,15 +119,6 @@ class KinAudioApp {
             inst.portal.sendMessage({ type: 'click', n: inst.numSteps });
         });
 
-        function rigCollapsableDiv(ctrlId, panelId) {
-            $(ctrlId).click(() => {
-                var v = $(panelId).is(":visible");
-                if (v)
-                    $(panelId).hide({ duration: 500 });
-                else
-                    $(panelId).show({ duration: 500 });
-            });
-        }
         rigCollapsableDiv("#trackedBodiesInfo", "#bodyStatus");
         rigCollapsableDiv("#showAudioControls", "#audioControls");
         rigCollapsableDiv("#showProgramControls", "#programControls");

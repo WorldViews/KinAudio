@@ -76,6 +76,15 @@ class CanvasLeapWatcher {
     }
 
     statusStr() {
+        try {
+            return this.statusStr_();
+        }
+        catch (e) {
+            return "Cannot get status";
+        }
+    }
+
+    statusStr_() {
         var l = this.LHAND.get();
         var r = this.RHAND.get();
         var VLR = (Math.abs(l[3]) + Math.abs(r[3]))/2;
