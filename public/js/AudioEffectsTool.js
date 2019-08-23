@@ -24,10 +24,6 @@ class AudioEffectsTool {
         this.osc2 = null;
         this.osc3 = null;
 
-        this.auraTone = null;
-        this.maxDLR = 50;
-        this.maxVLR = 50;
-
         console.log('Creating AudioEffectsTool ...');
 
     }
@@ -217,140 +213,43 @@ class AudioEffectsTool {
         this.osc3.stop(this.audioContext.currentTime + dur);
     }
 
-    createAuraTone(numOscs, maxOverTone, f0) {
-        this.SinOscs = [];
-        this.SinOscGains = [];
-        this.oscOuts = [];
-        this.outGains = [];
-        for (var i = 0; i < numOscs; i++) {
-            this.oscOuts[i] = this.audioContext.createGain();
-            this.SinOscs[i] = [];
-            this.SinOscGains[i] = [];
-            for (var j = 0; j < maxOverTone; j++) {
-                var osc = this.audioContext.createOscillator();
-                var oscNum = i * maxOverTone + j;
-                osc.type = 'sine';
-                osc.frequency.value = f0;
-                var oscGain = this.audioContext.createGain();
-                oscGain.gain.setValueAtTime(0, this.audioContext.currentTime);
-                this.SinOscs[i][j] = osc;
-                this.SinOscGains[i][j] = oscGain;
-                this.SinOscs[i][j].oscNum = oscNum;
-                this.SinOscs[i][j].connect(this.SinOscGains[i][j]);
-                this.SinOscGains[i][j].connect(this.oscOuts[i]);
-            }
-            this.outGains[i] = this.audioContext.createGain();
-            this.oscOuts[i].connect(this.outGains[i]);
-            this.oscOuts[i].gain.setValueAtTime(0, this.audioContext.currentTime);
-            this.outGains[i].gain.setValueAtTime(0, this.audioContext.currentTime);
-        }
-        this.auraTone = this.outGains;
-        this.auraTone.numOscs = numOscs;
-        this.auraTone.numOverTones = maxOverTone;
-        this.auraTone.f0 = f0;
-        this.auraTone.masterGain = 0.1;
-        this.auraTone.targetGain = 0.3;
+    fadein(gain, targetGain, rampTime) {
 
-    }
-
-    connectAuraTone() {
-        for (var i = 0; i < this.outGains.length; i++) {
-            this.outGains[i].connect(this.audioContext.destination);
+        if (target == null){
+            var target = 1/(gain.length +1);
         }
-    }
-
-    // TODO: add fade in and fade out envelopes
-    playAuraTone() {
-        this.connectAuraTone();
-        this.tuneAuraTone(0, 0);
-        if (this.SinOscs != null) {
-            for (var tone in this.SinOscs) {
-                for (var osc in this.SinOscs[tone]) {
-                    this.SinOscs[tone][osc].start();
-                }
-                this.fadein(this.SinOscGains[tone]);
-                this.fadein(this.oscOuts);
-            }
+        else{
+            var target = targetGain;
         }
-        else {
-            console.log("No aura tone!");
-            return;
-        }
-        this.fadein(this.outGains);
-    }
 
-
-    stopAuraTone() {
-        this.fadeout(this.outGains);
-        if (this.SinOscs != null) {
-            for (var tone in this.SinOscs) {
-                for (var osc in this.SinOscs[tone]) {
-                    this.SinOscs[tone][osc].stop(this.audioContext.currentTime + 1);
-                }
-            }
+        if (rampTime == null){
+            var dur = 1;
         }
-        else {
-            console.log("No aura tone!");
-            return;
+        else{
+            var dur = rampTime;
         }
-    }
 
-    fadein(gain) {
-        var target = this.auraTone.targetGain;
         for (var i = 0; i < gain.length; i++) {
-            gain[i].gain.linearRampToValueAtTime(target, this.audioContext.currentTime + 1);
+            gain[i].gain.linearRampToValueAtTime(target, this.audioContext.currentTime + dur);
         }
     }
 
-    fadeout(gain) {
-        this.auraTone.targetGain = 0.001;
-        var target = this.auraTone.targetGain;
+    fadeout(gain, targetGain, rampTime) {
+        if (target == null){
+            var target = 0.001;
+        }
+        else{
+            var target = targetGain;
+        }
+
+        if (rampTime == null){
+            var dur = 1;
+        }
+        else{
+            var dur = rampTime;
+        }
         for (var i = 0; i < gain.length; i++) {
-            gain[i].gain.linearRampToValueAtTime(target, this.audioContext.currentTime + 1);
-        }
-    }
-
-    tuneAuraTone(velocity, DLR) {
-        this.auraTone.velocity = velocity;
-        var attackCoef = 5;
-        var relaseCoef = 0.99;
-        var maxDLR = this.maxDLR;
-        var maxVLR = this.maxVLR;
-        this.auraTone.overToneScale = (maxDLR - DLR) / maxDLR;
-        //this.auraTone.overToneScale = 1;
-        var detune = velocity / maxVLR * 0.001;
-        var timbre = 0.98;
-        var t = this.audioContext.currentTime;
-
-        console.log("DLR in tuneAuraTone, ", DLR);
-
-        if (DLR > 45) {
-            this.auraTone.masterGain += DLR * 0.01 / attackCoef;
-        }
-        else {
-            this.auraTone.masterGain *= relaseCoef;
-        }
-        if (this.auraTone.masterGain > this.oscOuts.length) {
-            this.auraTone.masterGain = this.oscOuts.length
-        }
-        for (var i = 0; i < this.oscOuts.length; i++) {
-            this.oscOuts[i].gain.setValueAtTime(this.auraTone.masterGain / (i + 2), this.audioContext.currentTime);
-            console.log("auraTone.masterGain, ", this.auraTone.masterGain / (i + 2));
-        }
-
-        for (var tone in this.SinOscs) {
-            for (var osc in this.SinOscs[tone]) {
-                var oscGain = 1 / Math.pow((osc + 1), this.auraTone.overToneScale) / (this.auraTone.numOverTones);
-                this.SinOscGains[tone][osc].gain.setValueAtTime(oscGain, this.audioContext.currentTime);
-                var freq = this.auraTone.f0 / this.auraTone.numOverTones * Math.pow((osc + 1), (Math.pow(timbre, this.auraTone.numOscs / 2))) * (detune * tone + 1);
-                if (freq < this.auraTone.f0 / 2) {
-                    freq = this.auraTone.f0 / 2;
-                }
-                this.SinOscs[tone][osc].frequency.setValueAtTime(freq, this.audioContext.currentTime);
-            }
-            var outGain = (1 + (DLR / maxDLR) * Math.cos(2 * 3.14 * t * (tone+1) / this.auraTone.numOscs) / (2 * this.auraTone.numOscs));
-            console.log("oscillator gains, ", outGain);
-            this.outGains[tone].gain.setValueAtTime(outGain, this.audioContext.currentTime);
+            gain[i].gain.linearRampToValueAtTime(target, this.audioContext.currentTime + dur);
         }
     }
 
