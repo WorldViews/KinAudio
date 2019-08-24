@@ -535,6 +535,7 @@ class TwoHandInstrument extends AudioProgram {
         }
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
             this.playAuraToneFromTone(["Ab3"]);
+            this.auraVoices.notes.push("Ab3");
         }
     }
 
@@ -543,8 +544,10 @@ class TwoHandInstrument extends AudioProgram {
             //this.stopAuraToneFromAE();
         }
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            var notes = this.auraVoices.notes;
-            this.stopAuraToneFromTone(notes);
+            for (var note in this.auraVoices.notes){
+                var lastNote =  this.auraVoices.notes[note];
+                this.stopAuraToneFromTone(lastNote);
+            }
         }
     }
 
@@ -649,13 +652,7 @@ class TwoHandInstrument extends AudioProgram {
                 "sustain": 1,
                 "releaseCurve": "exponential",
                 "release": 0.4,
-            }/*,
-            "filter": {
-                "type": "lowpass",
-                "frequency": 220,
-                "rolloff": -12,
-                "Q": 1
-            }*/
+            }
         });
 
         var filter = new Tone.Filter({
@@ -665,13 +662,11 @@ class TwoHandInstrument extends AudioProgram {
             Q: 1
         });
 
-        this.filter = filter;
-
         //voices.chain(filter, Tone.Master);
         voices.chain(Tone.Master);
-        // create a polyphonic synth
-        // create a vibrato and a tremolo by changing the spread and count
         this.auraVoices = voices;
+        this.auraVoices.filter = filter;
+        this.auraVoices.notes = [];
         return voices;
     }
 
@@ -683,35 +678,37 @@ class TwoHandInstrument extends AudioProgram {
                 "spread": DLR,
             }
         });
-        /*
+
         if (velocity > 5){
-            this.playAuraToneFromTone(["Ab3", "C2"]);
+            if (this.auraVoices.notes.includes("C2")){
+                return;
+            }
+            this.auraVoices.notes.push("C2");
+            this.playAuraToneFromTone(this.auraVoices.notes);
         }
         else {
-            this.playAuraToneFromTone(["Ab3"]);
+            if (this.auraVoices.notes.includes("C2")){
+                this.stopAuraToneFromTone("C2");
+            }
+            else return;
         }
         console.log("returned from auraVoices.set");
-        */
 
-        // keep count of the notes and substract them with their order 
-
+        // TODO: create a pattern array and play the notes based on the velocity
     }
 
     playAuraToneFromTone(notes) {
         this.auraVoices.triggerAttack(notes, this.audioEffects.currentTime);
-        this.auraVoices.notes = notes;
 
     }
 
     stopAuraToneFromTone(notes) {
-        var note = [];
-        note = notes;
         if (this.auraVoices == null) {
             console.log("No auraTone created");
             return;
         }
         else {
-            this.auraVoices.triggerRelease( note ,this.audioEffects.currentTime);
+            this.auraVoices.triggerRelease( notes ,this.audioEffects.currentTime);
         }
     }
 
