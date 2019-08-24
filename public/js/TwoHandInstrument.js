@@ -72,7 +72,8 @@ class TwoHandInstrument extends AudioProgram {
         $("#changeTempo").on('input', () => inst.changeDrumsTempo());
         $("#DLR").on('input', () => inst.updateAuraTone());
         $("#velocity").on('input', () => inst.updateAuraTone());
-        rigCollapsableDiv("#showHandControls", "#handControls");
+
+
     }
 
     updateStatus() {
