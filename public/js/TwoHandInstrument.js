@@ -116,14 +116,15 @@ class TwoHandInstrument extends AudioProgram {
        var HLR = (this.RHFromLeap[1] + this.LHFromLeap[1])/2 - this.minHLR;
        HLR = HLR/this.maxHLR;
     
-       if(HLR > this.maxHLR){
+       if(HLR > 1){
            HLR = 0.99;
        }
-       else if (HLR < this.minHLR){
+       else if (HLR < 0){
            HLR = 0.01;
        }
+       var volume = 24*Math.log10(HLR);
 
-       var volume = -48*Math.log10(HLR);
+       console.log("Average height, ", HLR, "volume, ", volume);
 
         if (aveVLR > this.maxVLR * 10) {
             aveVLR = this.maxVLR * 10;
@@ -710,7 +711,7 @@ class TwoHandInstrument extends AudioProgram {
 
         // control the volume
         this.auraVoices.volume.value = volume;
-
+        console.log("auraVoices.volume:, ", volume);
 
         if (DLR > 2){
             if (!this.auraVoices.notes.includes("C2")){
@@ -736,7 +737,7 @@ class TwoHandInstrument extends AudioProgram {
                 this.auraVoices.notes.pop("C2");
             }
         }
-        console.log("playing the aura notes, ", this.auraVoices.notes);
+        //console.log("playing the aura notes, ", this.auraVoices.notes);
 
 
 
