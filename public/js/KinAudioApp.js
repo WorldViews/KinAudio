@@ -95,7 +95,8 @@ class KinAudioApp {
     }
 
     initLeapWatcher() {
-        this.leapWatcher = new CanvasLeapWatcher({ canvasTool: this.canvasTool })
+        this.leapWatcher = new CanvasLeapWatcher({ canvasTool: this.canvasTool,
+                                                   portal: this.portal })
     }
 
     initSkelWatcher() {
@@ -109,8 +110,7 @@ class KinAudioApp {
         setInterval(() => {
             //console.log("tick...");
             inst.numSteps++;
-            inst.portal.sendMessage(inst.rvWatcher.msg, { type: 'tick', n: inst.numSteps });
-            //$("#log").html("N: " + inst.numSteps + "<br>\n");
+            inst.portal.sendMessage({ type: 'tick', n: inst.numSteps });
         }, 5000);
 
         $("#loadAudio").click(() => {
@@ -146,11 +146,16 @@ class KinAudioApp {
         }
         this.rvWatcher.handleMessage(msg);
 
+        if (msg.type == "leapPose" && this.leapWatcher) {
+            this.leapWatcher.handleLeapPoseMSG(msg);
+        }
+
         if (!this.toneTool) {
             return;
         }
     }
 
+    // this gets called by rvWatcher.
     noticePoseFit(msg, rvWatcher) {
         if (!this.program) {
             return;
