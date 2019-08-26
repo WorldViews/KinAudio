@@ -467,9 +467,13 @@ class TwoHandInstrument extends AudioProgram {
             //this.generateAuraTone(6, 6, 110);
             console.log("Aura tone is created from AudioEffects");
         }
-        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+        else if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
             this.generateAuraTonefromTone();
             console.log("Aura tone is created from ToneTool");
+        }
+        else {
+            console.log("Select only one aura tone generator!");
+            return;
         }
     }
 
