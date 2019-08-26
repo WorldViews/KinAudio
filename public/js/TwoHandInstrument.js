@@ -275,7 +275,7 @@ class TwoHandInstrument extends AudioProgram {
         this.toneTool.currentBpm = tempo;
         var drumPart = part1;
         this.triggerDrums(drumPart, "8n");
-        this.drumPart.start();
+        //this.drumPart.start();
         Tone.Transport.start();
     }
 
