@@ -1,6 +1,12 @@
 var app = null;
 
-function rigCollapsableDiv(ctrlId, panelId) {
+function rigCollapsableDiv(ctrlId, panelId, init) {
+    if (init == "hide"){
+        $(panelId).hide({ duration: 500 });
+    }
+    else {
+        $(panelId).show({ duration: 500 });
+    }
     $(ctrlId).click(() => {
         var v = $(panelId).is(":visible");
         if (v)
@@ -122,14 +128,15 @@ class KinAudioApp {
         });
 
         rigCollapsableDiv("#trackedBodiesInfo", "#bodyStatus");
-        rigCollapsableDiv("#showAudioControls", "#audioControls");
+        rigCollapsableDiv("#showAudioControls", "#audioControls", "hide");
         rigCollapsableDiv("#showProgramControls", "#programControls");
         //rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
         rigCollapsableDiv("#showTrackingCanvas", "#canvasDiv");
         rigCollapsableDiv("#showMessage", "#messageDiv");
-        rigCollapsableDiv("#showHandControls", "#handControls");
-        rigCollapsableDiv("#showAuraToneControls", "#auraToneControls");
-        rigCollapsableDiv("#showDrumsControls", "#drumsControls");
+        rigCollapsableDiv("#showHandControls", "#handControls", "hide");
+        rigCollapsableDiv("#showAuraToneControls", "#auraToneControls", "hide");
+        rigCollapsableDiv("#showDrumsControls", "#drumsControls", "hide");
+        rigCollapsableDiv("#showSmoothingControl", "#smooControl", "hide");
         
     }
 
