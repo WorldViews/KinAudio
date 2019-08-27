@@ -92,6 +92,7 @@ class KinAudioApp {
         }
         this.canvasTool.start();
         this.canvasTool.setView(0, 1, 5);
+        this.setLeapView();
     }
 
     initLeapWatcher() {
