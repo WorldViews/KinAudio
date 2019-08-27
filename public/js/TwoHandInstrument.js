@@ -48,6 +48,7 @@ class TwoHandInstrument extends AudioProgram {
         this.RHx = null;
         this.RHxLeap = null;
         this.LHzLeap = null;
+        this.handWatcher = null;
 
         this.driver = null;
         this.driverId = null;
@@ -128,7 +129,7 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     updateAuraToneFromLeap() {
-        if (this.leapHandsCount <= 0)
+        if (this.handWatcher <= 0)
             return;
         var rhXvel = this.RHFromLeap[3];
         var lhXvel = this.LHFromLeap[3];
@@ -288,6 +289,7 @@ class TwoHandInstrument extends AudioProgram {
             return;
         //console.log("frame", leapLastFrame);
         //console.log("hands", leapLastFrame.hands);
+        this.handWatcher = leapLastFrame.hands.length;
         if (leapLastFrame.hands.length != 0) {
             this.leapHandsCount++;
             this.RHFromLeap = app.leapWatcher.RHAND.get();
@@ -609,10 +611,16 @@ class TwoHandInstrument extends AudioProgram {
             //this.stopAuraToneFromAE();
         }
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+            /*
             for (var note in this.auraVoices.notes){
                 var lastNote =  this.auraVoices.notes[note];
                 this.stopAuraToneFromTone(lastNote);
             }
+            */
+           for (var i=0; i<this.auraVoices.notes.length; i++){
+               var lastNote = this.auraVoices.notes.pop();
+               this.stopAuraToneFromTone(lastNote);
+           }
         }
     }
 
@@ -653,7 +661,6 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     tuneAuraTone(velocity, DLR) {
-
         if (this.auraTone == null) {
             console.log("Create AuraTone");
             return;
@@ -739,6 +746,8 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     tuneAuraToneFromTone(DLR, velocity, volume) {
+
+
         //console.log("tuneAuraToneFromTone with DLR, ", DLR, " and velocity, ", velocity);
         var freq = Math.floor(velocity + 1);
         this.auraVoices.set({
