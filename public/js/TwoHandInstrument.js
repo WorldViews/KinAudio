@@ -16,6 +16,8 @@ let part5 = [["0", "F#3"], ["8n", "A#3"], ["4n", "B#3"], [3 * Tone.Time("8n"), "
 
 let seq1 = ["C3", [null, "Eb3"], ["F4", "Bb4", "C5"]];
 
+let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"]];
+
 var toneGain = null;
 var sweepEnv = null;
 
@@ -26,7 +28,6 @@ const errorThreshold = 100;
 const maxError = 300;
 const midFc = 200;
 const maxFc = 1000;
-
 
 class TwoHandInstrument extends AudioProgram {
     constructor(app, opts) {
@@ -76,8 +77,6 @@ class TwoHandInstrument extends AudioProgram {
         $("#changeTempo").on('input', () => inst.changeDrumsTempo());
         $("#DLR").on('input', () => inst.updateAuraTone());
         $("#velocity").on('input', () => inst.updateAuraTone());
-
-
     }
 
     updateStatus() {
@@ -104,12 +103,19 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     initializeLeapSmoothing(){
-        this.VLRfilter = new OneEuroFilter(100,1,0.001, 1);
-        this.DLRfilter = new OneEuroFilter(25,1,0.001, 1);
+        this.VLRfilter = new OneEuroFilter(0.1,0.1,0.001, 1);
+        this.DLRfilter = new OneEuroFilter(10,1,0.001, 1);
         this.HLRfilter = new OneEuroFilter(10,1,0.001, 1);
     }
 
     smoothLeapData(VLR, DLR, HLR){
+        if (DLR == null){
+            DLR = 0; // reset DLR if not computed
+        }
+
+        if (VLR > 20*this.maxVLR){
+            VLR = 20*this.maxVLR;
+        }
         var timeStamp = getClockTime();
         var VLRSmoo = this.VLRfilter.filter(VLR, timeStamp);
         var DLRSmoo = this.DLRfilter.filter(DLR, timeStamp);
@@ -132,9 +138,13 @@ class TwoHandInstrument extends AudioProgram {
        var HLR = (this.RHFromLeap[1] + this.LHFromLeap[1])/2;
 
        var leapData = [aveVLR, DLR, HLR];
-       console.log("Leap Data:, ", leapData);
-       var smoothData = this.smoothLeapData(aveVLR, DLR*100, HLR);
-       console.log("Smooth Data:, ",smoothData);
+       document.getElementById("originalVelocity").value = aveVLR;
+       document.getElementById("originalDistance").value = DLR*10;
+       var smoothData = this.smoothLeapData(aveVLR, DLR, HLR);
+       aveVLR = smoothData[0];
+       DLR = smoothData[1];
+       document.getElementById("smoothVelocity").value = smoothData[0];
+       document.getElementById("smoothDistance").value = smoothData[1]*10;
        
        HLR = HLR - this.minHLR;
        HLR = HLR/this.maxHLR;
@@ -164,6 +174,9 @@ class TwoHandInstrument extends AudioProgram {
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
             this.tuneAuraToneFromTone(DLR, aveVLR, volume);
         }
+
+        //console.log("Leap Data:, ", leapData);
+        //console.log("Smooth Data:, ",smoothData);
 
     }
 
@@ -585,8 +598,9 @@ class TwoHandInstrument extends AudioProgram {
             //this.playAuraToneFromAE();
         }
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            this.playAuraToneFromTone(["Eb3"]);
-            this.auraVoices.notes.push("Eb3");
+            var note = this.auraVoices.chord[0];
+            this.playAuraToneFromTone(note);
+            this.auraVoices.notes.push(note);
         }
     }
 
@@ -719,12 +733,13 @@ class TwoHandInstrument extends AudioProgram {
         voices.chain(Tone.Master);
         this.auraVoices = voices;
         this.auraVoices.filter = filter;
+        this.auraVoices.chord = chords[0];
         this.auraVoices.notes = [];
         return voices;
     }
 
     tuneAuraToneFromTone(DLR, velocity, volume) {
-        console.log("tuneAuraToneFromTone with DLR, ", DLR, " and velocity, ", velocity);
+        //console.log("tuneAuraToneFromTone with DLR, ", DLR, " and velocity, ", velocity);
         var freq = Math.floor(velocity + 1);
         this.auraVoices.set({
             "oscillator": {
@@ -734,39 +749,56 @@ class TwoHandInstrument extends AudioProgram {
 
         // control the volume
         this.auraVoices.volume.value = volume;
-        console.log("auraVoices.volume:, ", volume);
+        //console.log("auraVoices.volume:, ", volume);
 
-        if (DLR > 2){
-            if (!this.auraVoices.notes.includes("C2")){
-            this.auraVoices.notes.push("C2");
+        if (DLR > 1.5){
+            if (!this.auraVoices.notes.includes(this.auraVoices.chord[1])){
+            this.auraVoices.notes.push(this.auraVoices.chord[1]);
             this.playAuraToneFromTone(this.auraVoices.notes);
             }
         }
-        if (DLR > 5){
-            if (!this.auraVoices.notes.includes("Ab2")){
-                this.auraVoices.notes.push("Ab2");
+        if (DLR > 3){
+            if (!this.auraVoices.notes.includes(this.auraVoices.chord[2])){
+                this.auraVoices.notes.push(this.auraVoices.chord[2]);
                 this.playAuraToneFromTone(this.auraVoices.notes);
             }
         }
-        if (DLR < 5){
-            if (this.auraVoices.notes.includes("Ab2")){
-                this.stopAuraToneFromTone("Ab2");
-                this.auraVoices.notes.pop("Ab2");
+        if (DLR < 3){
+            if (this.auraVoices.notes.includes(this.auraVoices.chord[2])){
+                this.stopAuraToneFromTone(this.auraVoices.chord[2]);
+                this.auraVoices.notes.pop(this.auraVoices.chord[2]);
             }
         }
-        if (DLR < 2){
-            if (this.auraVoices.notes.includes("C2")){
-                this.stopAuraToneFromTone("C2");
-                this.auraVoices.notes.pop("C2");
+        if (DLR < 1.5){
+            if (this.auraVoices.notes.includes(this.auraVoices.chord[1])){
+                this.stopAuraToneFromTone(this.auraVoices.chord[1]);
+                this.auraVoices.notes.pop(this.auraVoices.chord[1]);
             }
+        }
+
+        if (DLR > 5){
+            this.changeAuraChord();
         }
         //console.log("playing the aura notes, ", this.auraVoices.notes);
 
+        console.log("playing aura notes:, ", this.auraVoices.notes);
 
 
         // TODO #2: create a pattern array and play the notes based on the velocity
         // TODO #1: smooth the velocity - 
         // TODO #0: add gain control - done
+    }
+
+    changeAuraChord(){
+        var chord = this.auraVoices.chord;
+        var chordNo = chords.indexOf(chord);
+        var nextChordNo = (chordNo+1)%chords.length;
+        console.log("Chord is changed from, ", chord);
+        var newChord =  chords[nextChordNo];
+        this.auraVoices.chord = newChord;
+        this.auraVoices.notes = newChord;
+        console.log("...to, ", newChord);
+        this.playAuraToneFromTone(this.auraVoices.notes);
     }
 
     playAuraToneFromTone(notes) {

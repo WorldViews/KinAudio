@@ -81,6 +81,29 @@
                 <input type="checkbox" checked id="usingToneTool" /> ToneTool
             </p>
         </div>
+        <h4 id="showSmoothingControl">1 Euro Filter Comparison</h4>
+        <div id="smooControl" style="padding:40px;">
+            <div class="slider-wrapper">
+                <input type="range" id="originalVelocity" min="0" max="3000" value="0" step="1"  style="width:80%">
+                <label for="velocity">Original VLR</label>
+
+            </div>
+            <div class="slider-wrapper">
+                    <input type="range" id="smoothVelocity" min="0" max="3000" value="0" step="1"  style="width:80%">
+                    <label for="velocity">Smooth VLR</label>
+
+            </div>
+            <div class="slider-wrapper">
+                    <input type="range" id="originalDistance" min="0" max="10" value="0" step="1"  style="width:80%">
+                    <label for="velocity">Original DLR</label>
+    
+                </div>
+                <div class="slider-wrapper">
+                        <input type="range" id="smoothDistance" min="0" max="10" value="0" step="1"  style="width:80%">
+                        <label for="velocity">Smooth DLR</label>
+    
+                </div>
+        </div>
     </div>
 
 
