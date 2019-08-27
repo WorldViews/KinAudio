@@ -766,13 +766,13 @@ class TwoHandInstrument extends AudioProgram {
         if (DLR < 3){
             if (this.auraVoices.notes.includes(this.auraVoices.chord[2])){
                 this.stopAuraToneFromTone(this.auraVoices.chord[2]);
-                this.auraVoices.notes.pop(this.auraVoices.chord[2]);
+                this.auraVoices.notes.pop();
             }
         }
         if (DLR < 1.5){
             if (this.auraVoices.notes.includes(this.auraVoices.chord[1])){
                 this.stopAuraToneFromTone(this.auraVoices.chord[1]);
-                this.auraVoices.notes.pop(this.auraVoices.chord[1]);
+                this.auraVoices.notes.pop();
             }
         }
 
@@ -796,7 +796,7 @@ class TwoHandInstrument extends AudioProgram {
         console.log("Chord is changed from, ", chord);
         var newChord =  chords[nextChordNo];
         this.auraVoices.chord = newChord;
-        this.auraVoices.notes = newChord;
+        this.auraVoices.notes = newChord.slice(0);
         console.log("...to, ", newChord);
         this.playAuraToneFromTone(this.auraVoices.notes);
     }
