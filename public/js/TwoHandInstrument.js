@@ -57,6 +57,8 @@ class TwoHandInstrument extends AudioProgram {
         this.minHLR = 90;
         this.maxHLR = 250;
         this.auraVoices = null;
+
+        this.initializeLeapSmoothing();
     }
 
     //***** GUI driven acctions *****/
@@ -101,7 +103,21 @@ class TwoHandInstrument extends AudioProgram {
         this.updateAuraToneFromLeap();
     }
 
-    smoothLeapData(){
+    initializeLeapSmoothing(){
+        this.VLRfilter = new OneEuroFilter(100,1,0.001, 1);
+        this.DLRfilter = new OneEuroFilter(25,1,0.001, 1);
+        this.HLRfilter = new OneEuroFilter(10,1,0.001, 1);
+    }
+
+    smoothLeapData(VLR, DLR, HLR){
+        var timeStamp = getClockTime();
+        var VLRSmoo = this.VLRfilter.filter(VLR, timeStamp);
+        var DLRSmoo = this.DLRfilter.filter(DLR, timeStamp);
+        var HLRSmoo = this.HLRfilter.filter(HLR, timeStamp);
+
+        // find out which rate works better for which value
+
+        return [VLRSmoo, DLRSmoo, HLRSmoo];
 
     }
 
@@ -113,7 +129,14 @@ class TwoHandInstrument extends AudioProgram {
         var DLR = this.DLRFromLeap; // in mms
         var aveVLR = (Math.abs(rhXvel) + Math.abs(lhXvel)) / 2;
 
-       var HLR = (this.RHFromLeap[1] + this.LHFromLeap[1])/2 - this.minHLR;
+       var HLR = (this.RHFromLeap[1] + this.LHFromLeap[1])/2;
+
+       var leapData = [aveVLR, DLR, HLR];
+       console.log("Leap Data:, ", leapData);
+       var smoothData = this.smoothLeapData(aveVLR, DLR*100, HLR);
+       console.log("Smooth Data:, ",smoothData);
+       
+       HLR = HLR - this.minHLR;
        HLR = HLR/this.maxHLR;
     
        if(HLR > 1){
@@ -124,7 +147,7 @@ class TwoHandInstrument extends AudioProgram {
        }
        var volume = 24*Math.log10(HLR);
 
-       console.log("Average height, ", HLR, "volume, ", volume);
+       //console.log("Average height, ", HLR, "volume, ", volume);
 
         if (aveVLR > this.maxVLR * 10) {
             aveVLR = this.maxVLR * 10;
@@ -668,7 +691,7 @@ class TwoHandInstrument extends AudioProgram {
             "oscillator": {
                 "type": "fatsine",
                 "partials": [0, 2, 3, 4],
-                "partialCount": 1,
+                "partialCount": 0,
                 "spread": 60,
                 "count": 10
             },
@@ -742,8 +765,8 @@ class TwoHandInstrument extends AudioProgram {
 
 
         // TODO #2: create a pattern array and play the notes based on the velocity
-        // TODO #1: smooth the velocity
-        // TODO #0: add gain control
+        // TODO #1: smooth the velocity - 
+        // TODO #0: add gain control - done
     }
 
     playAuraToneFromTone(notes) {
