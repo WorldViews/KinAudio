@@ -432,3 +432,33 @@ CanvasTool.CloudGraphic = class extends CanvasTool.Graphic {
     }
 }
 
+CanvasTool.GraphGraphic = class extends CanvasTool.Graphic {
+    constructor(id, x, y, width, height) {
+        super(id,x, y);
+        this.width = width || 10;
+        this.height = height || 10;
+        this.rgb = [200,0,0];
+        this.points = [];
+        for (var i=0; i<200; i++) {
+            var t = 0.1*i;
+            var w = 3;
+            var x = t;
+            var y = Math.sin(w*t);
+            this.addPoint({x: 0.1*i, y: Math.sin(.1*i)})
+        }
+        //this.lineWidth = .1;
+        this.strokeStyle = "black";
+    }
+
+    addPoint(pt) {
+        this.points.push(pt);
+    }
+
+    draw(canvas, ctx) {
+        //console.log("GraphGraphic draw", this.points);
+        this.drawPolyLine(canvas, ctx, this.points);
+    }
+
+}
+
+

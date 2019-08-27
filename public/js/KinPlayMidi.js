@@ -129,7 +129,7 @@ class KinMidiPlay extends AudioProgram {
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.handleBodies();
         var dlr = app.leapWatcher.DLR.get();
-        console.log("dlr", dlr);
+        //console.log("dlr", dlr);
         if (dlr) {
             this.aura.r = dlr;
         }
@@ -143,7 +143,8 @@ class KinMidiPlay extends AudioProgram {
         this.initMidis(MIDI_URLS);
         this.aura = new CanvasTool.CloudGraphic(this, 0.0, 0.8, .25)
         app.canvasTool.addGraphic(this.aura);
-
+        this.graph = new CanvasTool.GraphGraphic('graph1', this, 0, 0);
+        app.canvasTool.addGraphic(this.graph);
    }
 
     async initMidis(urls) {
@@ -198,6 +199,8 @@ class KinMidiPlay extends AudioProgram {
     changeTempoFromLeap() {
         if (app.leapWatcher) {
             var d = app.leapWatcher.DLR.get();
+            if (d == null)
+                return;
             var tempoMin = 40;
             var tempo = tempoMin + 200*d;
             this.toneTool.setTempo(tempo);
