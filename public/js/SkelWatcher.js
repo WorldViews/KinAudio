@@ -87,7 +87,7 @@ being kept track of, that may be application specific.
 class RiggedBody extends Body {
     constructor(id, bodyRec) {
         super(id, bodyRec);
-        this.RHAND =            new V3State("RHAND");
+        this.RHAND =            new KinematicState("RHAND");
         this.LHAND =            new KinematicState("LHAND");
         this.DLR =              new State("DLR"); // dist Left to Right
         this.LEFT_UP =          new BooleanState("LEFT_UP");
