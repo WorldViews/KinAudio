@@ -70,6 +70,7 @@ class ChiGongFeedback extends AudioProgram {
     }
 
     updateStatus() {
+        return;
         var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
             this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
         //console.log("status:", statusStr);
@@ -165,8 +166,6 @@ class ChiGongFeedback extends AudioProgram {
     }
 
     /////////////////////// Aura Voice Section ////////////////////////
-
-
     updateAuraToneFromKinect(msg, rvWatcher) {
         // TODO #1: replace data with posefit msg data - done
         // TODO #2: calibrate data for ChiGong
@@ -344,8 +343,6 @@ class ChiGongFeedback extends AudioProgram {
         }
     }
 
-}
-
 /////////////////////// Drum Part Section ////////////////////////
 
 generateDrums(){
@@ -413,3 +410,5 @@ changeDrumsTempo() {
     this.toneTool.setTempo(tempo);
     console.log("tempo is set to ", tempo);
 }
+}
+
