@@ -47,7 +47,8 @@ class ChiGongFeedback extends AudioProgram {
         this.driverId = null;
         this.auraTone = null;
         this.maxDLR = 50;
-        this.maxVLR = 50;
+        this.maxVLR = 70;
+        this.minVLR = 10;
         this.minHLR = 90;
         this.maxHLR = 250;
         this.auraVoices = null;
@@ -104,7 +105,7 @@ class ChiGongFeedback extends AudioProgram {
                 this.driverId = bodyId;
                 this.driver = body;
                 this.bodyNum = sw.bodies[bodyId].bodyNum;
-                console.log("TwoHandInstrument driver is set with id and body number, ", this.driverId, this.bodyNum);
+                console.log("ChiGong driver is set with id and body number, ", this.driverId, this.bodyNum);
                 this.RHx = rv.prevMsg.controlPoints[0].pt[0];
             }
             /*
@@ -148,7 +149,8 @@ class ChiGongFeedback extends AudioProgram {
     start() {
         Tone.Transport.start();
         this.generateAuraTonefromTone();
-        this.playAuraToneFromTone();
+        var note = this.auraVoices.chord[0];
+        this.playAuraToneFromTone(note);
     }
 
 
@@ -172,35 +174,42 @@ class ChiGongFeedback extends AudioProgram {
         // TODO #3: see which smoothing to use
         // TODO #4: Check if the skelwatcher RHAND is broken
 
-        rv = rvWatcher;
-        sw = this.skelWatcher;
-        this.RHAND = sw.bodies[this.driverId].RHAND.get();
-        this.LHAND = sw.bodies[this.driverId].LHAND.get();
+        if (!this.driver) {
+            return;
+        }
+        var rv = rvWatcher;
+        this.RHAND = this.driver.RHAND.get();
+        this.LHAND = this.driver.LHAND.get();
         // receive kinect x axis data => TODO: Double check if x is the first element in the array
-        var rhXvel = this.RHAND[3];
-        var lhXvel = this.LHAND[3];
+        var rhXvel = Math.abs(this.RHAND[3]);
+        var lhXvel = Math.abs(this.LHAND[3]);
         // recieve the distance data
-        var DLR = sw.DLR.get(); // in what? m? mm?
-        var VLR = (rhXvel + lhXvel)/2; // check the velocity values again
+        var DLR = this.driver.DLR.get(); // in what? m? mm?
+        var VLR = (rhXvel + lhXvel) * 50 / 2; // check the velocity values again
 
         var playSpeed = rv.playSpeed; // => map it to volume
-        if (playSpeed > 0.999){
+        if (playSpeed > 0.999) {
             playSpeed = 0.999;
-        } 
-        else if(playSpeed < 0){
+        }
+        else if (playSpeed < 0) {
             playSpeed = 0.001;
         }
-    
+
         var volume = 24 * Math.log10(playSpeed);
 
-        if (VLR > this.maxVLR * 10) {
-            VLR = this.maxVLR * 10;
+
+        if (VLR < this.minVLR){
+            VLR = this.minVLR;
+        } 
+        else if (VLR > this.maxVLR){
+            VLR = this.maxVLR;
         }
-
+        
         DLR = Math.round(DLR * 10);
-        aveVLR = Math.round(VLR / 5);
-
-        this.tuneAuraToneFromTone(DLR, VLR, volume);
+        console.log("VLR with scaling of 50,  ", VLR);
+        VLR = Math.round(VLR);
+        console.log("DLR -two hand distance value is, ", DLR);
+        this.tuneAuraToneFromTone(DLR, VLR);
 
         //console.log("Leap Data:, ", leapData);
         //console.log("Smooth Data:, ",smoothData);
@@ -234,7 +243,7 @@ class ChiGongFeedback extends AudioProgram {
                 "type": "fatsine",
                 "partials": [0, 2, 3, 4],
                 "partialCount": 0,
-                "spread": 60,
+                "spread": 10,
                 "count": 10
             },
             "envelope": {
@@ -263,6 +272,8 @@ class ChiGongFeedback extends AudioProgram {
         this.auraVoices.filter = filter;
         this.auraVoices.chord = chords[0];
         this.auraVoices.notes = [];
+
+        console.log("****** Aura Voices are generates from ToneTool.");
         return voices;
     }
 
@@ -273,37 +284,40 @@ class ChiGongFeedback extends AudioProgram {
                 "spread": velocity
             }
         });
+        
+
+        console.log("velocity value in tuneAuraToneFromTone is ", velocity);
 
         // control the volume
-        this.auraVoices.volume.value = volume;
+        //this.auraVoices.volume.value = volume;
         //console.log("auraVoices.volume:, ", volume);
 
-        if (DLR > 1.5) {
+        if (DLR > 2) {
             if (!this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
                 this.auraVoices.notes.push(this.auraVoices.chord[1]);
                 this.playAuraToneFromTone(this.auraVoices.notes);
             }
         }
-        if (DLR > 3) {
+        if (DLR > 4) {
             if (!this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
                 this.auraVoices.notes.push(this.auraVoices.chord[2]);
                 this.playAuraToneFromTone(this.auraVoices.notes);
             }
         }
-        if (DLR < 3) {
+        if (DLR < 4) {
             if (this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
                 this.stopAuraToneFromTone(this.auraVoices.chord[2]);
                 this.auraVoices.notes.pop();
             }
         }
-        if (DLR < 1.5) {
+        if (DLR < 2) {
             if (this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
                 this.stopAuraToneFromTone(this.auraVoices.chord[1]);
                 this.auraVoices.notes.pop();
             }
         }
 
-        if (DLR > 5) {
+        if (DLR > 7) {
             this.changeAuraChord();
         }
         //console.log("playing the aura notes, ", this.auraVoices.notes);
@@ -343,72 +357,72 @@ class ChiGongFeedback extends AudioProgram {
         }
     }
 
-/////////////////////// Drum Part Section ////////////////////////
+    /////////////////////// Drum Part Section ////////////////////////
 
-generateDrums(){
-    var drums = this.toneTool.createDrum();
-    this.drums = drums;
-    this.toneTool.addFilter(drums, 150, 'lowpass', -12);
-    this.toneTool.addReverb(this.toneTool.filter, 0.5);
-    this.toneTool.currentBpm = tempo;
-    var drumPart = part1;
-    this.triggerDrums(drumPart, "8n");
-}
+    generateDrums() {
+        var drums = this.toneTool.createDrum();
+        this.drums = drums;
+        this.toneTool.addFilter(drums, 150, 'lowpass', -12);
+        this.toneTool.addReverb(this.toneTool.filter, 0.5);
+        this.toneTool.currentBpm = tempo;
+        var drumPart = part1;
+        this.triggerDrums(drumPart, "8n");
+    }
 
-triggerDrums(drumPart, duration) {
-    this.part = drumPart;
-    var inst = this;
-    this.drumPart = new Tone.Part(function (time, pitch) {
-        inst.drums.triggerAttackRelease(pitch, duration, time);
-    }, inst.part);
-    this.drumPart.loop = true;
-}
+    triggerDrums(drumPart, duration) {
+        this.part = drumPart;
+        var inst = this;
+        this.drumPart = new Tone.Part(function (time, pitch) {
+            inst.drums.triggerAttackRelease(pitch, duration, time);
+        }, inst.part);
+        this.drumPart.loop = true;
+    }
 
-startDrums() {
-    if (this.drums == null) {
-        console.log("Creating drums ...");
-        this.start();
+    startDrums() {
+        if (this.drums == null) {
+            console.log("Creating drums ...");
+            this.start();
+        }
+        else {
+            this.drumPart.start();
+        }
     }
-    else {
-        this.drumPart.start();
-    }
-}
 
-stopDrums() {
-    if (this.drums == null) {
-        console.log("No drums created");
-        return;
+    stopDrums() {
+        if (this.drums == null) {
+            console.log("No drums created");
+            return;
+        }
+        else {
+            this.drumPart.stop();
+        }
     }
-    else {
-        this.drumPart.stop();
-    }
-}
 
-changePartTempo(playSpeed, smooSpeed) {
-    if (!this.toneTool) {
-        console.log("changePartTempo ... ignored - no toneTool");
-        return;
+    changePartTempo(playSpeed, smooSpeed) {
+        if (!this.toneTool) {
+            console.log("changePartTempo ... ignored - no toneTool");
+            return;
+        }
+        //console.log("playSpeed:", playSpeed, "smooSpeed", smooSpeed);
+        this.playSpeed = playSpeed;
+        this.smooSpeed = smooSpeed;
+        tempo = this.toneTool.calculateTempo(playSpeed, smooSpeed);
+        tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
+        this.tempo = tempo;
+        this.toneTool.setTempo(tempo);
     }
-    //console.log("playSpeed:", playSpeed, "smooSpeed", smooSpeed);
-    this.playSpeed = playSpeed;
-    this.smooSpeed = smooSpeed;
-    tempo = this.toneTool.calculateTempo(playSpeed, smooSpeed);
-    tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
-    this.tempo = tempo;
-    this.toneTool.setTempo(tempo);
-}
 
-changeDrumsTempo() {
-    if (!this.toneTool) {
-        console.log("changePartTempo ... ignored - no toneTool");
-        return;
+    changeDrumsTempo() {
+        if (!this.toneTool) {
+            console.log("changePartTempo ... ignored - no toneTool");
+            return;
+        }
+        tempo = document.getElementById("changeTempo").value;
+        console.log("tempo is now ", tempo);
+        tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
+        this.tempo = tempo;
+        this.toneTool.setTempo(tempo);
+        console.log("tempo is set to ", tempo);
     }
-    tempo = document.getElementById("changeTempo").value;
-    console.log("tempo is now ", tempo);
-    tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
-    this.tempo = tempo;
-    this.toneTool.setTempo(tempo);
-    console.log("tempo is set to ", tempo);
-}
 }
 
