@@ -95,6 +95,9 @@ class KinMidiPlay extends AudioProgram {
         this.tickNum = 0;
         this.songs = [];
         this.initGUI();
+        var gui = app.gui;
+        this.gain = 1;
+        gui.add(this, 'gain', 0, 5);
 
     }
 
@@ -133,7 +136,7 @@ class KinMidiPlay extends AudioProgram {
         if (dlr) {
             this.aura.r = dlr;
             if (this.graph) {
-                this.graph.addPoint(dlr);
+                this.graph.addPoint(this.gain*dlr);
             }
         }
         this.updateLeapInfo();

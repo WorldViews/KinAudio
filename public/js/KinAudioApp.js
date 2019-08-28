@@ -122,6 +122,7 @@ class KinAudioApp {
 
     setupDATGUI() {
         var gui = new dat.GUI();
+        this.gui = gui;
         var state = this.state;
         gui.add(state, 'speed', -10,10);
     }
