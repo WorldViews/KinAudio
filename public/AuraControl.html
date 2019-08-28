@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Aura Control</title>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/libs/jquery-3.1.0.min.js"></script>
+    <script src="js/libs/sprintf.js"></script>
+    <script src="../js/MUSEPortal.js"></script>
+    <script src="../js/kinDefs.js"></script>
+    <script src="../js/kinDefs.js"></script>
+    <script src="js/CanvasTool.js"></script>
+    <script src="js/StateVariables.js"></script>
+    <script src="js/SkelWatcher.js"></script>
+    <script src="js/CanvasSkelWatcher.js"></script>
+</head>
+
+<body>
+    <input type="range" id="auraEnergy" min="1" max="1000" style="width:95%">
+    <script>
+        var portal = null;
+        function setAura() {
+            var val = $("#auraEnergy").val() / 1000.0;
+            console.log("aura e "+val);
+            var aMax = val;
+            var auras = [
+                {name: "hands", rgb: [255,50,0], aMax,
+                 joints: [JointType.handLeft, JointType.handRight]}
+            ];
+            var msg = {'type':'setProps', auras};
+            console.log("msg", msg);
+            portal.sendMessage(msg);
+        }
+        $(document).ready(() => {
+            portal = new MUSEPortal();
+            $("#auraEnergy").on('input', (e) => {
+                setAura();
+            });
+        });
+    </script>
+</body>
+
+</html>
