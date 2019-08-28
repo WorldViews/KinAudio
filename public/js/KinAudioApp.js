@@ -1,5 +1,7 @@
 var app = null;
 
+var state = {};
+
 function rigCollapsableDiv(ctrlId, panelId, init) {
     if (init == "hide"){
         $(panelId).hide({ duration: 500 });
@@ -53,7 +55,10 @@ class KinAudioApp {
             }
         });
         $("#leapView").click(() => inst.setLeapView());
-        $("#highView").click(() => inst.setLeapView());
+        $("#highView").click(() => inst.setHighView());
+        this.state = state;
+        state.speed = 1.0;
+        this.setupDATGUI();
         this.start();
     }
 
@@ -61,6 +66,11 @@ class KinAudioApp {
         var view = {center: {x: 0, y: 0.8}, width: 1.0};
         var canvasTool = this.canvasTool;
         canvasTool.setView(view);
+    }
+
+    setHighView() {
+        var view = {center: {x: 0, y: 0.8}, width: 10.0};
+        this.canvasTool.setView(view);
     }
 
     start() {
@@ -108,6 +118,12 @@ class KinAudioApp {
 
     initSkelWatcher() {
         this.skelWatcher = new CanvasSkelWatcher({ canvasTool: this.canvasTool });
+    }
+
+    setupDATGUI() {
+        var gui = new dat.GUI();
+        var state = this.state;
+        gui.add(state, 'speed', -10,10);
     }
 
     setupGUIBindings() {
