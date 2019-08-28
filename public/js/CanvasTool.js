@@ -433,13 +433,13 @@ CanvasTool.CloudGraphic = class extends CanvasTool.Graphic {
 }
 
 CanvasTool.GraphGraphic = class extends CanvasTool.Graphic {
-    constructor(id, x, y, width, height) {
+    constructor(id, x, y, width, height, maxNumPoints) {
         super(id,x, y);
         this.width = width || 10;
         this.height = height || 10;
         this.rgb = [200,0,0];
         this.yvals = [];
-        this.maxNumPoints = 100;
+        this.maxNumPoints = maxNumPoints || 100;
         for (var i=0; i<200; i++) {
             var t = 0.1*i;
             var w = 3;
@@ -477,8 +477,54 @@ CanvasTool.GraphGraphic = class extends CanvasTool.Graphic {
         }
         ctx.stroke();
     }
+}
 
+CanvasTool.TrailGraphic = class extends CanvasTool.Graphic {
+    constructor(id, x, y, width, height, maxNumPoints) {
+        super(id,x, y);
+        this.width = width || 10;
+        this.height = height || 10;
+        this.rgb = [200,0,0];
+        this.points = [];
+        this.maxNumPoints = maxNumPoints || 100;
+        for (var i=0; i<200; i++) {
+            var t = 0.1*i;
+            var w = 3;
+            var x = t;
+            var y = Math.sin(w*t);
+            this.addPoint([x,y]);
+        }
+        //this.lineWidth = .1;
+        this.strokeStyle = "black";
+    }
 
+    addPoint(pt) {
+        this.points.push(pt);
+        if (this.points.length > this.maxNumPoints)
+            this.points.shift();
+    }
+
+    draw(canvas, ctx) {
+        //console.log("GraphGraphic draw", this.points);
+        this.drawTrail(ctx, this.points);
+    }
+    
+    drawTrail(ctx, points) {
+        ctx.lineWidth = this.lineWidth;
+        ctx.strokeStyle = this.strokeStyle;
+        ctx.beginPath();
+        var x0 = this.x - this.width/2;
+        var y0 = this.y;
+        var p0 = this.points[0];
+        ctx.moveTo(x0 + p0[0], y0 + p0[1]);
+        for (var i = 1; i < points.length; i++) {
+            var x = x0 + points[i][0];
+            var y = y0 + points[i][1];
+            //console.log("x,y", x, y);
+            ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
 }
 
 

@@ -131,6 +131,11 @@ class KinMidiPlay extends AudioProgram {
         //console.log("speed:", rv.playSpeed);
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.handleBodies();
+        var rpos = app.leapWatcher.RHAND.get();
+        if (rpos && this.trail) {
+            var pt = [rpos[0]/1000, rpos[1]/1000];
+            this.trail.addPoint(pt);
+        }
         var dlr = app.leapWatcher.DLR.get();
         //console.log("dlr", dlr);
         if (dlr) {
@@ -151,6 +156,9 @@ class KinMidiPlay extends AudioProgram {
         app.canvasTool.addGraphic(this.aura);
         this.graph = new CanvasTool.GraphGraphic('graph1', 0, 0, 2, 1);
         app.canvasTool.addGraphic(this.graph);
+
+        this.trail = new CanvasTool.TrailGraphic('trail1', 0, 0.8, 2, 1);
+        app.canvasTool.addGraphic(this.trail);
    }
 
     async initMidis(urls) {
