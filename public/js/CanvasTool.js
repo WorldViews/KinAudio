@@ -438,26 +438,46 @@ CanvasTool.GraphGraphic = class extends CanvasTool.Graphic {
         this.width = width || 10;
         this.height = height || 10;
         this.rgb = [200,0,0];
-        this.points = [];
+        this.yvals = [];
+        this.maxNumPoints = 100;
         for (var i=0; i<200; i++) {
             var t = 0.1*i;
             var w = 3;
             var x = t;
             var y = Math.sin(w*t);
-            this.addPoint({x: 0.1*i, y: Math.sin(.1*i)})
+            this.addPoint(y);
         }
         //this.lineWidth = .1;
         this.strokeStyle = "black";
     }
 
     addPoint(pt) {
-        this.points.push(pt);
+        this.yvals.push(pt);
+        if (this.yvals.length > this.maxNumPoints)
+            this.yvals.shift();
     }
 
     draw(canvas, ctx) {
         //console.log("GraphGraphic draw", this.points);
-        this.drawPolyLine(canvas, ctx, this.points);
+        this.drawGraph(canvas, ctx, this.yvals);
     }
+    
+    drawGraph(canvas, ctx, yvals) {
+        ctx.lineWidth = this.lineWidth;
+        ctx.strokeStyle = this.strokeStyle;
+        ctx.beginPath();
+        var x0 = this.x - this.width/2;
+        var y0 = this.y;
+        ctx.moveTo(x0, y0 + yvals[0]);
+        for (var i = 1; i < yvals.length; i++) {
+            var x = x0 + this.width * i / yvals.length;
+            var y = y0 + yvals[i];
+            //console.log("x,y", x, y);
+            ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
 
 }
 

@@ -95,6 +95,9 @@ class KinMidiPlay extends AudioProgram {
         this.tickNum = 0;
         this.songs = [];
         this.initGUI();
+        var gui = app.gui;
+        this.gain = 1;
+        gui.add(this, 'gain', 0, 5);
 
     }
 
@@ -132,6 +135,9 @@ class KinMidiPlay extends AudioProgram {
         //console.log("dlr", dlr);
         if (dlr) {
             this.aura.r = dlr;
+            if (this.graph) {
+                this.graph.addPoint(this.gain*dlr);
+            }
         }
         this.updateLeapInfo();
         this.updateStatus();
@@ -143,7 +149,7 @@ class KinMidiPlay extends AudioProgram {
         this.initMidis(MIDI_URLS);
         this.aura = new CanvasTool.CloudGraphic(this, 0.0, 0.8, .25)
         app.canvasTool.addGraphic(this.aura);
-        this.graph = new CanvasTool.GraphGraphic('graph1', this, 0, 0);
+        this.graph = new CanvasTool.GraphGraphic('graph1', 0, 0, 2, 1);
         app.canvasTool.addGraphic(this.graph);
    }
 
