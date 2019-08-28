@@ -170,7 +170,7 @@ class ChiGongFeedback extends AudioProgram {
     /////////////////////// Aura Voice Section ////////////////////////
     updateAuraToneFromKinect(msg, rvWatcher) {
         // TODO #1: replace data with posefit msg data - done
-        // TODO #2: calibrate data for ChiGong
+        // TODO #2: calibrate data for ChiGong - done for VLR and DLR
         // TODO #3: see which smoothing to use
         // TODO #4: Check if the skelwatcher RHAND is broken
 
