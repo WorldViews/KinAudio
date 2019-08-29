@@ -124,7 +124,7 @@ class KinAudioApp {
         var gui = new dat.GUI();
         this.gui = gui;
         var state = this.state;
-        gui.add(state, 'speed', -10,10);
+        //gui.add(state, 'speed', -10,10);
     }
 
     setupGUIBindings() {
@@ -148,8 +148,8 @@ class KinAudioApp {
         rigCollapsableDiv("#showAudioControls", "#audioControls", "hide");
         rigCollapsableDiv("#showProgramControls", "#programControls");
         //rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
-        rigCollapsableDiv("#showTrackingCanvas", "#canvasDiv");
-        rigCollapsableDiv("#showMessage", "#messageDiv");
+        rigCollapsableDiv("#showTrackingCanvas", "#canvasDiv", "hide");
+        rigCollapsableDiv("#showMessage", "#messageDiv", "hide");
         rigCollapsableDiv("#showHandControls", "#handControls", "hide");
         rigCollapsableDiv("#showAuraToneControls", "#auraToneControls", "hide");
         rigCollapsableDiv("#showDrumsControls", "#drumsControls", "hide");
