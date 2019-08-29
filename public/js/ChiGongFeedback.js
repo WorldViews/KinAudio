@@ -53,7 +53,30 @@ class ChiGongFeedback extends AudioProgram {
         this.maxHLR = 250;
         this.auraVoices = null;
 
-        //this.initializeLeapSmoothing();
+        this.initVLRFilter();
+
+        // dat.DUI controls
+        var gui = app.gui;
+
+        this.VLR = 0;
+        this.smoothVLR = 0;
+        this.DLR = 0;
+        this.volume = -12;
+        this.playSpeed = 0;
+
+
+        var s01  = gui.addFolder('Kinect Data');
+        var s02 = gui.addFolder('VLR Filter Parameters');
+        s01.add(this, 'DLR', 0, 15).listen();
+        s01.add(this, 'VLR', 0, 70).listen();
+        s01.add(this, 'smoothVLR', 0, 70).listen();
+        s01.add(this, 'volume', -48, 6).listen();
+        s01.add(this, 'playSpeed', -10, 10).listen();
+        s02.add(this, 'cutoff', 0, 1.0);
+        s02.add(this, 'minCutoff', 0, 1.0);
+        s02.add(this, 'beta', 0, 1.0);
+        s02.add(this, 'alpha', 0, 1.0);
+        s02.add(this, 'setVLRFilterParameters');
     }
 
     //***** GUI driven acctions *****/
@@ -166,13 +189,40 @@ class ChiGongFeedback extends AudioProgram {
             this.audioEffects.startAudio(this.audioEffects.source);
         });
     }
+    
+    initVLRFilter(){
+        this.cutoff = 0.1;
+        this.minCutoff = 0.1;
+        this.beta = 0.001;
+        this.alpha = 1;
+        this.VLRFilter = new OneEuroFilter(this.cutoff,this.minCutoff,this.beta,this.alpha);
+        this.setVLRFilterParameters = function(){
+            this.VLRFilter.setFrequency(this.cutoff);
+            this.VLRFilter.setMinCutoff(this.minCutoff);
+            this.VLRFilter.setBeta(this.beta);
+            console.log("OneEuroFilter for VLR parameters are set to; cutoff, ", this.cutoff, "minCutoff,  ", this.minCutoff, "beta, ", this.beta);
+        }
+    }
+
+    smoothVLRData(VLR){
+        var timeStamp = getClockTime();
+        var VLRSmoo = this.VLRFilter.filter(VLR, timeStamp);
+        this.smoothVLR = VLRSmoo;
+
+        return VLRSmoo;
+    }
 
     /////////////////////// Aura Voice Section ////////////////////////
     updateAuraToneFromKinect(msg, rvWatcher) {
         // TODO #1: replace data with posefit msg data - done
         // TODO #2: calibrate data for ChiGong - done for VLR and DLR
-        // TODO #3: see which smoothing to use
-        // TODO #4: Check if the skelwatcher RHAND is broken
+        // TODO #3: see which smoothing to use - done (smothing with 1 Euro Filter)
+        // TODO #4: Check if the skelwatcher RHAND is broken - done (not broken)
+
+        // TODO #2.1: add only one chord change - limit the duration of chord changes
+        // TODO #2.3: add volume
+        // TODO #2.3: check the velocity use (is the modulation enough)
+        // TODO #2.4: add aura intensity control 1) gui and 2) from kinect
 
         if (!this.driver) {
             return;
@@ -188,6 +238,7 @@ class ChiGongFeedback extends AudioProgram {
         var VLR = (rhXvel + lhXvel) * 50 / 2; // check the velocity values again
 
         var playSpeed = rv.playSpeed; // => map it to volume
+        this.playSpeed = rv.playSpeed;
         if (playSpeed > 0.999) {
             playSpeed = 0.999;
         }
@@ -208,6 +259,7 @@ class ChiGongFeedback extends AudioProgram {
         DLR = Math.round(DLR * 10);
         console.log("VLR with scaling of 50,  ", VLR);
         VLR = Math.round(VLR);
+        var VLRSmoo = this.smoothVLRData(VLR);
         console.log("DLR -two hand distance value is, ", DLR);
         this.tuneAuraToneFromTone(DLR, VLR);
 
@@ -278,19 +330,25 @@ class ChiGongFeedback extends AudioProgram {
     }
 
     tuneAuraToneFromTone(DLR, velocity, volume) {
+        this.VLR = velocity;
+        this.DLR = DLR;
+        this.volume = volume;
         //console.log("tuneAuraToneFromTone with DLR, ", DLR, " and velocity, ", velocity);
         this.auraVoices.set({
             "oscillator": {
                 "spread": velocity
             }
         });
-        
-
         console.log("velocity value in tuneAuraToneFromTone is ", velocity);
+        this.selectAuraNotes(DLR);
 
         // control the volume
         //this.auraVoices.volume.value = volume;
         //console.log("auraVoices.volume:, ", volume);
+
+    }
+
+    selectAuraNotes(DLR){
 
         if (DLR > 2) {
             if (!this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
@@ -323,11 +381,6 @@ class ChiGongFeedback extends AudioProgram {
         //console.log("playing the aura notes, ", this.auraVoices.notes);
 
         console.log("playing aura notes:, ", this.auraVoices.notes);
-
-
-        // TODO #2: create a pattern array and play the notes based on the velocity
-        // TODO #1: smooth the velocity - 
-        // TODO #0: add gain control - done
     }
 
     changeAuraChord() {
