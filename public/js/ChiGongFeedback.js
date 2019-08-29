@@ -1,5 +1,3 @@
-//TODO: move these parameters to members of Prog1 iff appropriate
-
 /*
 var part = new Tone.Part(function(time, pitch){
 	synth.triggerAttackRelease(pitch, "8n", time);
@@ -65,10 +63,13 @@ class ChiGongFeedback extends AudioProgram {
         this.volume = -12;
         this.playSpeed = 0;
         this.smoothPlaySpeed = 0.1;
+        this.auraEnergy = 0;
+        this.poseFitMessage = false;
 
 
         var s01 = gui.addFolder('RV Data');
         var s02 = gui.addFolder('VLR Filter Parameters');
+        var s03 = gui.addFolder('Aura Parameters');
         s01.add(this, 'DLR', 0, 15).listen();
         s01.add(this, 'VLR', 0, 70).listen();
         s01.add(this, 'smoothVLR', 0, 70).listen();
@@ -80,6 +81,7 @@ class ChiGongFeedback extends AudioProgram {
         s02.add(this, 'beta', 0, 1.0);
         s02.add(this, 'alpha', 0, 1.0);
         s02.add(this, 'setVLRFilterParameters');
+        s03.add(this,'auraEnergy', 1, 1000).listen();
     }
 
     //***** GUI driven acctions *****/
@@ -109,6 +111,7 @@ class ChiGongFeedback extends AudioProgram {
         var rv = this.rvWatcher;
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.changeFilterParam(rv.poseError);
+        this.updateAuraEnergy();
         this.handleBodies();
         this.updateStatus();
     }
@@ -119,6 +122,7 @@ class ChiGongFeedback extends AudioProgram {
         //this.changePartTempo(rvWatcher.playSpeed, rvWatcher.smooSpeed);
         this.updateAuraToneFromKinect(msg, rvWatcher);
         this.updateStatus();
+        this.setAuraEnergyFromKinect();
     }
 
     handleBodies() {
@@ -224,6 +228,30 @@ class ChiGongFeedback extends AudioProgram {
         return psSmoo;
     }
 
+    updateAuraEnergy() {
+        var aMax = this.auraEnergy/1000;
+        var auras = [
+            {name: "hands", rgb: [255,50,0], aMax,
+             joints: [JointType.handLeft, JointType.handRight]}
+        ];
+        var msg = {'type':'setProps', auras};
+        app.portal.sendMessage(msg);
+    }
+    setAuraEnergyFromKinect(){
+        var rv = this.rvWatcher;
+        if (rv.msg.type == 'poseFit'){
+            var poseError = rv.poseError;
+            if (poseError > 150){
+                poseError = 150;
+            }
+            poseError = (1 - poseError/150)*1000;
+            this.auraEnergy = poseError;
+        }
+        else {
+            return;
+        }
+    }
+
     /////////////////////// Aura Voice Section ////////////////////////
     updateAuraToneFromKinect(msg, rvWatcher) {
         // TODO #1: replace data with posefit msg data - done
@@ -232,9 +260,11 @@ class ChiGongFeedback extends AudioProgram {
         // TODO #4: Check if the skelwatcher RHAND is broken - done (not broken)
 
         // TODO #2.1: add only one chord change - limit the duration of chord changes - done
-        // TODO #2.2: add volume 
+        // TODO #2.2: add volume - done
         // TODO #2.3: check the velocity use (is the modulation enough)
-        // TODO #2.4: add aura intensity control 1) gui and 2) from kinect
+        // TODO #2.4: add aura intensity control 1) gui - done and 2) from kinect - 
+        // TODO #2.5: add new chords
+        // TODO #2.6: add scale change based on poseError
 
         if (!this.driver) {
             return;
@@ -258,9 +288,6 @@ class ChiGongFeedback extends AudioProgram {
         this.playSpeed = playSpeed;
         var volume = 12 * Math.log10(playSpeed);
 
-        console.log("playSpeed and volume data: ", playSpeed, volume);
-
-
         if (VLR < this.minVLR) {
             VLR = this.minVLR;
         }
@@ -272,7 +299,6 @@ class ChiGongFeedback extends AudioProgram {
         VLR = Math.round(VLR);
         var VLRSmoo = this.smoothVLRData(VLR);
         this.tuneAuraToneFromTone(DLR, VLR, volume);
-
     }
 
     updateAuraTone() {
