@@ -97,8 +97,17 @@ class KinMidiPlay extends AudioProgram {
         this.initGUI();
         var gui = app.gui;
         this.gain = 1;
+        this.useGain = true;
+        this.randomVal = 0;
+        this.DLR = .1;
+        this.newRandVal = function() {
+            this.randomVal = Math.random();
+        }
         gui.add(this, 'gain', 0, 5);
-
+        gui.add(this, 'DLR', 0, 1.5).listen();
+        gui.add(this, 'useGain');
+        gui.add(this, 'randomVal', -2, 2).listen();
+        gui.add(this, 'newRandVal');
     }
 
     //***** GUI driven acctions *****/
@@ -138,12 +147,19 @@ class KinMidiPlay extends AudioProgram {
         }
         var dlr = app.leapWatcher.DLR.get();
         //console.log("dlr", dlr);
-        if (dlr) {
+        if (dlr && !app.leapWatcher.DLR.isStale()) {
+            this.DLR = dlr;
             this.aura.r = dlr;
             if (this.graph) {
-                this.graph.addPoint(this.gain*dlr);
+                if (this.useGain)
+                    this.graph.addPoint(this.gain*dlr);
+                else
+                this.graph.addPoint(dlr);
             }
         }
+        var tempoMin = 40;
+        var tempo = tempoMin + 200*this.DLR;
+        this.toneTool.setTempo(tempo);
         this.updateLeapInfo();
         this.updateStatus();
     }
@@ -207,7 +223,7 @@ class KinMidiPlay extends AudioProgram {
     }
 
     updateLeapInfo() {
-        this.changeTempoFromLeap();
+       // this.changeTempoFromLeap();
     }
 
     changeTempoFromLeap() {

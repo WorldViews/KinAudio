@@ -16,8 +16,14 @@ class State {
         this.minChangeTime = 0.2;
     }
 
+    isStale() {
+        var t = getClockTime();
+        return (t - this.lastChangeTime > .5)
+    }
+
     observe(state) {
         this.state = state;
+        this.lastChangeTime = getClockTime();
     }
 
     noticeNewState(state) {
@@ -43,6 +49,7 @@ class V3State extends State {
 
     observe(state) {
         this.state = state;
+        this.lastChangeTime = getClockTime();
     }
 
     get() {
@@ -63,6 +70,7 @@ class KinematicState extends State {
         this.state = state;
         this.prevT = this.t;
         this.t = getClockTime();
+        this.lastChangeTime = this.t;
     }
 
     get() {
