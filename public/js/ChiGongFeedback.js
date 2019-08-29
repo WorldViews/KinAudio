@@ -14,7 +14,7 @@ let part5 = [["0", "F#3"], ["8n", "A#3"], ["4n", "B#3"], [3 * Tone.Time("8n"), "
 
 let seq1 = ["C3", [null, "Eb3"], ["F4", "Bb4", "C5"]];
 
-let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"]];
+let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"], ["Eb3", "C2", "Bb3"], ["F2", "C2", "Ab3"],["Eb2", "G2", "G3"], ["Eb2", "C2", "C3"]];
 
 var toneGain = null;
 var sweepEnv = null;
@@ -93,7 +93,7 @@ class ChiGongFeedback extends AudioProgram {
         $("#stopDrums").click(() => inst.stopDrums());
         $("#playAuraTone").click(() => inst.playAuraTone());
         $("#stopAuraTone").click(() => inst.stopAuraTone());
-        $("#createAuraTone").click(() => inst.createAuraTone());
+        $("#createAuraTone").click(() => inst.generateAuraTonefromTone());
         $("#DLR").on('input', () => inst.updateAuraTone());
         $("#velocity").on('input', () => inst.updateAuraTone());
     }
@@ -262,9 +262,10 @@ class ChiGongFeedback extends AudioProgram {
         // TODO #2.1: add only one chord change - limit the duration of chord changes - done
         // TODO #2.2: add volume - done
         // TODO #2.3: check the velocity use (is the modulation enough)
-        // TODO #2.4: add aura intensity control 1) gui - done and 2) from kinect - 
+        // TODO #2.4: add aura intensity control 1) gui - done and 2) from kinect - done
         // TODO #2.5: add new chords
         // TODO #2.6: add scale change based on poseError
+        // TODO #2.7: add other color change
 
         if (!this.driver) {
             return;
@@ -319,6 +320,7 @@ class ChiGongFeedback extends AudioProgram {
             var lastNote = this.auraVoices.notes.pop();
             this.stopAuraToneFromTone(lastNote);
         }
+        this.auraVoices.dispose();
 
     }
 
@@ -363,6 +365,9 @@ class ChiGongFeedback extends AudioProgram {
     }
 
     tuneAuraToneFromTone(DLR, velocity, volume) {
+        if (this.auraVoices.voices == null){
+            return;
+        }
         this.VLR = velocity;
         this.DLR = DLR;
         this.volume = volume;
@@ -374,6 +379,9 @@ class ChiGongFeedback extends AudioProgram {
         });
         //console.log("velocity value in tuneAuraToneFromTone is ", velocity);
         this.selectAuraNotes(DLR);
+        if (volume == NaN || volume == undefined){
+            volume = -12;
+        }
         this.auraVoices.volume.value = volume;
 
     }
@@ -408,15 +416,13 @@ class ChiGongFeedback extends AudioProgram {
         if (DLR > 7) {
             this.changeAuraChord();
         }
-        //console.log("playing the aura notes, ", this.auraVoices.notes);
-
-        //console.log("playing aura notes:, ", this.auraVoices.notes);
+        console.log("playing aura notes:, ", this.auraVoices.notes);
     }
 
     changeAuraChord() {
         var t = getClockTime();
         var dt = t - this.lastChordChangeTime;
-        console.log("the time between chord change is ", dt);
+        //console.log("the time between chord change is ", dt);
         if (dt > 2) {
             this.lastChordChangeTime = getClockTime();
             var chord = this.auraVoices.chord;
