@@ -325,7 +325,7 @@ class ChiGongFeedback extends AudioProgram {
     }
 
     generateAuraTonefromTone() {
-        var voices = new Tone.PolySynth(8, Tone.Synth, {
+        var voices = new Tone.PolySynth(4, Tone.Synth, {
             "oscillator": {
                 "type": "fatsine",
                 "partials": [0, 2, 3, 4],
@@ -417,6 +417,7 @@ class ChiGongFeedback extends AudioProgram {
             this.changeAuraChord();
         }
         console.log("playing aura notes:, ", this.auraVoices.notes);
+        console.log("What it is actually playing:, ", this.auraVoices.voices[0].frequency.value, this.auraVoices.voices[1].frequency.value, this.auraVoices.voices[2].frequency.value, this.auraVoices.voices[3].frequency.value);
     }
 
     changeAuraChord() {
