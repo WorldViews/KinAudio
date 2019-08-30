@@ -263,7 +263,7 @@ class ChiGongFeedback extends AudioProgram {
         // TODO #2.2: add volume - done
         // TODO #2.3: check the velocity use (is the modulation enough)
         // TODO #2.4: add aura intensity control 1) gui - done and 2) from kinect - done
-        // TODO #2.5: add new chords
+        // TODO #2.5: add new chords - done
         // TODO #2.6: add scale change based on poseError
         // TODO #2.7: add other color change
 
@@ -279,6 +279,8 @@ class ChiGongFeedback extends AudioProgram {
         var VLR = (rhXvel + lhXvel) * 50 / 2; 
         var playSpeed = rv.playSpeed;
         playSpeed = this.smoothPSData(playSpeed)/5.0;
+        var poseError = rv.poseError;
+        var transposeCoef = this.updateTransposeCoef(poseError);
 
         if (playSpeed > 0.999) {
             playSpeed = 0.999;
@@ -300,6 +302,25 @@ class ChiGongFeedback extends AudioProgram {
         VLR = Math.round(VLR);
         var VLRSmoo = this.smoothVLRData(VLR);
         this.tuneAuraToneFromTone(DLR, VLR, volume);
+    }
+
+    // first implement a counter to keep track of the trial number
+    updateTransposeCoef(pe){
+        var transCoef = 0; // in semitones, 0 means no transposition 
+        pe = Math.floor(Math.abs(pe)/20);
+
+        // test the pe-transposition coefficient number - test with leap and gui
+        transCoef = pe%12;
+
+        for (chordNo in chords){
+            for (noteNo in chords[chordNo]){
+                var note = chords[chordNo][noteNo];
+                var newNote = Tone.Frequency(note).transpose(transCoef).toNote();
+                chords[chordNo][noteNo] = newNote;
+            }
+        }
+        console.log("new chords array is ", chords);
+        
     }
 
     updateAuraTone() {
