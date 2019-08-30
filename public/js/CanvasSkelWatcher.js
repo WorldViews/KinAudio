@@ -1,7 +1,7 @@
 
 class KinectCameraGraphic extends CanvasTool.Graphic {
     constructor(id, x, y) {
-        super(id, x, y);
+        super({id, x, y});
         this.radius = .2;
         this.width = .3;
         this.height = .15;
@@ -15,7 +15,7 @@ class KinectCameraGraphic extends CanvasTool.Graphic {
 
 class PanoPortalGraphic extends CanvasTool.Graphic {
     constructor(id, x, y, r) {
-        super(id, x, y);
+        super({id, x, y});
         this.radius = r || 1.0;
         this.fillStyle = "#FEE"
     }
@@ -24,7 +24,7 @@ class PanoPortalGraphic extends CanvasTool.Graphic {
 class BodyGraphic extends CanvasTool.Graphic {
     constructor(body) {
         var id = "body"+body.id;
-        super(id, 48, 52);
+        super({id, x:48, y:52});
         this.body = body;
     }
 

@@ -1,0 +1,3 @@
+[submodule "public/CanvasTool"]
+	path = public/CanvasTool
+	url = https://github.com/WorldViews/CanvasTool

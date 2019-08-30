@@ -1,7 +1,7 @@
 
 class HandsGraphic extends CanvasTool.Graphic {
     constructor(watcher, x, y) {
-        super('hands', x, y);
+        super({id: 'hands', x, y});
         this.watcher = watcher;
         this.leap = watcher.leapClient;
         this.canvas = watcher.canvasTool.canvas;
