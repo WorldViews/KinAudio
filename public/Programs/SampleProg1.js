@@ -13,8 +13,9 @@ var maxFc = 1000;
 
 var SampleProg1 = class extends AudioProgram {
     constructor(app, opts) {
-        console.log("***** SampleProg1")
+        console.log("***** create SampleProg1", app, opts)
         super(app, opts);
+        console.log("toneTool", this.toneTool)
         this.counter = 0;
         this.tickNum = 0;
         this.smooSpeed = 0;
@@ -38,6 +39,7 @@ var SampleProg1 = class extends AudioProgram {
     }
 
     start() {
+        console.log("SampleProg1.start");
         var drums = this.toneTool.createDrum();
         var drums2 = this.toneTool.createDrum();
         this.drums = drums;
@@ -85,7 +87,7 @@ var SampleProg1 = class extends AudioProgram {
     update() {
         //super.update();
         var rv = this.rvWatcher;
-        console.log("speed:", rv.playSpeed);
+        //console.log("speed:", rv.playSpeed);
         this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.handleBodies();
         this.updateStatus();
@@ -105,7 +107,7 @@ var SampleProg1 = class extends AudioProgram {
 
     loadAudio() {
         console.log("loadAudio");
-       var url = '../Audio/samples/RVSoundscapeV2.wav';
+        var url = '../Audio/samples/RVSoundscapeV2.wav';
         var startTime = 0;
         console.log("loading audio", url, startTime);
         this.audioEffects.loadAudio(url, () => {
@@ -123,7 +125,7 @@ var SampleProg1 = class extends AudioProgram {
 
     changePartTempo(playSpeed, smooSpeed) {
         if (!this.toneTool) {
-            console.log("changePartTempo ... ignored - no toneTool");
+            //console.log("changePartTempo ... ignored - no toneTool");
             return;
         }
         //console.log("playSpeed:", playSpeed, "smooSpeed", smooSpeed);
@@ -138,12 +140,15 @@ var SampleProg1 = class extends AudioProgram {
     updateStatus() {
         var name = "prog1";
        // var name = this.constructor.name;
-       console.log(this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed)
+       //console.log(this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed)
        //var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
        //name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
-       var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f",
-       name, this.tickNum, this.tempo, this.playSpeed);
-//console.log("status:", statusStr);
+       var statusStr = "...";
+       try {
+            statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f",
+                                name, this.tickNum, this.tempo, this.playSpeed);
+       }
+       catch (e) {}
         $("#status").html(statusStr);
     }
 
@@ -151,8 +156,8 @@ var SampleProg1 = class extends AudioProgram {
     //***** GUI driven acctions *****/
 
     initGUI() {
+        console.log("SampleProg1.initGUI...");
         let inst = this;
-
         $("#addFilter").click(() => inst.addFilter());
         $("#removeFilter").click(() => inst.removeFilter());
         $("#filterFrequency").on('input', () => inst.changeFilterFrequency());

@@ -20,7 +20,7 @@
     <script src="js/RVWatcher.js"></script>
     <script src="js/Estimators.js"></script>
     <script src="js/AppProxy.js"></script>
-    <script src="js/CanvasTool.js"></script>
+    <script src="CanvasTool/js/CanvasTool.js"></script>
     <script src="js/StateVariables.js"></script>
     <script src="js/SkelWatcher.js"></script>
     <script src="js/CanvasSkelWatcher.js"></script>
@@ -34,29 +34,21 @@
 </head>
 
 <body>
+    <button id="Play1">Play1</button>
+    <button id="SampleProg1">SampleProg1</button>
     <h4 id="showProgramControls">Program Controls</h4>
     <div id="programControls" style="padding:40px;">
-        <button id="loadAudio" style="">Load Audio</button> &nbsp;
-        <p>
-            <button id="addFilter">Add Filter</button> &nbsp;
-            <button id="removeFilter">Remove Filter</button><br>
-            <input type="range" id="filterFrequency" changeFilterFrequency()" min="0" max="1000" style="width:80%" />
-            <label for="Frequency">Frequency</label>
-            <input type="range" id="detune" oninput="app.program.changeFilterDetune()" min="0" max="1000"
-                style="width:80%" />
-            <label for="Detune">Detune</label>
-            <input type="range" id="Q" oninput="app.program.changeFilterQ()" min="0" max="10" style="width:80%" />
-            <label for="Q">Q</label>
-            <p>
-                <input type="checkbox" checked id="handleRVMessagesCB" /> handle RV Messages
-            </p>
-            <input type="range" id="auraEnergy" min="0" max="1000" style="width:80%" /> Aura Energy <br>
-            <button id="showAuras">Auras</button>
     </div>
     <div id="museDiv"></div>
     <script>
-        $(document).ready(() => KinAudioApp.runApp({ program: Prog1 }));
-    </script>
+        async function startUp() {
+            console.log("starting...");
+            $("#Play1").click(async () => KinAudioApp.loadProgram("Play1"));
+            $("#SampleProg1").click(async () => KinAudioApp.loadProgram("SampleProg1"));
+        }
+
+        $(document).ready(() => { startUp()});
+     </script>
 </body>
 
 </html>

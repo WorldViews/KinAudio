@@ -24,10 +24,10 @@ var sweepEnv = null;
 var tempo = 44;
 let fc = null;
 
-const errorThreshold = 100;
-const maxError = 300;
-const midFc = 200;
-const maxFc = 1000;
+var errorThreshold = 100;
+var maxError = 300;
+var midFc = 200;
+var maxFc = 1000;
 
 class TwoHandInstrument extends AudioProgram {
     constructor(app, opts) {

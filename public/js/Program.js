@@ -14,12 +14,14 @@ class Program {
 class AudioProgram extends Program {
     constructor(app, opts) {
         super(app);
+        console.log("AudioProgram created");
         this.rvWatcher = app.rvWatcher;
         this.skelWatcher = app.skelWatcher;
     }
 
 // Main lifecycle events...
     init() {
+        console.log("AudioProgram.init");
         this.toneTool = app.toneTool;
         this.audioEffects = app.audioEffects;
     }
