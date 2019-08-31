@@ -147,8 +147,8 @@ class KinAudioApp {
         rigCollapsableDiv("#trackedBodiesInfo", "#bodyStatus");
         rigCollapsableDiv("#showAudioControls", "#audioControls", "hide");
         rigCollapsableDiv("#showProgramControls", "#programControls");
-        //rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
-        rigCollapsableDiv("#showTrackingCanvas", "#canvasDiv", "hide");
+        rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
+        //rigCollapsableDiv("#showTrackingCanvas", "#canvasDiv", "hide");
         rigCollapsableDiv("#showMessage", "#messageDiv", "hide");
         rigCollapsableDiv("#showHandControls", "#handControls", "hide");
         rigCollapsableDiv("#showAuraToneControls", "#auraToneControls", "hide");
