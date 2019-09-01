@@ -4,7 +4,8 @@ var DEFAULT_PROGRAMS = [
     "MidiPlay1",
     "SampleProg1",
     "TwoHands",
-    "ChiGong"
+    "ChiGong",
+    "RVFeedback"
 ];
 
 var state = {};

@@ -148,7 +148,7 @@ async function startMidi(name, url) {
 }
 
 
-class KinMidiPlay extends AudioProgram {
+class DonPlay extends AudioProgram {
     constructor(app, opts) {
         super(app, opts);
         this.counter = 0;
