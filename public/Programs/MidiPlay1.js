@@ -138,8 +138,8 @@ class MidiGraphic extends CanvasTool.Graphic {
 
 }
 
-var song1 = null;
-var song2 = null;
+///var song1 = null;
+//var song2 = null;
 
 async function startMidi(name, url) {
     var song = await Song.getSong(name, url);
@@ -157,6 +157,7 @@ class MidiPlay1 extends AudioProgram {
         this.initGUI();
         var gui = app.gui;
         this.gain = 1;
+        this.tempo = 44;
         this.useGain = true;
         this.randomVal = 0;
         this.DLR = .1;
@@ -232,7 +233,7 @@ class MidiPlay1 extends AudioProgram {
 
 
     start() {
-        this.toneTool.currentBpm = tempo;
+        this.toneTool.currentBpm = this.tempo;
         this.initMidis(MIDI_URLS);
         this.aura = new CanvasTool.CloudGraphic(this, 0.0, 0.8, .25)
         app.canvasTool.addGraphic(this.aura);
@@ -323,7 +324,8 @@ class MidiPlay1 extends AudioProgram {
         this.toneTool.setTempo(tempo);
         console.log("tempo is set to ", tempo);
     }
-
 }
+
+//MidiPlay1.noHTML = false;
 
 //app.setProgram(new MidiPlay1(app));

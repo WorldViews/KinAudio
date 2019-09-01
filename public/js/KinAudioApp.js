@@ -263,7 +263,7 @@ class KinAudioApp {
         return KinAudioApp.findClass(name);
     }
 
-    static async loadProgram(name, divId) {
+    static async loadProgramXXX(name, divId) {
         console.log("loadProgram", name);
         app = await KinAudioApp.getApp();
         if (app.program) {
@@ -279,6 +279,33 @@ class KinAudioApp {
             //alert("Program "+name+" not loaded");
             app.setProgram(new class_(app));
         }
+        app.program.init();
+        app.program.start();
+    }
+
+    static async loadProgram(name, divId) {
+        console.log("loadProgram", name);
+        app = await KinAudioApp.getApp();
+        if (app.program) {
+            app.program.finish();
+            app.program = null;
+        }
+        var class_ = await KinAudioApp.getClass(name);
+        console.log("class_", class_);
+        if (!class_) {
+            alert("Cannot load class for " + name);
+        }
+        /*
+        if (!class_.noHTML) {
+            var url = "Programs/" + name + ".html";
+            await app.loadProgramURL(url, divId);
+            console.log("********* finished loading program");
+        }
+        */
+        var url = "Programs/" + name + ".html";
+        await app.loadProgramURL(url, divId);
+        console.log("********* finished loading program");
+        app.setProgram(new class_(app));
         app.program.init();
         app.program.start();
     }
@@ -330,7 +357,7 @@ class KinAudioApp {
         for (var i = 0; i < progNames.length; i++) {
             let progName = progNames[i];
             let text = progName;
-            let id = "btn_"+progName;
+            let id = "btn_" + progName;
             //$("#appControls").appen
             $('<button/>', {
                 id, text,
