@@ -148,7 +148,7 @@ async function startMidi(name, url) {
 }
 
 
-class Play1 extends AudioProgram {
+class MidiPlay1 extends AudioProgram {
     constructor(app, opts) {
         super(app, opts);
         this.counter = 0;
@@ -326,4 +326,4 @@ class Play1 extends AudioProgram {
 
 }
 
-app.setProgram(new Play1(app));
+//app.setProgram(new MidiPlay1(app));

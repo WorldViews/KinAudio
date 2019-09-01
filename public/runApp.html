@@ -17,6 +17,7 @@
     <script src="../js/LeapRenderer.js"></script>
     <script src="../js/libs/math3d.js"></script>
     <script src="../js/libs/dat.gui.js"></script>
+    <script src="js/OneEuroFilter.js"></script>
     <script src="js/RVWatcher.js"></script>
     <script src="js/Estimators.js"></script>
     <script src="js/AppProxy.js"></script>
@@ -30,24 +31,17 @@
     <script src="js/BufferLoader.js"></script>
     <script src="js/ToneTool.js"></script>
     <script src="js/Program.js"></script>
-    <script src="js/SamplePrograms.js"></script>
 </head>
 
 <body>
-    <button id="Play1">Play1</button>
-    <button id="SampleProg1">SampleProg1</button>
+    <div id="appControls">
+    </div>
     <h4 id="showProgramControls">Program Controls</h4>
     <div id="programControls" style="padding:40px;">
     </div>
     <div id="museDiv"></div>
     <script>
-        async function startUp() {
-            console.log("starting...");
-            $("#Play1").click(async () => KinAudioApp.loadProgram("Play1"));
-            $("#SampleProg1").click(async () => KinAudioApp.loadProgram("SampleProg1"));
-        }
-
-        $(document).ready(() => { startUp()});
+        $(document).ready(() => { KinAudioApp.startUp()});
      </script>
 </body>
 

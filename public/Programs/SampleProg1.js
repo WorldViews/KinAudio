@@ -213,7 +213,6 @@ var SampleProg1 = class extends AudioProgram {
 
 }
 
-app.setProgram(new SampleProg1(app));
 
 
 
