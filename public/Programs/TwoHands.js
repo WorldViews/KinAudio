@@ -29,7 +29,7 @@ var maxError = 300;
 var midFc = 200;
 var maxFc = 1000;
 
-class TwoHandInstrument extends AudioProgram {
+class TwoHands extends AudioProgram {
     constructor(app, opts) {
         super(app, opts);
         this.counter = 0;
@@ -78,6 +78,11 @@ class TwoHandInstrument extends AudioProgram {
         $("#changeTempo").on('input', () => inst.changeDrumsTempo());
         $("#DLR").on('input', () => inst.updateAuraTone());
         $("#velocity").on('input', () => inst.updateAuraTone());
+
+        rigCollapsableDiv("#showAuraToneControls", "#auraToneControls", "hide");
+        rigCollapsableDiv("#showDrumsControls", "#drumsControls", "hide");
+        rigCollapsableDiv("#showSmoothingControl", "#smooControl", "hide");
+
     }
 
     updateStatus() {
@@ -824,5 +829,6 @@ class TwoHandInstrument extends AudioProgram {
             this.auraVoices.triggerRelease( notes ,this.audioEffects.currentTime);
         }
     }
-
 }
+
+//app.setProgram(new TwoHands(app));

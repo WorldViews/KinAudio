@@ -27,7 +27,7 @@ var maxError = 300;
 var midFc = 200;
 var maxFc = 1000;
 
-class ChiGongFeedback extends AudioProgram {
+class ChiGong extends AudioProgram {
     constructor(app, opts) {
         super(app, opts);
         this.counter = 0;
@@ -252,6 +252,8 @@ class ChiGongFeedback extends AudioProgram {
         }
     }
 
+    /////////////////////// Aura Voice Section ////////////////////////
+    updateAuraToneFromKinect(msg, rvWatcher) {
         // TODO #1: replace data with posefit msg data - done
         // TODO #2: calibrate data for ChiGong - done for VLR and DLR
         // TODO #3: see which smoothing to use - done (smothing with 1 Euro Filter)
@@ -265,16 +267,6 @@ class ChiGongFeedback extends AudioProgram {
         // TODO #2.6: add scale change based on poseError
         // TODO #2.7: add other color change
 
-        // TODO #3.1: Transposition mechanism and feedback, make sure you can transpose down
-        // TODO #3.2: Seperate the two hand instrument and chi gong feedback
-        // TODO #3.3: Create a select button for RV and two-hand
-        // TODO #3.4: Include a percussion pattern for tempo feedback - may be iclude midi
-        // TODO #3.5: Spatial cues for both hand control - auditory streams
-
-
-
-    /////////////////////// Aura Voice Section ////////////////////////
-    updateAuraToneFromKinect(msg, rvWatcher) {
         if (!this.driver) {
             return;
         }
@@ -288,7 +280,7 @@ class ChiGongFeedback extends AudioProgram {
         var playSpeed = rv.playSpeed;
         playSpeed = this.smoothPSData(playSpeed)/5.0;
         var poseError = rv.poseError;
-        //var transposeCoef = this.updateTransposeCoef(poseError);
+        var transposeCoef = this.updateTransposeCoef(poseError);
 
         if (playSpeed > 0.999) {
             playSpeed = 0.999;
@@ -553,4 +545,7 @@ class ChiGongFeedback extends AudioProgram {
         console.log("tempo is set to ", tempo);
     }
 }
+
+//alert("hello");
+//app.setProgram(new ChiGong(app));
 

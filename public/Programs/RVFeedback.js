@@ -1,9 +1,10 @@
+//TODO: move these parameters to members of Prog1 iff appropriate
 
 var toneGain = null;
 var sweepEnv = null;
 
 var tempo = 44;
-var atwiddle = null;
+let fc = null;
 
 var errorThreshold = 100;
 var maxError = 300;
@@ -11,14 +12,12 @@ var midFc = 200;
 var maxFc = 1000;
 
 
-var SampleProg1 = class extends AudioProgram {
+var RVFeedback = class extends AudioProgram {
     constructor(app, opts) {
-        console.log("***** create SampleProg1", app, opts)
+        console.log("create Prog1");
         super(app, opts);
-        console.log("toneTool", this.toneTool)
         this.counter = 0;
         this.tickNum = 0;
-        this.smooSpeed = 0;
         this.part1 = [
             [null, null, null],
             [null, null, null],
@@ -30,16 +29,15 @@ var SampleProg1 = class extends AudioProgram {
         this.initGUI();
     }
 
-    triggerDrums(onset, notes, duration, time, volume){
-        if (this.counter % 8 == onset){
-            this.drums.triggerAttackRelease(notes[0],duration,time,volume);
-            this.drums2.triggerAttackRelease(notes[1],duration,time,volume);
+    triggerDrums(onset, notes, duration, time, volume) {
+        if (this.counter % 8 == onset) {
+            this.drums.triggerAttackRelease(notes[0], duration, time, volume);
+            this.drums2.triggerAttackRelease(notes[1], duration, time, volume);
             //console.log(counter);
         }
     }
 
     start() {
-        console.log("SampleProg1.start");
         var drums = this.toneTool.createDrum();
         var drums2 = this.toneTool.createDrum();
         this.drums = drums;
@@ -76,6 +74,9 @@ var SampleProg1 = class extends AudioProgram {
         let reverb = this.toneTool.addReverb(delay, 0.2);
         this.bell.chain(delay, reverb, Tone.Master);
 
+        // load audio
+        this.loadAudio();
+
         /*
         churchBell = toneTool.createBell(100, 100, 250, 8, -20);
         let delay2 = toneTool.addFeedbackDelay(churchBell, 0.05, 0.5);
@@ -87,12 +88,15 @@ var SampleProg1 = class extends AudioProgram {
     update() {
         //super.update();
         var rv = this.rvWatcher;
-        //console.log("speed:", rv.playSpeed);
+        console.log("speed:", rv.playSpeed);
         this.changePartTempo(rv.playSpeed, rv.smooSpeed);
-        //this.handleBodies();
+        this.changeFilterParam(rv.poseError);
+        this.handleBodies();
         this.updateStatus();
     }
 
+    // This is just to give some sample code of some things that can be
+    // found from the bodies...
     handleBodies() {
         var sw = this.skelWatcher;
         var J = JointType;
@@ -102,6 +106,12 @@ var SampleProg1 = class extends AudioProgram {
             console.log(" head pos", body.getWPos(J.head));
             console.log(" head floor coordinates", body.getFloorXY(J.head));
             console.log(" TRIGGER:", body.TRIGGER.get());
+            console.log(" LEFT_UP", body.LEFT_UP.get());
+            console.log(" LHAND", body.LHAND.get());
+            console.log(" RHAND", body.RHAND.get());
+            console.log(" RHAND tracking state", body.getTrackingState(J.handRight));
+            console.log(" RHAND joint", body.getJoint(J.handRight));
+            console.log(" Dist Left Right", body.DLR.get());
         }
     }
 
@@ -125,7 +135,7 @@ var SampleProg1 = class extends AudioProgram {
 
     changePartTempo(playSpeed, smooSpeed) {
         if (!this.toneTool) {
-            //console.log("changePartTempo ... ignored - no toneTool");
+            console.log("changePartTempo ... ignored - no toneTool");
             return;
         }
         //console.log("playSpeed:", playSpeed, "smooSpeed", smooSpeed);
@@ -138,17 +148,10 @@ var SampleProg1 = class extends AudioProgram {
     }
 
     updateStatus() {
-        var name = "prog1";
-       // var name = this.constructor.name;
-       //console.log(this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed)
-       //var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
-       //name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
-       var statusStr = "...";
-       try {
-            statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f",
-                                name, this.tickNum, this.tempo, this.playSpeed);
-       }
-       catch (e) {}
+        //console.log(this.constructor.name, this.tickNum, this.tempo, this.playSpeed);
+        var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f",
+            this.constructor.name, this.tickNum, this.tempo, this.playSpeed);
+        //console.log("status:", statusStr);
         $("#status").html(statusStr);
     }
 
@@ -156,13 +159,34 @@ var SampleProg1 = class extends AudioProgram {
     //***** GUI driven acctions *****/
 
     initGUI() {
-        console.log("SampleProg1.initGUI...");
         let inst = this;
+
         $("#addFilter").click(() => inst.addFilter());
         $("#removeFilter").click(() => inst.removeFilter());
         $("#filterFrequency").on('input', () => inst.changeFilterFrequency());
         $("#detune").on('input', () => inst.changeFilterDetune());
         $("#Q").on('input', () => inst.changeFilterQ());
+    }
+
+
+    changeFilterParam(error) {
+        if (this.audioEffects.biquad == null) {
+            console.log("No filter added yet");
+        }
+        else {
+            if (error > maxError) {
+                error = maxError;
+            }
+            if (error <= errorThreshold) {
+                fc = maxFc - error * 8;
+            }
+            else {
+                fc = midFc - (error - errorThreshold);
+            }
+            this.audioEffects.biquad.frequency.value = fc;
+            this.audioEffects.biquad.freq = fc;
+            console.log("Changing audioEffects.biquad.freq to ", fc, this.audioEffects.biquad.freq, this.audioEffects.biquad.frequency);
+        }
     }
 
     changeFilterFrequency() {
@@ -210,7 +234,6 @@ var SampleProg1 = class extends AudioProgram {
         var effects = this.audioEffects;
         effects.removeBiquad(effects.source, effects.biquad);
     }
-
 }
 
 

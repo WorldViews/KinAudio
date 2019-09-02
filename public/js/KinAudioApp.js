@@ -1,9 +1,17 @@
 var app = null;
 
+var DEFAULT_PROGRAMS = [
+    "MidiPlay1",
+    "SampleProg1",
+    "TwoHands",
+    "ChiGong",
+    "RVFeedback"
+];
+
 var state = {};
 
 function rigCollapsableDiv(ctrlId, panelId, init) {
-    if (init == "hide"){
+    if (init == "hide") {
         $(panelId).hide({ duration: 500 });
     }
     else {
@@ -21,6 +29,9 @@ function rigCollapsableDiv(ctrlId, panelId, init) {
 class KinAudioApp {
     constructor(portal) {
         console.log("creating KinAudioApp");
+        if (app) {
+            alert("Warning ... app already exists");
+        }
         this.setupGUIBindings();
         if (!portal) {
             console.log("Getting MUSEPortal");
@@ -63,13 +74,13 @@ class KinAudioApp {
     }
 
     setLeapView() {
-        var view = {center: {x: 0, y: 0.8}, width: 1.0};
+        var view = { center: { x: 0, y: 0.8 }, width: 1.0 };
         var canvasTool = this.canvasTool;
         canvasTool.setView(view);
     }
 
     setHighView() {
-        var view = {center: {x: 0, y: 0.8}, width: 10.0};
+        var view = { center: { x: 0, y: 0.8 }, width: 10.0 };
         this.canvasTool.setView(view);
     }
 
@@ -112,8 +123,10 @@ class KinAudioApp {
     }
 
     initLeapWatcher() {
-        this.leapWatcher = new CanvasLeapWatcher({ canvasTool: this.canvasTool,
-                                                   portal: this.portal })
+        this.leapWatcher = new CanvasLeapWatcher({
+            canvasTool: this.canvasTool,
+            portal: this.portal
+        })
     }
 
     initSkelWatcher() {
@@ -147,14 +160,14 @@ class KinAudioApp {
         rigCollapsableDiv("#trackedBodiesInfo", "#bodyStatus");
         rigCollapsableDiv("#showAudioControls", "#audioControls", "hide");
         rigCollapsableDiv("#showProgramControls", "#programControls");
-        //rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
+        rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
         rigCollapsableDiv("#showTrackingCanvas", "#canvasDiv", "hide");
-        rigCollapsableDiv("#showMessage", "#messageDiv", "hide");
+        //rigCollapsableDiv("#showMessage", "#messageDiv", "hide");
         rigCollapsableDiv("#showHandControls", "#handControls", "hide");
         rigCollapsableDiv("#showAuraToneControls", "#auraToneControls", "hide");
         rigCollapsableDiv("#showDrumsControls", "#drumsControls", "hide");
         rigCollapsableDiv("#showSmoothingControl", "#smooControl", "hide");
-        
+
     }
 
 
@@ -230,30 +243,128 @@ class KinAudioApp {
         }
         this.program = program;
         if (program) {
+            program.init();
             program.start();
         }
     }
 
-    loadApp(name) {
-        var url = "Programs/" + name + ".html";
-        this.loadAppURL(url);
-    }
-
-    loadAppURL(url) {
-        this.initAudio();
-        if (this.program) {
-            this.program.finish();
-            this.program = null;
+    static findClass(name) {
+        try {
+            return eval(name);
         }
-        $("#audioControls").load(url);
+        catch (e) { return null; };
     }
 
-    static runApp(opts) {
-        console.log("starting...");
-        $("#museDiv").load("museDiv.html", () => {
-            app = new KinAudioApp();
-            app.setProgramClass(opts.program);
+    static async getClass(name) {
+        var class_ = KinAudioApp.findClass(name);
+        if (class_)
+            return class_;
+        await KinAudioApp.loadScript(sprintf("Programs/%s.js", name));
+        return KinAudioApp.findClass(name);
+    }
+
+    static async loadProgramXXX(name, divId) {
+        console.log("loadProgram", name);
+        app = await KinAudioApp.getApp();
+        if (app.program) {
+            app.program.finish();
+            app.program = null;
+        }
+        var url = "Programs/" + name + ".html";
+        await app.loadProgramURL(url, divId);
+        console.log("********* finished loading program");
+        if (app.program == null) {
+            var class_ = await KinAudioApp.getClass(name);
+            console.log("class_", class_);
+            //alert("Program "+name+" not loaded");
+            app.setProgram(new class_(app));
+        }
+        app.program.init();
+        app.program.start();
+    }
+
+    static async loadProgram(name, divId) {
+        console.log("loadProgram", name);
+        app = await KinAudioApp.getApp();
+        if (app.program) {
+            app.program.finish();
+            app.program = null;
+        }
+        var class_ = await KinAudioApp.getClass(name);
+        console.log("class_", class_);
+        if (!class_) {
+            alert("Cannot load class for " + name);
+        }
+        /*
+        if (!class_.noHTML) {
+            var url = "Programs/" + name + ".html";
+            await app.loadProgramURL(url, divId);
+            console.log("********* finished loading program");
+        }
+        */
+        var url = "Programs/" + name + ".html";
+        await app.loadProgramURL(url, divId);
+        console.log("********* finished loading program");
+        app.setProgram(new class_(app));
+        app.program.init();
+        app.program.start();
+    }
+
+    async loadProgramURL(url, divId) {
+        divId = divId || "programControls";
+        console.log("loadProgramURL", divId, url);
+        this.initAudio();
+        console.log("toneTool", this.toneTool);
+        return new Promise((resolve, reject) => {
+            $("#" + divId).load(url, () => {
+                resolve();
+            });
+        })
+    }
+
+    static async loadScript(url) {
+        console.log("loadScript", url);
+        return new Promise((resolve, reject) => {
+            $.getScript(url, () => {
+                resolve();
+            });
+        })
+    }
+
+    static async getApp() {
+        if (app)
+            return app;
+        return new Promise((resolve, reject) => {
+            $("#museDiv").load("museDiv.html", () => {
+                app = new KinAudioApp();
+                resolve(app);
+            });
         });
+    }
+
+    static async runApp(opts) {
+        console.log("starting...");
+        app = await KinAudioApp.getApp();
+        app.setProgramClass(opts.program);
+    }
+
+    static async startUp(progNames) {
+        progNames = progNames || DEFAULT_PROGRAMS;
+        var progName = getParameterByName("prog");
+        if (progName)
+            progNames = [progName];
+        console.log("starting...", progNames);
+        for (var i = 0; i < progNames.length; i++) {
+            let progName = progNames[i];
+            let text = progName;
+            let id = "btn_" + progName;
+            //$("#appControls").appen
+            $('<button/>', {
+                id, text,
+                style: 'margin: 5px',
+                click: async () => KinAudioApp.loadProgram(progName)
+            }).appendTo("#appControls");
+        }
     }
 }
 

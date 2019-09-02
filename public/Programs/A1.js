@@ -1,39 +1,20 @@
 
-var toneGain = null;
-var sweepEnv = null;
-
-var tempo = 44;
-var atwiddle = null;
-
-var errorThreshold = 100;
-var maxError = 300;
-var midFc = 200;
-var maxFc = 1000;
-
-
-var SampleProg1 = class extends AudioProgram {
+var A1 = class extends AudioProgram {
     constructor(app, opts) {
-        console.log("***** create SampleProg1", app, opts)
+        console.log("***** create A1", app, opts)
         super(app, opts);
         console.log("toneTool", this.toneTool)
         this.counter = 0;
         this.tickNum = 0;
         this.smooSpeed = 0;
-        this.part1 = [
-            [null, null, null],
-            [null, null, null],
-            [null, null, null],
-            [220, null, null],
-            [null, null, null],
-            [null, null, null],
-            [null, null, null]];
+        this.tempo = 44;
         this.initGUI();
     }
 
-    triggerDrums(onset, notes, duration, time, volume){
-        if (this.counter % 8 == onset){
-            this.drums.triggerAttackRelease(notes[0],duration,time,volume);
-            this.drums2.triggerAttackRelease(notes[1],duration,time,volume);
+    triggerDrums(onset, notes, duration, time, volume) {
+        if (this.counter % 8 == onset) {
+            this.drums.triggerAttackRelease(notes[0], duration, time, volume);
+            this.drums2.triggerAttackRelease(notes[1], duration, time, volume);
             //console.log(counter);
         }
     }
@@ -50,38 +31,18 @@ var SampleProg1 = class extends AudioProgram {
         this.toneTool.addFilter(drums, 150, 'lowpass', -12);
         this.toneTool.addFilter(drums2, 150, 'lowpass', -12);
         this.toneTool.addReverb(this.toneTool.filter, 0.5);
-        this.toneTool.currentBpm = tempo;
+        this.toneTool.currentBpm = this.tempo;
         let inst = this;
         this.loopBeat = this.toneTool.createLoopBeat(time => {
             var gain = 0.4;
             inst.triggerDrums(0, ['c3', 'c3'], '4n', time, gain);
             inst.triggerDrums(5, ['f#2', 'f#2'], '8n', time, gain);
             inst.triggerDrums(6, ['f#2', 'f#2'], '8n', time, gain);
-
-            var bellPart = inst.toneTool.createBellPart(inst.bell, this.part1);
-            //churchBellPart = toneTool.createBellPart(churchBell, part1);
-
-            //bellPart.start(5);
-            //churchBellPart.start(10);
-
             this.counter = (this.counter + 1) % 16;
         }, '16n', this.toneTool.currentBpm);
 
         this.loopBeat.start();
-        //loopBeat.start(0);
         Tone.Transport.start();
-
-        this.bell = this.toneTool.createBell(12, 600, 20, 8, -20);
-        let delay = this.toneTool.addFeedbackDelay(this.bell, 0.05, 0.5);
-        let reverb = this.toneTool.addReverb(delay, 0.2);
-        this.bell.chain(delay, reverb, Tone.Master);
-
-        /*
-        churchBell = toneTool.createBell(100, 100, 250, 8, -20);
-        let delay2 = toneTool.addFeedbackDelay(churchBell, 0.05, 0.5);
-        let reverb2 = toneTool.addReverb(delay2, 0.2);
-        churchBell.chain(delay2, reverb2, Tone.Master);
-        */
     }
 
     update() {
@@ -89,20 +50,7 @@ var SampleProg1 = class extends AudioProgram {
         var rv = this.rvWatcher;
         //console.log("speed:", rv.playSpeed);
         this.changePartTempo(rv.playSpeed, rv.smooSpeed);
-        //this.handleBodies();
         this.updateStatus();
-    }
-
-    handleBodies() {
-        var sw = this.skelWatcher;
-        var J = JointType;
-        for (var bodyId in sw.bodies) {
-            var body = sw.bodies[bodyId];
-            console.log("body", bodyId, body);
-            console.log(" head pos", body.getWPos(J.head));
-            console.log(" head floor coordinates", body.getFloorXY(J.head));
-            console.log(" TRIGGER:", body.TRIGGER.get());
-        }
     }
 
     loadAudio() {
@@ -118,11 +66,6 @@ var SampleProg1 = class extends AudioProgram {
         });
     }
 
-    noticePoseFit(msg, rvWatcher) {
-        this.tickNum++;
-        //console.log("Prog noticePoseFit");
-    }
-
     changePartTempo(playSpeed, smooSpeed) {
         if (!this.toneTool) {
             //console.log("changePartTempo ... ignored - no toneTool");
@@ -131,7 +74,7 @@ var SampleProg1 = class extends AudioProgram {
         //console.log("playSpeed:", playSpeed, "smooSpeed", smooSpeed);
         this.playSpeed = playSpeed;
         this.smooSpeed = smooSpeed;
-        tempo = this.toneTool.calculateTempo(playSpeed, smooSpeed);
+        var tempo = this.toneTool.calculateTempo(playSpeed, smooSpeed);
         tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
         this.tempo = tempo;
         this.toneTool.setTempo(tempo);
@@ -139,16 +82,12 @@ var SampleProg1 = class extends AudioProgram {
 
     updateStatus() {
         var name = "prog1";
-       // var name = this.constructor.name;
-       //console.log(this.constructor.name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed)
-       //var statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f  SmooSpeed: %5.1f",
-       //name, this.tickNum, this.tempo, this.playSpeed, this.smooSpeed);
-       var statusStr = "...";
-       try {
+        var statusStr = "...";
+        try {
             statusStr = sprintf("%s Step: %4d Tempo: %3d  PlaySpeed: %5.1f",
-                                name, this.tickNum, this.tempo, this.playSpeed);
-       }
-       catch (e) {}
+                name, this.tickNum, this.tempo, this.playSpeed);
+        }
+        catch (e) { }
         $("#status").html(statusStr);
     }
 
@@ -156,8 +95,9 @@ var SampleProg1 = class extends AudioProgram {
     //***** GUI driven acctions *****/
 
     initGUI() {
-        console.log("SampleProg1.initGUI...");
+        console.log("A1.initGUI...");
         let inst = this;
+        $("#loadAudio").click(() => inst.loadAudio());
         $("#addFilter").click(() => inst.addFilter());
         $("#removeFilter").click(() => inst.removeFilter());
         $("#filterFrequency").on('input', () => inst.changeFilterFrequency());
