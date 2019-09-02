@@ -22,10 +22,10 @@ var sweepEnv = null;
 var tempo = 44;
 let fc = null;
 
-var errorThreshold = 100;
-var maxError = 300;
-var midFc = 200;
-var maxFc = 1000;
+const errorThreshold = 100;
+const maxError = 300;
+const midFc = 200;
+const maxFc = 1000;
 
 class ChiGongFeedback extends AudioProgram {
     constructor(app, opts) {
@@ -136,7 +136,7 @@ class ChiGongFeedback extends AudioProgram {
                 this.driver = body;
                 this.bodyNum = sw.bodies[bodyId].bodyNum;
                 console.log("ChiGong driver is set with id and body number, ", this.driverId, this.bodyNum);
-                this.RHx = rv.prevMsg.controlPoints[0].pt[0];
+                //this.RHx = rv.prevMsg.controlPoints[0].pt[0];
             }
             /*
             console.log("body", bodyId, body);
@@ -270,8 +270,6 @@ class ChiGongFeedback extends AudioProgram {
         // TODO #3.3: Create a select button for RV and two-hand
         // TODO #3.4: Include a percussion pattern for tempo feedback - may be iclude midi
         // TODO #3.5: Spatial cues for both hand control - auditory streams
-
-
 
     /////////////////////// Aura Voice Section ////////////////////////
     updateAuraToneFromKinect(msg, rvWatcher) {
