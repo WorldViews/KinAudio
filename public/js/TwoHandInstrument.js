@@ -16,7 +16,7 @@ let part5 = [["0", "F#3"], ["8n", "A#3"], ["4n", "B#3"], [3 * Tone.Time("8n"), "
 
 let seq1 = ["C3", [null, "Eb3"], ["F4", "Bb4", "C5"]];
 
-let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"]];
+let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"], ["Eb3", "C2", "Bb3"], ["F2", "C2", "Ab3"], ["Eb2", "G2", "G3"], ["Eb2", "C2", "C3"]];
 
 var toneGain = null;
 var sweepEnv = null;
@@ -59,6 +59,7 @@ class TwoHandInstrument extends AudioProgram {
         this.minHLR = 90;
         this.maxHLR = 250;
         this.auraVoices = null;
+        this.lastChordChangeTime = getClockTime();
 
         this.initializeLeapSmoothing();
     }
@@ -98,24 +99,24 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     updateLeapInfo() {
-        //this.updateDrumPartFromLeap();
+        this.updateDrumPartFromLeap();
         //this.smoothLeapData();
-        this.updateAuraToneFromLeap();
+        //this.updateAuraToneFromLeap();
     }
 
-    initializeLeapSmoothing(){
-        this.VLRfilter = new OneEuroFilter(0.1,0.1,0.001, 1);
-        this.DLRfilter = new OneEuroFilter(10,1,0.001, 1);
-        this.HLRfilter = new OneEuroFilter(10,1,0.001, 1);
+    initializeLeapSmoothing() {
+        this.VLRfilter = new OneEuroFilter(0.1, 0.1, 0.001, 1);
+        this.DLRfilter = new OneEuroFilter(10, 1, 0.001, 1);
+        this.HLRfilter = new OneEuroFilter(10, 1, 0.001, 1);
     }
 
-    smoothLeapData(VLR, DLR, HLR){
-        if (DLR == null){
+    smoothLeapData(VLR, DLR, HLR) {
+        if (DLR == null) {
             DLR = 0; // reset DLR if not computed
         }
 
-        if (VLR > 20*this.maxVLR){
-            VLR = 20*this.maxVLR;
+        if (VLR > 20 * this.maxVLR) {
+            VLR = 20 * this.maxVLR;
         }
         var timeStamp = getClockTime();
         var VLRSmoo = this.VLRfilter.filter(VLR, timeStamp);
@@ -136,34 +137,34 @@ class TwoHandInstrument extends AudioProgram {
         var DLR = this.DLRFromLeap; // in mms
         var aveVLR = (Math.abs(rhXvel) + Math.abs(lhXvel)) / 2;
 
-       var HLR = (this.RHFromLeap[1] + this.LHFromLeap[1])/2;
+        var HLR = (this.RHFromLeap[1] + this.LHFromLeap[1]) / 2;
 
-       var leapData = [aveVLR, DLR, HLR];
-       document.getElementById("originalVelocity").value = aveVLR;
-       document.getElementById("originalDistance").value = DLR*10;
-       var smoothData = this.smoothLeapData(aveVLR, DLR, HLR);
-       aveVLR = smoothData[0];
-       DLR = smoothData[1];
-       document.getElementById("smoothVelocity").value = smoothData[0];
-       document.getElementById("smoothDistance").value = smoothData[1]*10;
-       
-       HLR = HLR - this.minHLR;
-       HLR = HLR/this.maxHLR;
-    
-       if(HLR > 1){
-           HLR = 0.99;
-       }
-       else if (HLR < 0){
-           HLR = 0.01;
-       }
-       var volume = 24*Math.log10(HLR);
+        var leapData = [aveVLR, DLR, HLR];
+        document.getElementById("originalVelocity").value = aveVLR;
+        document.getElementById("originalDistance").value = DLR * 10;
+        var smoothData = this.smoothLeapData(aveVLR, DLR, HLR);
+        aveVLR = smoothData[0];
+        DLR = smoothData[1];
+        document.getElementById("smoothVelocity").value = smoothData[0];
+        document.getElementById("smoothDistance").value = smoothData[1] * 10;
 
-       //console.log("Average height, ", HLR, "volume, ", volume);
+        HLR = HLR - this.minHLR;
+        HLR = HLR / this.maxHLR;
+
+        if (HLR > 1) {
+            HLR = 0.99;
+        }
+        else if (HLR < 0) {
+            HLR = 0.01;
+        }
+        var volume = 24 * Math.log10(HLR);
+
+        //console.log("Average height, ", HLR, "volume, ", volume);
 
         if (aveVLR > this.maxVLR * 10) {
             aveVLR = this.maxVLR * 10;
         }
-        
+
         DLR = Math.round(DLR * 10);
         aveVLR = Math.round(aveVLR / 5);
 
@@ -617,10 +618,10 @@ class TwoHandInstrument extends AudioProgram {
                 this.stopAuraToneFromTone(lastNote);
             }
             */
-           for (var i=0; i<this.auraVoices.notes.length; i++){
-               var lastNote = this.auraVoices.notes.pop();
-               this.stopAuraToneFromTone(lastNote);
-           }
+            for (var i = 0; i < this.auraVoices.notes.length; i++) {
+                var lastNote = this.auraVoices.notes.pop();
+                this.stopAuraToneFromTone(lastNote);
+            }
         }
     }
 
@@ -708,7 +709,7 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     generateAuraTonefromTone() {
-        var voices = new Tone.PolySynth(8, Tone.Synth, {
+        var voices = new Tone.PolySynth(4, Tone.Synth, {
             "oscillator": {
                 "type": "fatsine",
                 "partials": [0, 2, 3, 4],
@@ -760,32 +761,32 @@ class TwoHandInstrument extends AudioProgram {
         this.auraVoices.volume.value = volume;
         //console.log("auraVoices.volume:, ", volume);
 
-        if (DLR > 1.5){
-            if (!this.auraVoices.notes.includes(this.auraVoices.chord[1])){
-            this.auraVoices.notes.push(this.auraVoices.chord[1]);
-            this.playAuraToneFromTone(this.auraVoices.notes);
+        if (DLR > 1.5) {
+            if (!this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
+                this.auraVoices.notes.push(this.auraVoices.chord[1]);
+                this.playAuraToneFromTone(this.auraVoices.notes);
             }
         }
-        if (DLR > 3){
-            if (!this.auraVoices.notes.includes(this.auraVoices.chord[2])){
+        if (DLR > 2.5) {
+            if (!this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
                 this.auraVoices.notes.push(this.auraVoices.chord[2]);
                 this.playAuraToneFromTone(this.auraVoices.notes);
             }
         }
-        if (DLR < 3){
-            if (this.auraVoices.notes.includes(this.auraVoices.chord[2])){
+        if (DLR < 2.5) {
+            if (this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
                 this.stopAuraToneFromTone(this.auraVoices.chord[2]);
                 this.auraVoices.notes.pop();
             }
         }
-        if (DLR < 1.5){
-            if (this.auraVoices.notes.includes(this.auraVoices.chord[1])){
+        if (DLR < 1.5) {
+            if (this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
                 this.stopAuraToneFromTone(this.auraVoices.chord[1]);
                 this.auraVoices.notes.pop();
             }
         }
 
-        if (DLR > 5){
+        if (DLR > 4) {
             this.changeAuraChord();
         }
         //console.log("playing the aura notes, ", this.auraVoices.notes);
@@ -798,16 +799,21 @@ class TwoHandInstrument extends AudioProgram {
         // TODO #0: add gain control - done
     }
 
-    changeAuraChord(){
-        var chord = this.auraVoices.chord;
-        var chordNo = chords.indexOf(chord);
-        var nextChordNo = (chordNo+1)%chords.length;
-        console.log("Chord is changed from, ", chord);
-        var newChord =  chords[nextChordNo];
-        this.auraVoices.chord = newChord;
-        this.auraVoices.notes = newChord.slice(0);
-        console.log("...to, ", newChord);
-        this.playAuraToneFromTone(this.auraVoices.notes);
+    changeAuraChord() {
+        var t = getClockTime();
+        var dt = t - this.lastChordChangeTime;
+        if (dt > 2) {
+            this.lastChordChangeTime = getClockTime();
+            var chord = this.auraVoices.chord;
+            var chordNo = chords.indexOf(chord);
+            var nextChordNo = (chordNo + 1) % chords.length;
+            console.log("Chord is changed from, ", chord);
+            var newChord = chords[nextChordNo];
+            this.auraVoices.chord = newChord;
+            this.auraVoices.notes = newChord.slice(0);
+            console.log("...to, ", newChord);
+            this.playAuraToneFromTone(this.auraVoices.notes);
+        }
     }
 
     playAuraToneFromTone(notes) {
@@ -821,7 +827,7 @@ class TwoHandInstrument extends AudioProgram {
             return;
         }
         else {
-            this.auraVoices.triggerRelease( notes ,this.audioEffects.currentTime);
+            this.auraVoices.triggerRelease(notes, this.audioEffects.currentTime);
         }
     }
 
