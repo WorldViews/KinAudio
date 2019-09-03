@@ -54,7 +54,7 @@ class ChiGongFeedback extends AudioProgram {
         s02.add(this, 'beta', 0, 1.0);
         s02.add(this, 'alpha', 0, 1.0);
         s02.add(this, 'setVLRFilterParameters');
-        s03.add(this,'auraEnergy', 1, 1000).listen();
+        s03.add(this, 'auraEnergy', 1, 1000).listen();
     }
 
     //***** GUI driven acctions *****/
@@ -96,6 +96,8 @@ class ChiGongFeedback extends AudioProgram {
         this.updateAuraToneFromKinect(msg, rvWatcher);
         this.updateStatus();
         this.setAuraEnergyFromKinect();
+        //this.RHx = rvWatcher.prevMsg.controlPoints[0].pt[0];
+
     }
 
     handleBodies() {
@@ -109,7 +111,6 @@ class ChiGongFeedback extends AudioProgram {
                 this.driver = body;
                 this.bodyNum = sw.bodies[bodyId].bodyNum;
                 console.log("ChiGong driver is set with id and body number, ", this.driverId, this.bodyNum);
-                //this.RHx = rv.prevMsg.controlPoints[0].pt[0];
             }
             /*
             console.log("body", bodyId, body);
@@ -193,7 +194,7 @@ class ChiGongFeedback extends AudioProgram {
         return VLRSmoo;
     }
 
-    smoothPSData(ps){
+    smoothPSData(ps) {
         var timeStamp = getClockTime();
         var psSmoo = this.playSpeedFilter.filter(ps, timeStamp);
         this.smoothPlaySpeed = psSmoo;
@@ -202,22 +203,24 @@ class ChiGongFeedback extends AudioProgram {
     }
 
     updateAuraEnergy() {
-        var aMax = this.auraEnergy/1000;
+        var aMax = this.auraEnergy / 1000;
         var auras = [
-            {name: "hands", rgb: [255,50,0], aMax,
-             joints: [JointType.handLeft, JointType.handRight]}
+            {
+                name: "hands", rgb: [255, 50, 0], aMax,
+                joints: [JointType.handLeft, JointType.handRight]
+            }
         ];
-        var msg = {'type':'setProps', auras};
+        var msg = { 'type': 'setProps', auras };
         app.portal.sendMessage(msg);
     }
-    setAuraEnergyFromKinect(){
+    setAuraEnergyFromKinect() {
         var rv = this.rvWatcher;
-        if (rv.msg.type == 'poseFit'){
+        if (rv.msg.type == 'poseFit') {
             var poseError = rv.poseError;
-            if (poseError > 150){
+            if (poseError > 150) {
                 poseError = 150;
             }
-            poseError = (1 - poseError/150)*1000;
+            poseError = (1 - poseError / 150) * 1000;
             this.auraEnergy = poseError;
         }
         else {
@@ -225,24 +228,24 @@ class ChiGongFeedback extends AudioProgram {
         }
     }
 
-        // TODO #1: replace data with posefit msg data - done
-        // TODO #2: calibrate data for ChiGong - done for VLR and DLR
-        // TODO #3: see which smoothing to use - done (smothing with 1 Euro Filter)
-        // TODO #4: Check if the skelwatcher RHAND is broken - done (not broken)
+    // TODO #1: replace data with posefit msg data - done
+    // TODO #2: calibrate data for ChiGong - done for VLR and DLR
+    // TODO #3: see which smoothing to use - done (smothing with 1 Euro Filter)
+    // TODO #4: Check if the skelwatcher RHAND is broken - done (not broken)
 
-        // TODO #2.1: add only one chord change - limit the duration of chord changes - done
-        // TODO #2.2: add volume - done
-        // TODO #2.3: check the velocity use (is the modulation enough)
-        // TODO #2.4: add aura intensity control 1) gui - done and 2) from kinect - done
-        // TODO #2.5: add new chords - done
-        // TODO #2.6: add scale change based on poseError
-        // TODO #2.7: add other color change
+    // TODO #2.1: add only one chord change - limit the duration of chord changes - done
+    // TODO #2.2: add volume - done
+    // TODO #2.3: check the velocity use (is the modulation enough)
+    // TODO #2.4: add aura intensity control 1) gui - done and 2) from kinect - done
+    // TODO #2.5: add new chords - done
+    // TODO #2.6: add scale change based on poseError
+    // TODO #2.7: add other color change
 
-        // TODO #3.1: Transposition mechanism and feedback, make sure you can transpose down
-        // TODO #3.2: Seperate the two hand instrument and chi gong feedback
-        // TODO #3.3: Create a select button for RV and two-hand
-        // TODO #3.4: Include a percussion pattern for tempo feedback - may be iclude midi
-        // TODO #3.5: Spatial cues for both hand control - auditory streams
+    // TODO #3.1: Transposition mechanism and feedback, make sure you can transpose down
+    // TODO #3.2: Seperate the two hand instrument and chi gong feedback
+    // TODO #3.3: Create a select button for RV and two-hand
+    // TODO #3.4: Include a percussion pattern for tempo feedback - may be iclude midi
+    // TODO #3.5: Spatial cues for both hand control - auditory streams
 
     /////////////////////// Aura Voice Section ////////////////////////
     updateAuraToneFromKinect(msg, rvWatcher) {
@@ -254,10 +257,10 @@ class ChiGongFeedback extends AudioProgram {
         this.LHAND = this.driver.LHAND.get();
         var rhXvel = Math.abs(this.RHAND[3]);
         var lhXvel = Math.abs(this.LHAND[3]);
-        var DLR = this.driver.DLR.get(); 
-        var VLR = (rhXvel + lhXvel) * 50 / 2; 
+        var DLR = this.driver.DLR.get();
+        var VLR = (rhXvel + lhXvel) * 50 / 2;
         var playSpeed = rv.playSpeed;
-        playSpeed = this.smoothPSData(playSpeed)/5.0;
+        playSpeed = this.smoothPSData(playSpeed) / 5.0;
         var poseError = rv.poseError;
         //var transposeCoef = this.updateTransposeCoef(poseError);
 
@@ -288,22 +291,22 @@ class ChiGongFeedback extends AudioProgram {
     }
 
     // first implement a counter to keep track of the trial number
-    updateTransposeCoef(pe){
+    updateTransposeCoef(pe) {
         var transCoef = 0; // in semitones, 0 means no transposition 
-        pe = Math.floor(Math.abs(pe)/20);
+        pe = Math.floor(Math.abs(pe) / 20);
 
         // test the pe-transposition coefficient number - test with leap and gui
-        transCoef = pe%12;
+        transCoef = pe % 12;
 
-        for (chordNo in chords){
-            for (noteNo in chords[chordNo]){
+        for (chordNo in chords) {
+            for (noteNo in chords[chordNo]) {
                 var note = chords[chordNo][noteNo];
                 var newNote = Tone.Frequency(note).transpose(transCoef).toNote();
                 chords[chordNo][noteNo] = newNote;
             }
         }
         console.log("new chords array is ", chords);
-        
+
     }
 
     updateAuraTone() {
