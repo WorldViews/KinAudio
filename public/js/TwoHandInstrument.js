@@ -16,7 +16,7 @@ let part5 = [["0", "F#3"], ["8n", "A#3"], ["4n", "B#3"], [3 * Tone.Time("8n"), "
 
 let seq1 = ["C3", [null, "Eb3"], ["F4", "Bb4", "C5"]];
 
-let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"], ["Eb3", "C2", "Bb3"], ["F2", "C2", "Ab3"], ["Eb2", "G2", "G3"], ["Eb2", "C2", "C3"]];
+//let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"], ["Eb3", "C2", "Bb3"], ["F2", "C2", "Ab3"], ["Eb2", "G2", "G3"], ["Eb2", "C2", "C3"]];
 
 var toneGain = null;
 var sweepEnv = null;

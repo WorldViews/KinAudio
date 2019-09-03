@@ -1,31 +1,4 @@
-/*
-var part = new Tone.Part(function(time, pitch){
-	synth.triggerAttackRelease(pitch, "8n", time);
-}, [["0", "C#3"], ["4n", "G3"], [3 * Tone.Time("8n"), "G#3"], ["2n", "C3"]]);
-
-part.start("4m");
-*/
-
-let part1 = [["0", "C#3"], ["4n", "G3"], [3 * Tone.Time("8n"), "G#3"], ["2n", "C3"]];
-let part2 = [["0", "C3"], ["4n", null], [3 * Tone.Time("8n"), "Eb3"], [4 * Tone.Time("8n"), "F4"], [4 * Tone.Time("8n") + 1 / 3 * Tone.Time("4n"), "Bb4"], [4 * Tone.Time("8n") + 2 / 3 * Tone.Time("4n"), "Bb4"]];
-let part3 = [["0", "F#3"], ["8n", "G3"], ["4n", "G#3"], [3 * Tone.Time("8n"), "D4"], ["2n", "F#3"], [5 * Tone.Time("8n"), "G3"]]; // Phrygian gates, J.Adams, m.944
-let part4 = [["0", "Gb3"], ["8n", "A3"], ["4n", "C4"], [3 * Tone.Time("8n"), "Gb3"], ["2n", "A3"], [5 * Tone.Time("8n"), "C4"]]; // Phrygian gates, J.Adams, m.945
-let part5 = [["0", "F#3"], ["8n", "A#3"], ["4n", "B#3"], [3 * Tone.Time("8n"), "C4"], ["2n", "D4"], [5 * Tone.Time("8n"), "F#3"]]; // Phrygian gates, J.Adams, m.946
-
-let seq1 = ["C3", [null, "Eb3"], ["F4", "Bb4", "C5"]];
-
-let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"], ["Eb3", "C2", "Bb3"], ["F2", "C2", "Ab3"],["Eb2", "G2", "G3"], ["Eb2", "C2", "C3"]];
-
-var toneGain = null;
-var sweepEnv = null;
-
 var tempo = 44;
-let fc = null;
-
-const errorThreshold = 100;
-const maxError = 300;
-const midFc = 200;
-const maxFc = 1000;
 
 class ChiGongFeedback extends AudioProgram {
     constructor(app, opts) {
@@ -178,9 +151,9 @@ class ChiGongFeedback extends AudioProgram {
 
     start() {
         Tone.Transport.start();
-        this.generateAuraTonefromTone();
+        this.auraVoices = this.toneTool.generateAuraTone();
         var note = this.auraVoices.chord[0];
-        this.playAuraToneFromTone(note);
+        this.toneTool.playAuraTone(note);
     }
 
 

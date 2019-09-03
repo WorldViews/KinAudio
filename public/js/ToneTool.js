@@ -3,19 +3,27 @@ let maxBpm = 208;
 let minBpm = 30;
 let maxSpeed = 10;
 
+let part1 = [["0", "C#3"], ["4n", "G3"], [3 * Tone.Time("8n"), "G#3"], ["2n", "C3"]];
+let part2 = [["0", "C3"], ["4n", null], [3 * Tone.Time("8n"), "Eb3"], [4 * Tone.Time("8n"), "F4"], [4 * Tone.Time("8n") + 1 / 3 * Tone.Time("4n"), "Bb4"], [4 * Tone.Time("8n") + 2 / 3 * Tone.Time("4n"), "Bb4"]];
+let part3 = [["0", "F#3"], ["8n", "G3"], ["4n", "G#3"], [3 * Tone.Time("8n"), "D4"], ["2n", "F#3"], [5 * Tone.Time("8n"), "G3"]]; // Phrygian gates, J.Adams, m.944
+let part4 = [["0", "Gb3"], ["8n", "A3"], ["4n", "C4"], [3 * Tone.Time("8n"), "Gb3"], ["2n", "A3"], [5 * Tone.Time("8n"), "C4"]]; // Phrygian gates, J.Adams, m.945
+let part5 = [["0", "F#3"], ["8n", "A#3"], ["4n", "B#3"], [3 * Tone.Time("8n"), "C4"], ["2n", "D4"], [5 * Tone.Time("8n"), "F#3"]]; // Phrygian gates, J.Adams, m.946
+
+let seq1 = ["C3", [null, "Eb3"], ["F4", "Bb4", "C5"]];
+
 let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"], ["Eb3", "C2", "Bb3"], ["F2", "C2", "Ab3"], ["Eb2", "G2", "G3"], ["Eb2", "C2", "C3"]];
 
 class ToneTool {
 
-    construtor(audioContext) {
+    constructor(audioContext) {
         this.audioContext = audioContext;
-        this.Tone = new Tone();
-        this.Tone.Context(audioContext); // this could be a different AudioContext, up to 6 per tab for Chrome, depending on the browser
+        var tone = new Tone();
+        Tone.setContext(audioContext); // this could be a different AudioContext, up to 6 per tab for Chrome, depending on the browser
         console.log('Creating Tone.js Tool for audioContext', this.audioContext);
 
         this.defaultBpm = 44; // default
         this.curentBpm = this.defaultBpm;
-        Tone.Transport.bpm.value = this.bpm;
+        Tone.Transport.bpm.value = this.defaultBpm;
         this.now = Tone.Context.now;
 
         this.maxDLR = 50;
@@ -315,7 +323,7 @@ class ToneTool {
         return voices;
     }
 
-    tuneAuraToneFromTone(DLR, velocity, volume) {
+    tuneAuraTone(DLR, velocity, volume) {
         if (this.auraVoices.voices == null){
             return;
         }
@@ -342,24 +350,24 @@ class ToneTool {
         if (DLR > this.firstNoteDLR) {
             if (!this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
                 this.auraVoices.notes.push(this.auraVoices.chord[1]);
-                this.playAuraToneFromTone(this.auraVoices.notes);
+                this.playAuraTone(this.auraVoices.notes);
             }
         }
         if (DLR > this.secondNoteDLR) {
             if (!this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
                 this.auraVoices.notes.push(this.auraVoices.chord[2]);
-                this.playAuraToneFromTone(this.auraVoices.notes);
+                this.playAuraTone(this.auraVoices.notes);
             }
         }
         if (DLR < this.secondNoteDLR) {
             if (this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
-                this.stopAuraToneFromTone(this.auraVoices.chord[2]);
+                this.stopAuraTone(this.auraVoices.chord[2]);
                 this.auraVoices.notes.pop();
             }
         }
         if (DLR < this.firstNoteDLR) {
             if (this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
-                this.stopAuraToneFromTone(this.auraVoices.chord[1]);
+                this.stopAuraTone(this.auraVoices.chord[1]);
                 this.auraVoices.notes.pop();
             }
         }
@@ -383,12 +391,12 @@ class ToneTool {
             this.auraVoices.chord = newChord;
             this.auraVoices.notes = newChord.slice(0);
             console.log("...to, ", newChord);
-            this.playAuraToneFromTone(this.auraVoices.notes);
+            this.playAuraTone(this.auraVoices.notes);
         }
     }
 
     playAuraTone(notes) {
-        this.auraVoices.triggerAttack(notes, this.audioEffects.currentTime);
+        this.auraVoices.triggerAttack(notes, this.audioContext.currentTime);
 
     }
 
@@ -398,7 +406,7 @@ class ToneTool {
             return;
         }
         else {
-            this.auraVoices.triggerRelease(notes, this.audioEffects.currentTime);
+            this.auraVoices.triggerRelease(notes, this.audioContext.currentTime);
         }
     }
 }

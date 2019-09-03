@@ -219,8 +219,8 @@ class KinAudioApp {
             return;
         }
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.audioEffects = new AudioEffectsTool(this.audioContext);
         this.toneTool = new ToneTool(this.audioContext);
+        this.audioEffects = new AudioEffectsTool(this.audioContext);
         this.toneTool.defaultBpm = 44;
     }
 
