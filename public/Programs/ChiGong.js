@@ -1,31 +1,4 @@
-/*
-var part = new Tone.Part(function(time, pitch){
-	synth.triggerAttackRelease(pitch, "8n", time);
-}, [["0", "C#3"], ["4n", "G3"], [3 * Tone.Time("8n"), "G#3"], ["2n", "C3"]]);
-
-part.start("4m");
-*/
-
-let part1 = [["0", "C#3"], ["4n", "G3"], [3 * Tone.Time("8n"), "G#3"], ["2n", "C3"]];
-let part2 = [["0", "C3"], ["4n", null], [3 * Tone.Time("8n"), "Eb3"], [4 * Tone.Time("8n"), "F4"], [4 * Tone.Time("8n") + 1 / 3 * Tone.Time("4n"), "Bb4"], [4 * Tone.Time("8n") + 2 / 3 * Tone.Time("4n"), "Bb4"]];
-let part3 = [["0", "F#3"], ["8n", "G3"], ["4n", "G#3"], [3 * Tone.Time("8n"), "D4"], ["2n", "F#3"], [5 * Tone.Time("8n"), "G3"]]; // Phrygian gates, J.Adams, m.944
-let part4 = [["0", "Gb3"], ["8n", "A3"], ["4n", "C4"], [3 * Tone.Time("8n"), "Gb3"], ["2n", "A3"], [5 * Tone.Time("8n"), "C4"]]; // Phrygian gates, J.Adams, m.945
-let part5 = [["0", "F#3"], ["8n", "A#3"], ["4n", "B#3"], [3 * Tone.Time("8n"), "C4"], ["2n", "D4"], [5 * Tone.Time("8n"), "F#3"]]; // Phrygian gates, J.Adams, m.946
-
-let seq1 = ["C3", [null, "Eb3"], ["F4", "Bb4", "C5"]];
-
-let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"], ["Eb3", "C2", "Bb3"], ["F2", "C2", "Ab3"],["Eb2", "G2", "G3"], ["Eb2", "C2", "C3"]];
-
-var toneGain = null;
-var sweepEnv = null;
-
 var tempo = 44;
-let fc = null;
-
-var errorThreshold = 100;
-var maxError = 300;
-var midFc = 200;
-var maxFc = 1000;
 
 class ChiGong extends AudioProgram {
     constructor(app, opts) {
@@ -81,7 +54,7 @@ class ChiGong extends AudioProgram {
         s02.add(this, 'beta', 0, 1.0);
         s02.add(this, 'alpha', 0, 1.0);
         s02.add(this, 'setVLRFilterParameters');
-        s03.add(this,'auraEnergy', 1, 1000).listen();
+        s03.add(this, 'auraEnergy', 1, 1000).listen();
     }
 
     //***** GUI driven acctions *****/
@@ -123,6 +96,8 @@ class ChiGong extends AudioProgram {
         this.updateAuraToneFromKinect(msg, rvWatcher);
         this.updateStatus();
         this.setAuraEnergyFromKinect();
+        //this.RHx = rvWatcher.prevMsg.controlPoints[0].pt[0];
+
     }
 
     handleBodies() {
@@ -136,7 +111,6 @@ class ChiGong extends AudioProgram {
                 this.driver = body;
                 this.bodyNum = sw.bodies[bodyId].bodyNum;
                 console.log("ChiGong driver is set with id and body number, ", this.driverId, this.bodyNum);
-                this.RHx = rv.prevMsg.controlPoints[0].pt[0];
             }
             /*
             console.log("body", bodyId, body);
@@ -178,9 +152,9 @@ class ChiGong extends AudioProgram {
 
     start() {
         Tone.Transport.start();
-        this.generateAuraTonefromTone();
+        this.auraVoices = this.toneTool.generateAuraTone();
         var note = this.auraVoices.chord[0];
-        this.playAuraToneFromTone(note);
+        this.toneTool.playAuraTone(note);
     }
 
 
@@ -220,7 +194,7 @@ class ChiGong extends AudioProgram {
         return VLRSmoo;
     }
 
-    smoothPSData(ps){
+    smoothPSData(ps) {
         var timeStamp = getClockTime();
         var psSmoo = this.playSpeedFilter.filter(ps, timeStamp);
         this.smoothPlaySpeed = psSmoo;
@@ -229,22 +203,24 @@ class ChiGong extends AudioProgram {
     }
 
     updateAuraEnergy() {
-        var aMax = this.auraEnergy/1000;
+        var aMax = this.auraEnergy / 1000;
         var auras = [
-            {name: "hands", rgb: [255,50,0], aMax,
-             joints: [JointType.handLeft, JointType.handRight]}
+            {
+                name: "hands", rgb: [255, 50, 0], aMax,
+                joints: [JointType.handLeft, JointType.handRight]
+            }
         ];
-        var msg = {'type':'setProps', auras};
+        var msg = { 'type': 'setProps', auras };
         app.portal.sendMessage(msg);
     }
-    setAuraEnergyFromKinect(){
+    setAuraEnergyFromKinect() {
         var rv = this.rvWatcher;
-        if (rv.msg.type == 'poseFit'){
+        if (rv.msg.type == 'poseFit') {
             var poseError = rv.poseError;
-            if (poseError > 150){
+            if (poseError > 150) {
                 poseError = 150;
             }
-            poseError = (1 - poseError/150)*1000;
+            poseError = (1 - poseError / 150) * 1000;
             this.auraEnergy = poseError;
         }
         else {
@@ -252,21 +228,27 @@ class ChiGong extends AudioProgram {
         }
     }
 
+    // TODO #1: replace data with posefit msg data - done
+    // TODO #2: calibrate data for ChiGong - done for VLR and DLR
+    // TODO #3: see which smoothing to use - done (smothing with 1 Euro Filter)
+    // TODO #4: Check if the skelwatcher RHAND is broken - done (not broken)
+
+    // TODO #2.1: add only one chord change - limit the duration of chord changes - done
+    // TODO #2.2: add volume - done
+    // TODO #2.3: check the velocity use (is the modulation enough)
+    // TODO #2.4: add aura intensity control 1) gui - done and 2) from kinect - done
+    // TODO #2.5: add new chords - done
+    // TODO #2.6: add scale change based on poseError
+    // TODO #2.7: add other color change
+
+    // TODO #3.1: Transposition mechanism and feedback, make sure you can transpose down
+    // TODO #3.2: Seperate the two hand instrument and chi gong feedback
+    // TODO #3.3: Create a select button for RV and two-hand
+    // TODO #3.4: Include a percussion pattern for tempo feedback - may be iclude midi
+    // TODO #3.5: Spatial cues for both hand control - auditory streams
+
     /////////////////////// Aura Voice Section ////////////////////////
     updateAuraToneFromKinect(msg, rvWatcher) {
-        // TODO #1: replace data with posefit msg data - done
-        // TODO #2: calibrate data for ChiGong - done for VLR and DLR
-        // TODO #3: see which smoothing to use - done (smothing with 1 Euro Filter)
-        // TODO #4: Check if the skelwatcher RHAND is broken - done (not broken)
-
-        // TODO #2.1: add only one chord change - limit the duration of chord changes - done
-        // TODO #2.2: add volume - done
-        // TODO #2.3: check the velocity use (is the modulation enough)
-        // TODO #2.4: add aura intensity control 1) gui - done and 2) from kinect - done
-        // TODO #2.5: add new chords - done
-        // TODO #2.6: add scale change based on poseError
-        // TODO #2.7: add other color change
-
         if (!this.driver) {
             return;
         }
@@ -275,12 +257,12 @@ class ChiGong extends AudioProgram {
         this.LHAND = this.driver.LHAND.get();
         var rhXvel = Math.abs(this.RHAND[3]);
         var lhXvel = Math.abs(this.LHAND[3]);
-        var DLR = this.driver.DLR.get(); 
-        var VLR = (rhXvel + lhXvel) * 50 / 2; 
+        var DLR = this.driver.DLR.get();
+        var VLR = (rhXvel + lhXvel) * 50 / 2;
         var playSpeed = rv.playSpeed;
-        playSpeed = this.smoothPSData(playSpeed)/5.0;
+        playSpeed = this.smoothPSData(playSpeed) / 5.0;
         var poseError = rv.poseError;
-        var transposeCoef = this.updateTransposeCoef(poseError);
+        //var transposeCoef = this.updateTransposeCoef(poseError);
 
         if (playSpeed > 0.999) {
             playSpeed = 0.999;
@@ -301,50 +283,67 @@ class ChiGong extends AudioProgram {
         DLR = Math.round(DLR * 10);
         VLR = Math.round(VLR);
         var VLRSmoo = this.smoothVLRData(VLR);
-        this.tuneAuraToneFromTone(DLR, VLR, volume);
+        this.VLR = velocity;
+        this.DLR = DLR;
+        this.volume = volume;
+
+        this.toneTool.tuneAuraTone(DLR, VLR, volume);
     }
 
     // first implement a counter to keep track of the trial number
-    updateTransposeCoef(pe){
+    updateTransposeCoef(pe) {
         var transCoef = 0; // in semitones, 0 means no transposition 
-        pe = Math.floor(Math.abs(pe)/20);
+        pe = Math.floor(Math.abs(pe) / 20);
 
         // test the pe-transposition coefficient number - test with leap and gui
-        transCoef = pe%12;
+        transCoef = pe % 12;
 
-        for (chordNo in chords){
-            for (noteNo in chords[chordNo]){
+        for (chordNo in chords) {
+            for (noteNo in chords[chordNo]) {
                 var note = chords[chordNo][noteNo];
                 var newNote = Tone.Frequency(note).transpose(transCoef).toNote();
                 chords[chordNo][noteNo] = newNote;
             }
         }
         console.log("new chords array is ", chords);
-        
+
     }
 
     updateAuraTone() {
         var DLR = document.getElementById("DLR").value;
         var velocity = document.getElementById("velocity").value;
-        this.tuneAuraToneFromTone(DLR / 5, velocity * 2);
+        this.VLR = velocity;
+        this.DLR = DLR;
+        this.volume = volume;
+        this.toneTool.tuneAuraTone(DLR / 5, velocity * 2);
     }
 
     playAuraTone() {
 
         var note = this.auraVoices.chord[0];
-        this.playAuraToneFromTone(note);
+        this.toneTool.playAuraTone(note);
         this.auraVoices.notes.push(note);
     }
 
     stopAuraTone() {
         for (var i = 0; i < this.auraVoices.notes.length; i++) {
             var lastNote = this.auraVoices.notes.pop();
-            this.stopAuraToneFromTone(lastNote);
+            this.toneTool.stopAuraTone(lastNote);
         }
         this.auraVoices.dispose();
 
     }
 
+
+    generateAuraTonefromTone() {
+        this.auraVoices = this.toneTool.generateAuraTone();
+
+        this.firstNoteDLR = 2;
+        this.secondNoteDLR = 4;
+        this.chordChangeDLR = 7;
+    }
+
+    /*
     generateAuraTonefromTone() {
         var voices = new Tone.PolySynth(4, Tone.Synth, {
             "oscillator": {
@@ -384,6 +383,7 @@ class ChiGong extends AudioProgram {
         console.log("****** Aura Voices are generates from ToneTool.");
         return voices;
     }
+    
 
     tuneAuraToneFromTone(DLR, velocity, volume) {
         if (this.auraVoices.voices == null){
@@ -477,6 +477,8 @@ class ChiGong extends AudioProgram {
         }
     }
 
+    */
+
     /////////////////////// Drum Part Section ////////////////////////
 
     generateDrums() {
@@ -545,7 +547,4 @@ class ChiGong extends AudioProgram {
         console.log("tempo is set to ", tempo);
     }
 }
-
-//alert("hello");
-//app.setProgram(new ChiGong(app));
 
