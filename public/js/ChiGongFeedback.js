@@ -307,7 +307,11 @@ class ChiGongFeedback extends AudioProgram {
         DLR = Math.round(DLR * 10);
         VLR = Math.round(VLR);
         var VLRSmoo = this.smoothVLRData(VLR);
-        this.tuneAuraToneFromTone(DLR, VLR, volume);
+        this.VLR = velocity;
+        this.DLR = DLR;
+        this.volume = volume;
+
+        this.toneTool.tuneAuraTone(DLR, VLR, volume);
     }
 
     // first implement a counter to keep track of the trial number
@@ -332,25 +336,38 @@ class ChiGongFeedback extends AudioProgram {
     updateAuraTone() {
         var DLR = document.getElementById("DLR").value;
         var velocity = document.getElementById("velocity").value;
-        this.tuneAuraToneFromTone(DLR / 5, velocity * 2);
+        this.VLR = velocity;
+        this.DLR = DLR;
+        this.volume = volume;
+        this.toneTool.tuneAuraTone(DLR / 5, velocity * 2);
     }
 
     playAuraTone() {
 
         var note = this.auraVoices.chord[0];
-        this.playAuraToneFromTone(note);
+        this.toneTool.playAuraTone(note);
         this.auraVoices.notes.push(note);
     }
 
     stopAuraTone() {
         for (var i = 0; i < this.auraVoices.notes.length; i++) {
             var lastNote = this.auraVoices.notes.pop();
-            this.stopAuraToneFromTone(lastNote);
+            this.toneTool.stopAuraTone(lastNote);
         }
         this.auraVoices.dispose();
 
     }
 
+
+    generateAuraTonefromTone() {
+        this.auraVoices = this.toneTool.generateAuraTone();
+
+        this.firstNoteDLR = 2;
+        this.secondNoteDLR = 4;
+        this.chordChangeDLR = 7;
+    }
+
+    /*
     generateAuraTonefromTone() {
         var voices = new Tone.PolySynth(4, Tone.Synth, {
             "oscillator": {
@@ -390,6 +407,7 @@ class ChiGongFeedback extends AudioProgram {
         console.log("****** Aura Voices are generates from ToneTool.");
         return voices;
     }
+    
 
     tuneAuraToneFromTone(DLR, velocity, volume) {
         if (this.auraVoices.voices == null){
@@ -482,6 +500,8 @@ class ChiGongFeedback extends AudioProgram {
             this.auraVoices.triggerRelease(notes, this.audioEffects.currentTime);
         }
     }
+
+    */
 
     /////////////////////// Drum Part Section ////////////////////////
 

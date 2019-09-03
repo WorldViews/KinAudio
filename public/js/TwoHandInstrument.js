@@ -99,9 +99,9 @@ class TwoHandInstrument extends AudioProgram {
     }
 
     updateLeapInfo() {
-        this.updateDrumPartFromLeap();
+        //this.updateDrumPartFromLeap();
         //this.smoothLeapData();
-        //this.updateAuraToneFromLeap();
+        this.updateAuraToneFromLeap();
     }
 
     initializeLeapSmoothing() {
@@ -171,10 +171,10 @@ class TwoHandInstrument extends AudioProgram {
         //console.log("aveVLR, ", aveVLR);
 
         if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
-            //this.tuneAuraTone(aveVLR / 10, DLR * 100);
+            //this.tuneAuraToneFromAE(aveVLR / 10, DLR * 100);
         }
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            this.tuneAuraToneFromTone(DLR, aveVLR, volume);
+            this.toneTool.tuneAuraTone(DLR, aveVLR, volume);
         }
 
         //console.log("Leap Data:, ", leapData);
@@ -504,7 +504,7 @@ class TwoHandInstrument extends AudioProgram {
 
     createAuraTone() {
         if (!$("#usingToneTool").prop('checked') && $("#usingAudioEffects").prop('checked')) {
-            //this.generateAuraTone(6, 6, 110);
+            this.generateAuraToneFromAE(6, 6, 110);
             console.log("Aura tone is created from AudioEffects");
         }
         else if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
@@ -521,14 +521,14 @@ class TwoHandInstrument extends AudioProgram {
         var DLR = document.getElementById("DLR").value;
         var velocity = document.getElementById("velocity").value;
         if (!$("#usingToneTool").prop('checked') && $("#usingAudioEffects").prop('checked')) {
-            //this.tuneAuraTone(velocity, DLR);
+            this.tuneAuraToneFromAE(velocity, DLR);
         }
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            this.tuneAuraToneFromTone(DLR / 5, velocity * 2);
+            this.toneTool.tuneAuraTone(DLR / 5, velocity * 2);
         }
     }
 
-    generateAuraTone(numOscs, maxOverTone, f0) {
+    generateAuraToneFromAE(numOscs, maxOverTone, f0) {
         var audioEffects = this.audioEffects;
         this.SinOscs = [];
         this.SinOscGains = [];
@@ -598,37 +598,36 @@ class TwoHandInstrument extends AudioProgram {
 
     playAuraTone() {
         if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
-            //this.playAuraToneFromAE();
+            this.playAuraToneFromAE();
         }
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            var note = this.auraVoices.chord[0];
+            /*var note = this.auraVoices.chord[0];
             this.playAuraToneFromTone(note);
+            this.auraVoices.notes.push(note);
+            */
+            var note = this.auraVoices.chord[0];
+            this.toneTool.playAuraTone(note);
             this.auraVoices.notes.push(note);
         }
     }
 
     stopAuraTone() {
         if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
-            //this.stopAuraToneFromAE();
+            this.stopAuraToneFromAE();
         }
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            /*
-            for (var note in this.auraVoices.notes){
-                var lastNote =  this.auraVoices.notes[note];
-                this.stopAuraToneFromTone(lastNote);
-            }
-            */
             for (var i = 0; i < this.auraVoices.notes.length; i++) {
                 var lastNote = this.auraVoices.notes.pop();
-                this.stopAuraToneFromTone(lastNote);
+                this.toneTool.stopAuraTone(lastNote);
             }
+            this.auraVoices.dispose();
         }
     }
 
     // TODO: add fade in and fade out envelopes
     playAuraToneFromAE() {
         this.connectAuraTone();
-        this.tuneAuraTone(0, 0);
+        this.tuneAuraToneFromAE(0, 0);
         if (this.SinOscs != null) {
             for (var tone in this.SinOscs) {
                 for (var osc in this.SinOscs[tone]) {
@@ -661,7 +660,7 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
-    tuneAuraTone(velocity, DLR) {
+    tuneAuraToneFromAE(velocity, DLR) {
         if (this.auraTone == null) {
             console.log("Create AuraTone");
             return;
@@ -707,6 +706,17 @@ class TwoHandInstrument extends AudioProgram {
             this.outGains[tone].gain.setValueAtTime(outGain, this.audioEffects.audioContext.currentTime);
         }
     }
+
+
+    generateAuraTonefromTone() {
+        this.auraVoices = this.toneTool.generateAuraTone();
+
+        this.firstNoteDLR = 1.5;
+        this.secondNoteDLR = 2.5;
+        this.chordChangeDLR = 4;
+    }
+
+    /*
 
     generateAuraTonefromTone() {
         var voices = new Tone.PolySynth(4, Tone.Synth, {
@@ -789,14 +799,7 @@ class TwoHandInstrument extends AudioProgram {
         if (DLR > 4) {
             this.changeAuraChord();
         }
-        //console.log("playing the aura notes, ", this.auraVoices.notes);
-
         console.log("playing aura notes:, ", this.auraVoices.notes);
-
-
-        // TODO #2: create a pattern array and play the notes based on the velocity
-        // TODO #1: smooth the velocity - 
-        // TODO #0: add gain control - done
     }
 
     changeAuraChord() {
@@ -816,6 +819,7 @@ class TwoHandInstrument extends AudioProgram {
         }
     }
 
+
     playAuraToneFromTone(notes) {
         this.auraVoices.triggerAttack(notes, this.audioEffects.currentTime);
 
@@ -830,5 +834,6 @@ class TwoHandInstrument extends AudioProgram {
             this.auraVoices.triggerRelease(notes, this.audioEffects.currentTime);
         }
     }
+    */
 
 }

@@ -3,6 +3,8 @@ let maxBpm = 208;
 let minBpm = 30;
 let maxSpeed = 10;
 
+let chords = [["Eb3", "C2", "Ab2"], ["Eb3", "C2", "Ab3"], ["Eb3", "C2", "G3"], ["Eb3", "C2", "Bb3"], ["F2", "C2", "Ab3"], ["Eb2", "G2", "G3"], ["Eb2", "C2", "C3"]];
+
 class ToneTool {
 
     construtor(audioContext) {
@@ -15,6 +17,13 @@ class ToneTool {
         this.curentBpm = this.defaultBpm;
         Tone.Transport.bpm.value = this.bpm;
         this.now = Tone.Context.now;
+
+        this.maxDLR = 50;
+        this.maxVLR = 50;
+        this.minHLR = 90;
+        this.maxHLR = 250;
+        this.auraVoices = null;
+        this.lastChordChangeTime = getClockTime();
     }
 
     createDrum(){
@@ -262,4 +271,134 @@ class ToneTool {
         return delay;
     }
 
+    generateAuraTone() {
+        var voices = new Tone.PolySynth(4, Tone.Synth, {
+            "oscillator": {
+                "type": "fatsine",
+                "partials": [0, 2, 3, 4],
+                "partialCount": 0,
+                "spread": 60,
+                "count": 10
+            },
+            "envelope": {
+                "attackCurve": "sine",
+                "attack": 0.4,
+                "decayCurve": "exponential",
+                "decay": 0.1,
+                "sustain": 1,
+                "releaseCurve": "exponential",
+                "release": 0.4,
+            }
+        });
+
+        voices.volume.value = -12;
+
+        var filter = new Tone.Filter({
+            type: "lowpass",
+            frequency: 440,
+            rolloff: -12,
+            Q: 1
+        });
+
+        //voices.chain(filter, Tone.Master);
+        voices.chain(Tone.Master);
+        this.auraVoices = voices;
+        this.auraVoices.filter = filter;
+        this.auraVoices.chord = chords[0];
+        this.auraVoices.notes = [];
+
+        // default values for leap
+        this.firstNoteDLR = 1.5;
+        this.secondNoteDLR = 2.5;
+        this.chordChangeDLR = 4;
+
+        return voices;
+    }
+
+    tuneAuraToneFromTone(DLR, velocity, volume) {
+        if (this.auraVoices.voices == null){
+            return;
+        }
+        this.VLR = velocity;
+        this.DLR = DLR;
+        this.volume = volume;
+        //console.log("tuneAuraToneFromTone with DLR, ", DLR, " and velocity, ", velocity);
+        this.auraVoices.set({
+            "oscillator": {
+                "spread": velocity
+            }
+        });
+        //console.log("velocity value in tuneAuraToneFromTone is ", velocity);
+        this.selectAuraNotes(DLR);
+        if (volume == NaN || volume == undefined){
+            volume = -12;
+        }
+        this.auraVoices.volume.value = volume;
+
+    }
+
+    selectAuraNotes(DLR) {
+
+        if (DLR > this.firstNoteDLR) {
+            if (!this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
+                this.auraVoices.notes.push(this.auraVoices.chord[1]);
+                this.playAuraToneFromTone(this.auraVoices.notes);
+            }
+        }
+        if (DLR > this.secondNoteDLR) {
+            if (!this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
+                this.auraVoices.notes.push(this.auraVoices.chord[2]);
+                this.playAuraToneFromTone(this.auraVoices.notes);
+            }
+        }
+        if (DLR < this.secondNoteDLR) {
+            if (this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
+                this.stopAuraToneFromTone(this.auraVoices.chord[2]);
+                this.auraVoices.notes.pop();
+            }
+        }
+        if (DLR < this.firstNoteDLR) {
+            if (this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
+                this.stopAuraToneFromTone(this.auraVoices.chord[1]);
+                this.auraVoices.notes.pop();
+            }
+        }
+
+        if (DLR > this.chordChangeDLR) {
+            this.changeAuraChord();
+        }
+        console.log("playing aura notes:, ", this.auraVoices.notes);
+    }
+
+    changeAuraChord() {
+        var t = getClockTime();
+        var dt = t - this.lastChordChangeTime;
+        if (dt > 2) {
+            this.lastChordChangeTime = getClockTime();
+            var chord = this.auraVoices.chord;
+            var chordNo = chords.indexOf(chord);
+            var nextChordNo = (chordNo + 1) % chords.length;
+            console.log("Chord is changed from, ", chord);
+            var newChord = chords[nextChordNo];
+            this.auraVoices.chord = newChord;
+            this.auraVoices.notes = newChord.slice(0);
+            console.log("...to, ", newChord);
+            this.playAuraToneFromTone(this.auraVoices.notes);
+        }
+    }
+
+    playAuraTone(notes) {
+        this.auraVoices.triggerAttack(notes, this.audioEffects.currentTime);
+
+    }
+
+    stopAuraTone(notes) {
+        if (this.auraVoices == null) {
+            console.log("No auraTone created");
+            return;
+        }
+        else {
+            this.auraVoices.triggerRelease(notes, this.audioEffects.currentTime);
+        }
+    }
 }
