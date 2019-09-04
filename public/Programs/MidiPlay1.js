@@ -203,7 +203,7 @@ class MidiPlay1 extends AudioProgram {
     }
 
     update() {
-        var rv = this.rvWatcher;
+        //var rv = this.rvWatcher;
         //console.log("speed:", rv.playSpeed);
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.handleBodies();
