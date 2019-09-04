@@ -39,19 +39,20 @@ var RVFeedback = class extends AudioProgram {
 
     start() {
         var drums = this.toneTool.createDrum();
+        drums.volume.value = -12;
         var drums2 = this.toneTool.createDrum();
         this.drums = drums;
         this.drums2 = drums2;
         drums2.oscillator.type = 'triangle';
         drums2.octaves = 1;
-        drums2.volume.value = -14;
+        drums2.volume.value = -12;
         this.toneTool.addFilter(drums, 150, 'lowpass', -12);
         this.toneTool.addFilter(drums2, 150, 'lowpass', -12);
         this.toneTool.addReverb(this.toneTool.filter, 0.5);
         this.toneTool.currentBpm = tempo;
         let inst = this;
         this.loopBeat = this.toneTool.createLoopBeat(time => {
-            var gain = 0.4;
+            var gain = 1;
             inst.triggerDrums(0, ['c3', 'c3'], '4n', time, gain);
             inst.triggerDrums(5, ['f#2', 'f#2'], '8n', time, gain);
             inst.triggerDrums(6, ['f#2', 'f#2'], '8n', time, gain);
