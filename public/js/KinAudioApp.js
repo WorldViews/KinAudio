@@ -163,10 +163,6 @@ class KinAudioApp {
         rigCollapsableDiv("#showTrackingCanvas", "#trackingCanvas");
         rigCollapsableDiv("#showTrackingCanvas", "#canvasDiv", "hide");
         //rigCollapsableDiv("#showMessage", "#messageDiv", "hide");
-        rigCollapsableDiv("#showHandControls", "#handControls", "hide");
-        rigCollapsableDiv("#showAuraToneControls", "#auraToneControls", "hide");
-        rigCollapsableDiv("#showDrumsControls", "#drumsControls", "hide");
-        rigCollapsableDiv("#showSmoothingControl", "#smooControl", "hide");
 
     }
 
