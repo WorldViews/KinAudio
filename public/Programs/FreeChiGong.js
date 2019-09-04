@@ -81,27 +81,22 @@ class FreeChiGong extends AudioProgram {
     }
 
     update() {
-        var rv = this.rvWatcher;
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.changeFilterParam(rv.poseError);
         this.updateAuraEnergy();
         this.handleBodies();
+        this.updateAuraToneFromKinect();
         this.updateStatus();
     }
 
     noticePoseFit(msg, rvWatcher) {
+        return;
         this.tickNum++;
-        //console.log("Prog noticePoseFit");
-        //this.changePartTempo(rvWatcher.playSpeed, rvWatcher.smooSpeed);
-        this.updateAuraToneFromKinect(msg, rvWatcher);
         this.updateStatus();
-        this.setAuraEnergyFromKinect();
-        //this.RHx = rvWatcher.prevMsg.controlPoints[0].pt[0];
 
     }
 
     handleBodies() {
-        var rv = this.rvWatcher;
         var sw = this.skelWatcher;
         var J = JointType;
         for (var bodyId in sw.bodies) {
@@ -216,66 +211,35 @@ class FreeChiGong extends AudioProgram {
         var msg = { 'type': 'setProps', auras };
         app.portal.sendMessage(msg);
     }
-    setAuraEnergyFromKinect() {
-        var rv = this.rvWatcher;
-        if (rv.msg.type == 'poseFit') {
-            var poseError = rv.poseError;
-            if (poseError > 150) {
-                poseError = 150;
+    setAuraEnergyFromKinect(intensity) {
+        if (this.driver != null) {
+            var offset = 500;
+            if (intensity > 1) {
+                intensity = 1;
+                offset = 0;
             }
-            poseError = (1 - poseError / 150) * 1000;
-            this.auraEnergy = poseError;
+            this.auraEnergy = intensity * 1000 + offset;
+            console.log("Aura Energy:", this.auraEnergy);
         }
         else {
             return;
         }
     }
 
-    // TODO #1: replace data with posefit msg data - done
-    // TODO #2: calibrate data for ChiGong - done for VLR and DLR
-    // TODO #3: see which smoothing to use - done (smothing with 1 Euro Filter)
-    // TODO #4: Check if the skelwatcher RHAND is broken - done (not broken)
-
-    // TODO #2.1: add only one chord change - limit the duration of chord changes - done
-    // TODO #2.2: add volume - done
-    // TODO #2.3: check the velocity use (is the modulation enough)
-    // TODO #2.4: add aura intensity control 1) gui - done and 2) from kinect - done
-    // TODO #2.5: add new chords - done
-    // TODO #2.6: add scale change based on poseError
-    // TODO #2.7: add other color change
-
-    // TODO #3.1: Transposition mechanism and feedback, make sure you can transpose down
-    // TODO #3.2: Seperate the two hand instrument and chi gong feedback
-    // TODO #3.3: Create a select button for RV and two-hand
     // TODO #3.4: Include a percussion pattern for tempo feedback - may be iclude midi
     // TODO #3.5: Spatial cues for both hand control - auditory streams
 
     /////////////////////// Aura Voice Section ////////////////////////
-    updateAuraToneFromKinect(msg, rvWatcher) {
+    updateAuraToneFromKinect() {
         if (!this.driver) {
             return;
         }
-        var rv = rvWatcher;
         this.RHAND = this.driver.RHAND.get();
         this.LHAND = this.driver.LHAND.get();
         var rhXvel = Math.abs(this.RHAND[3]);
         var lhXvel = Math.abs(this.LHAND[3]);
         var DLR = this.driver.DLR.get();
         var VLR = (rhXvel + lhXvel) * 50 / 2;
-        var playSpeed = rv.playSpeed;
-        playSpeed = this.smoothPSData(playSpeed) / 5.0;
-        var poseError = rv.poseError;
-        //var transposeCoef = this.updateTransposeCoef(poseError);
-
-        if (playSpeed > 0.999) {
-            playSpeed = 0.999;
-        }
-        else if (playSpeed <= 0) {
-            playSpeed = 0.1;
-        }
-        this.playSpeed = playSpeed;
-        var volume = 12 * Math.log10(playSpeed);
-
         if (VLR < this.minVLR) {
             VLR = this.minVLR;
         }
@@ -285,12 +249,25 @@ class FreeChiGong extends AudioProgram {
 
         DLR = Math.round(DLR * 10);
         VLR = Math.round(VLR);
-        var VLRSmoo = this.smoothVLRData(VLR);
+        var VLRSmoo = Math.round(this.smoothVLRData(VLR));
         this.VLR = VLRSmoo;
         this.DLR = DLR;
         this.volume = volume;
+        //console.log("VLR:", VLR, "VLRSmoo:", VLRSmoo);
+        this.toneTool.tuneAuraTone(DLR, VLRSmoo, volume);
 
-        this.toneTool.tuneAuraTone(DLR, VLR, volume);
+        var playSpeed = (VLRSmoo-this.minVLR)/(this.maxVLR - this.minVLR);
+        if (playSpeed > 0.999) {
+            playSpeed = 0.999;
+        }
+        else if (playSpeed <= 0) {
+            playSpeed = 0.1;
+        }
+        this.playSpeed = playSpeed;
+        var volume = 12 * Math.log10(playSpeed);
+
+        var intensity = playSpeed;
+        this.setAuraEnergyFromKinect(intensity);
     }
 
     // first implement a counter to keep track of the trial number
