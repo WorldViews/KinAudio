@@ -30,13 +30,13 @@ var Knock1 = class extends AudioProgram {
 
         this.toneTool.currentBpm = this.tempo;
         //this.initMidis(MIDI_URLS);
-        this.aura = new CanvasTool.CloudGraphic({id: 'aura', x: 0.0, y: 0.8, .25})
+        this.aura = new CanvasTool.CloudGraphic({id: 'aura', x: 0.0, y: 0.8, r: .25})
         app.canvasTool.addGraphic(this.aura);
         this.graph = new CanvasTool.GraphGraphic({id: 'graph1', x: 0, y: 0, width: 2, height: 1});
         app.canvasTool.addGraphic(this.graph);
 
-        //this.trail = new CanvasTool.TrailGraphic('trail1', 0, 0.8, 2, 1);
-        this.trail = new CanvasTool.TrailGraphic({id: 'trail1', x: 0, y:0, width: 0});
+        this.trail = new CanvasTool.TrailGraphic({id: 'trail1', x: 0, y: 0.8, width: 0,
+                                                    lineWidth: .001, maxNumPoints: 40});
         app.canvasTool.addGraphic(this.trail);
     }
 
