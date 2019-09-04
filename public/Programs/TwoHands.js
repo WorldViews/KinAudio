@@ -18,6 +18,7 @@ class TwoHands extends AudioProgram {
         this.rhxLeapStep = 50;
         this.RHx = null;
         this.RHxLeap = null;
+        this.RHzLeap = null;
         this.LHzLeap = null;
         this.handWatcher = null;
 
@@ -31,6 +32,8 @@ class TwoHands extends AudioProgram {
         this.maxHLR = 250;
         this.auraVoices = null;
         this.lastChordChangeTime = getClockTime();
+        this.lastTransposeTime = getClockTime();
+        this.lastTransCoef = 0;
 
         this.initializeLeapSmoothing();
     }
@@ -50,6 +53,11 @@ class TwoHands extends AudioProgram {
         $("#changeTempo").on('input', () => inst.changeDrumsTempo());
         $("#DLR").on('input', () => inst.updateAuraTone());
         $("#velocity").on('input', () => inst.updateAuraTone());
+
+        rigCollapsableDiv("#showHandControls", "#handControls", "hide");
+        rigCollapsableDiv("#showAuraToneControls", "#auraToneControls", "hide");
+        rigCollapsableDiv("#showDrumsControls", "#drumsControls", "hide");
+        rigCollapsableDiv("#showSmoothingControl", "#smooControl", "hide");
     }
 
     updateStatus() {
@@ -70,7 +78,7 @@ class TwoHands extends AudioProgram {
     }
 
     updateLeapInfo() {
-        //this.updateDrumPartFromLeap();
+        this.updatePartFromLeap();
         //this.smoothLeapData();
         this.updateAuraToneFromLeap();
     }
@@ -98,6 +106,60 @@ class TwoHands extends AudioProgram {
 
         return [VLRSmoo, DLRSmoo, HLRSmoo];
 
+    }
+
+    transposeAuraVoices(partNo) {
+
+        var lz = this.LHzLeap;
+        var rx = this.RHxLeap;
+        var th = this.lhzTreshold;
+
+        var t = getClockTime();
+        var dt = t - this.lastTransposeTime;
+
+        if (dt > 20) {
+            var transCoef = 0; // in semitones, 0 means no transposition 
+            var lastTransCoef = this.lastTransCoef;
+
+            if (partNo < 1){
+                partNo = 1;
+            }
+            else if (partNo > 5){
+                partNo = 5;
+            }
+
+            switch (partNo) {
+                case 1:
+                    transCoef = -7;
+                    break;
+                case 2:
+                    transCoef = -3;
+                    break;
+                case 3:
+                    transCoef = 0;
+                    break;
+                case 4:
+                    transCoef = 3;
+                    break;
+                case 5:
+                    transCoef = 7;
+                    break;
+                default:
+                    transCoef = 0;
+            }
+            this.lastTransCoef = transCoef;
+            transCoef = transCoef - lastTransCoef;
+
+
+            for (var chordNo in chords) {
+                for (var noteNo in chords[chordNo]) {
+                    var note = chords[chordNo][noteNo];
+                    var newNote = Tone.Frequency(note).transpose(transCoef).toNote();
+                    chords[chordNo][noteNo] = newNote;
+                }
+            }
+            console.log("new chords array is ", chords);
+        }
     }
 
     updateAuraToneFromLeap() {
@@ -153,14 +215,21 @@ class TwoHands extends AudioProgram {
 
     }
 
-    updateDrumPartFromLeap() {
+    updatePartFromLeap() {
         if (app.leapWatcher) {
             var lz = this.LHzLeap;
+            var rz = this.RHzLeap;
             var rx = this.RHxLeap;
             var th = this.lhzTreshold;
-            if (lz > th) {
+            if ((lz - rz) > th) {
                 var partNo = this.scaleRHxFromLeap(rx);
-                this.changeDrumPart(partNo);
+                if (this.drums != null && this.auraVoices == null) {
+                    this.changeDrumPart(partNo);
+                }
+                else {
+                    if ($("#transposeOnOff").prop('checked'))
+                        this.transposeAuraVoices(partNo);
+                }
             }
             else {
                 console.log("***** Lift the left hand higher to change the drum part!! *****");
@@ -168,6 +237,7 @@ class TwoHands extends AudioProgram {
             }
         }
     }
+
     scaleRHxFromLeap(x) {
         var partNo = Math.floor((x / this.rhxLeapStep) - 1) + 3;
         console.log("partNo ", partNo);
@@ -268,8 +338,9 @@ class TwoHands extends AudioProgram {
             this.LHFromLeap = app.leapWatcher.LHAND.get();
             this.DLRFromLeap = app.leapWatcher.DLR.get();
             this.RHxLeap = this.RHFromLeap[0];
+            this.RHzLeap = this.RHFromLeap[1];
             this.LHzLeap = this.LHFromLeap[1];
-            this.lhzTreshold = 180;
+            this.lhzTreshold = 120;
 
             //console.log("Average velocity", (Math.abs( this.LHFromLeap[3])+Math.abs( this.RHFromLeap[3]))/2);
         }
@@ -299,14 +370,6 @@ class TwoHands extends AudioProgram {
 
 
     start() {
-        var drums = this.toneTool.createDrum();
-        this.drums = drums;
-        this.toneTool.addFilter(drums, 150, 'lowpass', -12);
-        this.toneTool.addReverb(this.toneTool.filter, 0.5);
-        this.toneTool.currentBpm = tempo;
-        var drumPart = part1;
-        this.triggerDrums(drumPart, "8n");
-        //this.drumPart.start();
         Tone.Transport.start();
     }
 
@@ -347,6 +410,16 @@ class TwoHands extends AudioProgram {
         }
     }
 
+    generateDrums() {
+        var drums = this.toneTool.createDrum();
+        this.drums = drums;
+        this.toneTool.addFilter(drums, 150, 'lowpass', -12);
+        this.toneTool.addReverb(this.toneTool.filter, 0.5);
+        this.toneTool.currentBpm = tempo;
+        var drumPart = part1;
+        this.triggerDrums(drumPart, "8n");
+    }
+
     triggerDrums(drumPart, duration) {
         this.part = drumPart;
         var inst = this;
@@ -359,6 +432,7 @@ class TwoHands extends AudioProgram {
     startDrums() {
         if (this.drums == null) {
             console.log("Creating drums ...");
+            this.generateDrums();
             this.start();
         }
         else {
@@ -572,10 +646,6 @@ class TwoHands extends AudioProgram {
             this.playAuraToneFromAE();
         }
         if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            /*var note = this.auraVoices.chord[0];
-            this.playAuraToneFromTone(note);
-            this.auraVoices.notes.push(note);
-            */
             var note = this.auraVoices.chord[0];
             this.toneTool.playAuraTone(note);
             this.auraVoices.notes.push(note);

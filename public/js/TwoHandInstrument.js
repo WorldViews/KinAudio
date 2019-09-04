@@ -31,6 +31,8 @@ class TwoHandInstrument extends AudioProgram {
         this.maxHLR = 250;
         this.auraVoices = null;
         this.lastChordChangeTime = getClockTime();
+        this.defaultTransCoef = 0;
+        this.lastTransCoef = 0;
 
         this.initializeLeapSmoothing();
     }
@@ -97,6 +99,41 @@ class TwoHandInstrument extends AudioProgram {
         // find out which rate works better for which value
 
         return [VLRSmoo, DLRSmoo, HLRSmoo];
+
+    }
+
+    updateTransposeCoef(partNo) {
+        var transCoef; // in semitones, 0 means no transposition 
+        var lastTransCoef = this.lastTransCoef;
+        switch(partNo){
+            case 1: 
+                transCoef = -7;
+                break;
+            case 2:
+                transCoef = -3;
+                break;
+            case 3: 
+                transCoef = 0;
+                break;
+            case 4: 
+                transCoef = 3;
+                break;
+            case 5: 
+                transCoef = 7;
+                break;
+        }
+        this.lastTransCoef = transCoef;
+        transCoef = transCoef - lastTransCoef;
+        
+
+        for (chordNo in chords) {
+            for (noteNo in chords[chordNo]) {
+                var note = chords[chordNo][noteNo];
+                var newNote = Tone.Frequency(note).transpose(transCoef).toNote();
+                chords[chordNo][noteNo] = newNote;
+            }
+        }
+        console.log("new chords array is ", chords);
 
     }
 
