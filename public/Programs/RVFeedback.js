@@ -37,7 +37,14 @@ var RVFeedback = class extends AudioProgram {
         }
     }
 
-    start() {
+    start(){
+        Tone.Transport.start();
+        this.loadAudio();
+        this.generateDrumParts();
+
+    }
+
+    generateDrumParts(){
         var drums = this.toneTool.createDrum();
         drums.volume.value = -12;
         var drums2 = this.toneTool.createDrum();
@@ -66,17 +73,10 @@ var RVFeedback = class extends AudioProgram {
             this.counter = (this.counter + 1) % 16;
         }, '16n', this.toneTool.currentBpm);
 
-        this.loopBeat.start();
-        //loopBeat.start(0);
-        Tone.Transport.start();
-
         this.bell = this.toneTool.createBell(12, 600, 20, 8, -20);
         let delay = this.toneTool.addFeedbackDelay(this.bell, 0.05, 0.5);
         let reverb = this.toneTool.addReverb(delay, 0.2);
         this.bell.chain(delay, reverb, Tone.Master);
-
-        // load audio
-        this.loadAudio();
 
         /*
         churchBell = toneTool.createBell(100, 100, 250, 8, -20);
@@ -84,6 +84,18 @@ var RVFeedback = class extends AudioProgram {
         let reverb2 = toneTool.addReverb(delay2, 0.2);
         churchBell.chain(delay2, reverb2, Tone.Master);
         */
+    }
+
+    startDrums() {
+        var state = this.loopBeat.state;
+        console.log("drums' state are ", state);
+        if(state == "started") {
+            return;
+        }
+        else {
+            this.loopBeat.start();
+            console.log("***** strating drums");    
+        }
     }
 
     update() {
@@ -103,6 +115,14 @@ var RVFeedback = class extends AudioProgram {
         var J = JointType;
         for (var bodyId in sw.bodies) {
             var body = sw.bodies[bodyId];
+            if (body.TRIGGER.get()) {
+                this.driverId = bodyId;
+                this.driver = body;
+                this.bodyNum = sw.bodies[bodyId].bodyNum;
+                console.log("RV driver is set with id and body number, ", this.driverId, this.bodyNum);
+                this.startDrums();
+            }
+            /*
             console.log("body", bodyId, body);
             console.log(" head pos", body.getWPos(J.head));
             console.log(" head floor coordinates", body.getFloorXY(J.head));
@@ -113,6 +133,7 @@ var RVFeedback = class extends AudioProgram {
             console.log(" RHAND tracking state", body.getTrackingState(J.handRight));
             console.log(" RHAND joint", body.getJoint(J.handRight));
             console.log(" Dist Left Right", body.DLR.get());
+            */
         }
     }
 
@@ -173,6 +194,11 @@ var RVFeedback = class extends AudioProgram {
     changeFilterParam(error) {
         if (this.audioEffects.biquad == null) {
             console.log("No filter added yet");
+            return;
+        }
+        else if (error == undefined){
+            console.log("No error calculated yet!");
+            return;
         }
         else {
             if (error > maxError) {
