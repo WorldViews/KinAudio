@@ -203,7 +203,7 @@ class MidiPlay1 extends AudioProgram {
     }
 
     update() {
-        var rv = this.rvWatcher;
+        //var rv = this.rvWatcher;
         //console.log("speed:", rv.playSpeed);
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.handleBodies();
@@ -216,7 +216,7 @@ class MidiPlay1 extends AudioProgram {
         //console.log("dlr", dlr);
         if (dlr && !app.leapWatcher.DLR.isStale()) {
             this.DLR = dlr;
-            this.aura.r = dlr;
+            this.auraGraphic.r = dlr;
             if (this.graph) {
                 if (this.useGain)
                     this.graph.addPoint(this.gain*dlr);
@@ -235,8 +235,8 @@ class MidiPlay1 extends AudioProgram {
     start() {
         this.toneTool.currentBpm = this.tempo;
         this.initMidis(MIDI_URLS);
-        this.aura = new CanvasTool.CloudGraphic(this, 0.0, 0.8, .25)
-        app.canvasTool.addGraphic(this.aura);
+        this.auraGraphic = new CanvasTool.CloudGraphic({id: 'cloud', x: 0.0, y: 0.8, r: .25})
+        app.canvasTool.addGraphic(this.auraGraphic);
         this.graph = new CanvasTool.GraphGraphic('graph1', 0, 0, 2, 1);
         app.canvasTool.addGraphic(this.graph);
 
