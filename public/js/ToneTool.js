@@ -285,7 +285,7 @@ class ToneTool {
                 "type": "fatsine",
                 "partials": [0, 2, 3, 4],
                 "partialCount": 0,
-                "spread": 60,
+                "spread": 10,
                 "count": 10
             },
             "envelope": {

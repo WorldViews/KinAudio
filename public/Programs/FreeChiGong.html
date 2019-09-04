@@ -1,0 +1,26 @@
+<p>
+    <input type="checkbox" checked id="handleRVMessagesCB" /> handle RV Messages
+</p>
+<h4 id="showDrumsControls">Drums:</h4>
+<div id="drumsControls" style="padding:40px;">
+    <button id="startDrums" style="">Start Drums</button> &nbsp;
+    <button id="loadAudio" style="">Load Audio</button> &nbsp;
+    <button id="stopDrums" style="">Stop Drums</button> &nbsp;
+    <p>
+        <input type="range" id="changeTempo" oninput="app.program.changeDrumsTempo()" min="30" max="256"
+            style="width:80%">
+        <label for="changeTempo">change Tempo</label>
+    </p>
+</div>
+<h4 id="showAuraToneControls">Aura Tone Controls</h4>
+<div id="auraToneControls" style="padding:40px;">
+    <button id="createAuraTone" style="">Create Aura Tone</button> &nbsp;
+    <button id="playAuraTone" style="">Play Aura Tone</button> &nbsp;
+    <button id="stopAuraTone" style="">Stop Aura Tone</button> &nbsp;
+    <p>
+        <input type="range" id="DLR" oninput="app.program.updateAuraTone()" min="0" max="50" style="width:80%" />
+        <label for="DLR">Hands distance</label>
+        <input type="range" id="velocity" oninput="app.program.updateAuraTone()" min="0" max="50" style="width:80%" />
+        <label for="velocity">Hands velocity</label>
+    </p>
+</div>

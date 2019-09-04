@@ -752,9 +752,9 @@ class TwoHands extends AudioProgram {
     generateAuraTonefromTone() {
         this.auraVoices = this.toneTool.generateAuraTone();
 
-        this.firstNoteDLR = 1.5;
-        this.secondNoteDLR = 2.5;
-        this.chordChangeDLR = 4;
+        this.toneTool.firstNoteDLR = 1.5;
+        this.toneTool.secondNoteDLR = 2.5;
+        this.toneTool.chordChangeDLR = 4;
     }
 
     /*

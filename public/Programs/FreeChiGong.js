@@ -1,6 +1,6 @@
 var tempo = 44;
 
-class ChiGong extends AudioProgram {
+class FreeChiGong extends AudioProgram {
     constructor(app, opts) {
         super(app, opts);
         this.counter = 0;
@@ -84,6 +84,7 @@ class ChiGong extends AudioProgram {
         var rv = this.rvWatcher;
         //this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         //this.changeFilterParam(rv.poseError);
+        this.updateAuraEnergy();
         this.handleBodies();
         this.updateStatus();
     }
@@ -94,6 +95,7 @@ class ChiGong extends AudioProgram {
         //this.changePartTempo(rvWatcher.playSpeed, rvWatcher.smooSpeed);
         this.updateAuraToneFromKinect(msg, rvWatcher);
         this.updateStatus();
+        this.setAuraEnergyFromKinect();
         //this.RHx = rvWatcher.prevMsg.controlPoints[0].pt[0];
 
     }
@@ -152,8 +154,8 @@ class ChiGong extends AudioProgram {
         Tone.Transport.start();
         this.auraVoices = this.toneTool.generateAuraTone();
         this.toneTool.firstNoteDLR = 2;
-        this.toneTool.secondNoteDLR = 3;
-        this.toneTool.chordChangeDLR = 4;
+        this.toneTool.secondNoteDLR = 4;
+        this.toneTool.chordChangeDLR = 7;
         var note = this.auraVoices.chord[0];
         this.toneTool.playAuraTone(note);
     }
@@ -201,6 +203,32 @@ class ChiGong extends AudioProgram {
         this.smoothPlaySpeed = psSmoo;
 
         return psSmoo;
+    }
+
+    updateAuraEnergy() {
+        var aMax = this.auraEnergy / 1000;
+        var auras = [
+            {
+                name: "hands", rgb: [255, 50, 0], aMax,
+                joints: [JointType.handLeft, JointType.handRight]
+            }
+        ];
+        var msg = { 'type': 'setProps', auras };
+        app.portal.sendMessage(msg);
+    }
+    setAuraEnergyFromKinect() {
+        var rv = this.rvWatcher;
+        if (rv.msg.type == 'poseFit') {
+            var poseError = rv.poseError;
+            if (poseError > 150) {
+                poseError = 150;
+            }
+            poseError = (1 - poseError / 150) * 1000;
+            this.auraEnergy = poseError;
+        }
+        else {
+            return;
+        }
     }
 
     // TODO #1: replace data with posefit msg data - done

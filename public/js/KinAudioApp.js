@@ -5,6 +5,7 @@ var DEFAULT_PROGRAMS = [
     "SampleProg1",
     "TwoHands",
     "ChiGong",
+    "FreeChiGong",
     "RVFeedback"
 ];
 
