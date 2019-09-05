@@ -121,10 +121,10 @@ class TwoHands extends AudioProgram {
             var transCoef = 0; // in semitones, 0 means no transposition 
             var lastTransCoef = this.lastTransCoef;
 
-            if (partNo < 1){
+            if (partNo < 1) {
                 partNo = 1;
             }
-            else if (partNo > 5){
+            else if (partNo > 5) {
                 partNo = 5;
             }
 
@@ -201,14 +201,7 @@ class TwoHands extends AudioProgram {
         DLR = Math.round(DLR * 10);
         aveVLR = Math.round(aveVLR / 5);
 
-        //console.log("aveVLR, ", aveVLR);
-
-        if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
-            //this.tuneAuraToneFromAE(aveVLR / 10, DLR * 100);
-        }
-        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            this.toneTool.tuneAuraTone(DLR, aveVLR, volume);
-        }
+        this.toneTool.tuneAuraTone(DLR, aveVLR, volume);
 
         //console.log("Leap Data:, ", leapData);
         //console.log("Smooth Data:, ",smoothData);
@@ -227,8 +220,7 @@ class TwoHands extends AudioProgram {
                     this.changeDrumPart(partNo);
                 }
                 else {
-                    if ($("#transposeOnOff").prop('checked'))
-                        this.transposeAuraVoices(partNo);
+                    return;
                 }
             }
             else {
@@ -371,6 +363,8 @@ class TwoHands extends AudioProgram {
 
     start() {
         Tone.Transport.start();
+        this.createAuraTone();
+        this.playAuraTone();
     }
 
 
@@ -548,16 +542,13 @@ class TwoHands extends AudioProgram {
     }
 
     createAuraTone() {
-        if (!$("#usingToneTool").prop('checked') && $("#usingAudioEffects").prop('checked')) {
-            this.generateAuraToneFromAE(6, 6, 110);
-            console.log("Aura tone is created from AudioEffects");
-        }
-        else if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
+
+        if (this.auraVoices == null) {
             this.generateAuraTonefromTone();
-            console.log("Aura tone is created from ToneTool");
+            console.log("Aura tone is created from ToneTool.");
         }
         else {
-            console.log("Select only one aura tone generator!");
+            console.log("Aura tone is already created.");
             return;
         }
     }
@@ -565,189 +556,23 @@ class TwoHands extends AudioProgram {
     updateAuraTone() {
         var DLR = document.getElementById("DLR").value;
         var velocity = document.getElementById("velocity").value;
-        if (!$("#usingToneTool").prop('checked') && $("#usingAudioEffects").prop('checked')) {
-            this.tuneAuraToneFromAE(velocity, DLR);
-        }
-        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            this.toneTool.tuneAuraTone(DLR / 5, velocity * 2);
-        }
+        this.toneTool.tuneAuraTone(DLR / 5, velocity * 2);
     }
 
-    generateAuraToneFromAE(numOscs, maxOverTone, f0) {
-        var audioEffects = this.audioEffects;
-        this.SinOscs = [];
-        this.SinOscGains = [];
-        this.oscOuts = [];
-        this.outGains = [];
-        for (var i = 0; i < numOscs; i++) {
-            this.oscOuts[i] = audioEffects.audioContext.createGain();
-            this.SinOscs[i] = [];
-            this.SinOscGains[i] = [];
-            for (var j = 0; j < maxOverTone; j++) {
-                var osc = audioEffects.audioContext.createOscillator();
-                var oscNum = i * maxOverTone + j;
-                osc.type = 'sine';
-                osc.frequency.value = f0;
-                var oscGain = audioEffects.audioContext.createGain();
-                oscGain.gain.setValueAtTime(0, audioEffects.audioContext.currentTime);
-                this.SinOscs[i][j] = osc;
-                this.SinOscGains[i][j] = oscGain;
-                this.SinOscs[i][j].oscNum = oscNum;
-                this.SinOscs[i][j].connect(this.SinOscGains[i][j]);
-                this.SinOscGains[i][j].connect(this.oscOuts[i]);
-            }
-            this.outGains[i] = audioEffects.audioContext.createGain();
-            this.oscOuts[i].connect(this.outGains[i]);
-            this.oscOuts[i].gain.setValueAtTime(0, audioEffects.audioContext.currentTime);
-            this.outGains[i].gain.setValueAtTime(0, audioEffects.audioContext.currentTime);
-        }
-        this.initiateAuraTone(numOscs, maxOverTone, f0);
-
-    }
-
-    initiateAuraTone(numOscs, maxOverTone, f0) {
-        this.auraTone = [
-            {
-                id: "SinOsc",
-                type: "oscillatorNode",
-                element: this.SinOscs
-            },
-            {
-                id: "SinOscGains",
-                type: "gainNode",
-                element: this.SinOscGains
-            },
-            {
-                id: "oscOuts",
-                type: "gainNode",
-                element: this.oscOuts
-            },
-            {
-                id: "outGains",
-                type: "gainNode",
-                element: this.outGains
-            },
-        ];
-        this.auraTone.numOscs = numOscs;
-        this.auraTone.numOverTones = maxOverTone;
-        this.auraTone.f0 = f0;
-        this.auraTone.masterGain = 0.1;
-        this.auraTone.targetGain = 0.3;
-    }
-
-    connectAuraTone() {
-        for (var i = 0; i < this.outGains.length; i++) {
-            this.outGains[i].connect(this.audioEffects.audioContext.destination);
-        }
-    }
 
     playAuraTone() {
-        if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
-            this.playAuraToneFromAE();
-        }
-        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            var note = this.auraVoices.chord[0];
-            this.toneTool.playAuraTone(note);
-            this.auraVoices.notes.push(note);
-        }
+        var note = this.auraVoices.chord[0];
+        this.toneTool.playAuraTone(note);
+        this.auraVoices.notes.push(note);
     }
 
     stopAuraTone() {
-        if ($("#usingAudioEffects").prop('checked') && !$("#usingToneTool").prop('checked')) {
-            this.stopAuraToneFromAE();
+        for (var i = 0; i < this.auraVoices.notes.length; i++) {
+            var lastNote = this.auraVoices.notes.pop();
+            this.toneTool.stopAuraTone(lastNote);
         }
-        if ($("#usingToneTool").prop('checked') && !$("#usingAudioEffects").prop('checked')) {
-            for (var i = 0; i < this.auraVoices.notes.length; i++) {
-                var lastNote = this.auraVoices.notes.pop();
-                this.toneTool.stopAuraTone(lastNote);
-            }
-            this.auraVoices.dispose();
-        }
+        this.auraVoices.dispose();
     }
-
-    // TODO: add fade in and fade out envelopes
-    playAuraToneFromAE() {
-        this.connectAuraTone();
-        this.tuneAuraToneFromAE(0, 0);
-        if (this.SinOscs != null) {
-            for (var tone in this.SinOscs) {
-                for (var osc in this.SinOscs[tone]) {
-                    this.SinOscs[tone][osc].start();
-                }
-                this.audioEffects.fadein(this.SinOscGains[tone]);
-                this.audioEffects.fadein(this.oscOuts);
-            }
-        }
-        else {
-            console.log("No aura tone!");
-            return;
-        }
-        this.audioEffects.fadein(this.outGains);
-    }
-
-
-    stopAuraToneFromAE() {
-        this.audioEffects.fadeout(this.outGains);
-        if (this.SinOscs != null) {
-            for (var tone in this.SinOscs) {
-                for (var osc in this.SinOscs[tone]) {
-                    this.SinOscs[tone][osc].stop(this.audioEffects.audioContext.currentTime + 1);
-                }
-            }
-        }
-        else {
-            console.log("No aura tone!");
-            return;
-        }
-    }
-
-    tuneAuraToneFromAE(velocity, DLR) {
-        if (this.auraTone == null) {
-            console.log("Create AuraTone");
-            return;
-        }
-        var attackCoef = 5;
-        var relaseCoef = 0.99;
-        var maxDLR = this.maxDLR;
-        var maxVLR = this.maxVLR;
-        this.auraTone.overToneScale = (maxDLR - DLR) / maxDLR;
-        //this.auraTone.overToneScale = 1;
-        var detune = velocity / maxVLR * 0.001;
-        var timbre = 0.98;
-        var t = this.audioEffects.audioContext.currentTime;
-
-        console.log("DLR in tuneAuraTone, ", DLR);
-
-        if (DLR > 45) {
-            this.auraTone.masterGain += DLR * 0.01 / attackCoef;
-        }
-        else {
-            this.auraTone.masterGain *= relaseCoef;
-        }
-        if (this.auraTone.masterGain > this.oscOuts.length) {
-            this.auraTone.masterGain = this.oscOuts.length;
-        }
-        for (var i = 0; i < this.oscOuts.length; i++) {
-            this.oscOuts[i].gain.setValueAtTime(this.auraTone.masterGain / (i + 2), this.audioEffects.audioContext.currentTime);
-            console.log("auraTone.masterGain, ", this.auraTone.masterGain / (i + 2));
-        }
-
-        for (var tone in this.SinOscs) {
-            for (var osc in this.SinOscs[tone]) {
-                var oscGain = 1 / Math.pow((osc + 1), this.auraTone.overToneScale) / (this.auraTone.numOverTones);
-                this.SinOscGains[tone][osc].gain.setValueAtTime(oscGain, this.audioEffects.audioContext.currentTime);
-                var freq = this.auraTone.f0 / this.auraTone.numOverTones * Math.pow((osc + 1), (Math.pow(timbre, this.auraTone.numOscs / 2))) * (detune * tone + 1);
-                if (freq < this.auraTone.f0 / 2) {
-                    freq = this.auraTone.f0 / 2;
-                }
-                this.SinOscs[tone][osc].frequency.setValueAtTime(freq, this.audioEffects.audioContext.currentTime);
-            }
-            var outGain = (1 + (DLR / maxDLR) * Math.cos(2 * 3.14 * t * (tone + 1) / this.auraTone.numOscs) / (2 * this.auraTone.numOscs));
-            console.log("oscillator gains, ", outGain);
-            this.outGains[tone].gain.setValueAtTime(outGain, this.audioEffects.audioContext.currentTime);
-        }
-    }
-
 
     generateAuraTonefromTone() {
         this.auraVoices = this.toneTool.generateAuraTone();
@@ -756,125 +581,4 @@ class TwoHands extends AudioProgram {
         this.toneTool.secondNoteDLR = 2.5;
         this.toneTool.chordChangeDLR = 4;
     }
-
-    /*
-
-    generateAuraTonefromTone() {
-        var voices = new Tone.PolySynth(4, Tone.Synth, {
-            "oscillator": {
-                "type": "fatsine",
-                "partials": [0, 2, 3, 4],
-                "partialCount": 0,
-                "spread": 60,
-                "count": 10
-            },
-            "envelope": {
-                "attackCurve": "sine",
-                "attack": 0.4,
-                "decayCurve": "exponential",
-                "decay": 0.1,
-                "sustain": 1,
-                "releaseCurve": "exponential",
-                "release": 0.4,
-            }
-        });
-
-        voices.volume.value = -12;
-
-        var filter = new Tone.Filter({
-            type: "lowpass",
-            frequency: 440,
-            rolloff: -12,
-            Q: 1
-        });
-
-        //voices.chain(filter, Tone.Master);
-        voices.chain(Tone.Master);
-        this.auraVoices = voices;
-        this.auraVoices.filter = filter;
-        this.auraVoices.chord = chords[0];
-        this.auraVoices.notes = [];
-        return voices;
-    }
-
-    tuneAuraToneFromTone(DLR, velocity, volume) {
-
-
-        //console.log("tuneAuraToneFromTone with DLR, ", DLR, " and velocity, ", velocity);
-        var freq = Math.floor(velocity + 1);
-        this.auraVoices.set({
-            "oscillator": {
-                "spread": velocity
-            }
-        });
-
-        // control the volume
-        this.auraVoices.volume.value = volume;
-        //console.log("auraVoices.volume:, ", volume);
-
-        if (DLR > 1.5) {
-            if (!this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
-                this.auraVoices.notes.push(this.auraVoices.chord[1]);
-                this.playAuraToneFromTone(this.auraVoices.notes);
-            }
-        }
-        if (DLR > 2.5) {
-            if (!this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
-                this.auraVoices.notes.push(this.auraVoices.chord[2]);
-                this.playAuraToneFromTone(this.auraVoices.notes);
-            }
-        }
-        if (DLR < 2.5) {
-            if (this.auraVoices.notes.includes(this.auraVoices.chord[2])) {
-                this.stopAuraToneFromTone(this.auraVoices.chord[2]);
-                this.auraVoices.notes.pop();
-            }
-        }
-        if (DLR < 1.5) {
-            if (this.auraVoices.notes.includes(this.auraVoices.chord[1])) {
-                this.stopAuraToneFromTone(this.auraVoices.chord[1]);
-                this.auraVoices.notes.pop();
-            }
-        }
-
-        if (DLR > 4) {
-            this.changeAuraChord();
-        }
-        console.log("playing aura notes:, ", this.auraVoices.notes);
-    }
-
-    changeAuraChord() {
-        var t = getClockTime();
-        var dt = t - this.lastChordChangeTime;
-        if (dt > 2) {
-            this.lastChordChangeTime = getClockTime();
-            var chord = this.auraVoices.chord;
-            var chordNo = chords.indexOf(chord);
-            var nextChordNo = (chordNo + 1) % chords.length;
-            console.log("Chord is changed from, ", chord);
-            var newChord = chords[nextChordNo];
-            this.auraVoices.chord = newChord;
-            this.auraVoices.notes = newChord.slice(0);
-            console.log("...to, ", newChord);
-            this.playAuraToneFromTone(this.auraVoices.notes);
-        }
-    }
-
-
-    playAuraToneFromTone(notes) {
-        this.auraVoices.triggerAttack(notes, this.audioEffects.currentTime);
-
-    }
-
-    stopAuraToneFromTone(notes) {
-        if (this.auraVoices == null) {
-            console.log("No auraTone created");
-            return;
-        }
-        else {
-            this.auraVoices.triggerRelease(notes, this.audioEffects.currentTime);
-        }
-    }
-    */
-
 }
