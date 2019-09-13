@@ -158,7 +158,7 @@ class FreeChiGong extends AudioProgram {
 
     loadAudio() {
         console.log("loadAudio");
-        var url = '../Audio/samples/RVSoundscapeV2.wav';
+        var url = '/rvaudio/audio/samples/RVSoundscapeV2.wav';
         var startTime = 0;
         console.log("loading audio", url, startTime);
         this.audioEffects.loadAudio(url, () => {
