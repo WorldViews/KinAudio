@@ -178,6 +178,7 @@ class TwoHands extends AudioProgram {
         var smoothData = this.smoothLeapData(aveVLR, DLR, HLR);
         aveVLR = smoothData[0];
         DLR = smoothData[1];
+        HLR = smoothData[2];
         document.getElementById("smoothVelocity").value = smoothData[0];
         document.getElementById("smoothDistance").value = smoothData[1] * 10;
 
@@ -187,12 +188,12 @@ class TwoHands extends AudioProgram {
         if (HLR > 1) {
             HLR = 0.99;
         }
-        else if (HLR < 0) {
-            HLR = 0.01;
+        else if (HLR < 0.05) {
+            HLR = 0.05;
         }
-        var volume = 24 * Math.log10(HLR);
+        var volume = 18 * Math.log10(HLR);
 
-        //console.log("Average height, ", HLR, "volume, ", volume);
+        console.log("Average height, ", HLR, "volume, ", volume);
 
         if (aveVLR > this.maxVLR * 10) {
             aveVLR = this.maxVLR * 10;
@@ -301,7 +302,7 @@ class TwoHands extends AudioProgram {
                 this.driver = body;
                 this.bodyNum = sw.bodies[bodyId].bodyNum;
                 console.log("TwoHandInstrument driver is set with id and body number, ", this.driverId, this.bodyNum);
-                this.RHx = rv.prevMsg.controlPoints[0].pt[0];
+                //this.RHx = rv.prevMsg.controlPoints[0].pt[0];
             }
             /*
             console.log("body", bodyId, body);

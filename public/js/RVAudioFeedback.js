@@ -61,7 +61,7 @@ var RVAudioFeedback = class extends AudioProgram {
             inst.triggerDrums(5, ['f#2', 'f#2'], '8n', time, gain);
             inst.triggerDrums(6, ['f#2', 'f#2'], '8n', time, gain);
 
-            var bellPart = inst.toneTool.createBellPart(inst.bell, this.part1);
+            //var bellPart = inst.toneTool.createBellPart(inst.bell, this.part1);
             //churchBellPart = toneTool.createBellPart(churchBell, part1);
 
             //bellPart.start(5);

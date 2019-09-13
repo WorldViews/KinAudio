@@ -1,4 +1,6 @@
 var tempo = 44;
+//var bellPart = [["0", "Ab3"], ["4n", null], ["2n", null],  [3*Tone.Time("4n"), null],  ["1m", null],  [5*Tone.Time("4n"), null],  [6*Tone.Time("4n"), null],  [7*Tone.Time("4n"), null],  [8*Tone.Time("4n"), "Ab3"], [8*Tone.Time("4n") + Tone.Time("8n"), "C4"], [9*Tone.Time("4n"),null], [10*Tone.Time("4n"),null], [11*Tone.Time("4n"),null] ]
+var bellPart = [["0", "Ab3"], ["1m", null], ["2m", null]];
 
 class TwoHandInstrument extends AudioProgram {
     constructor(app, opts) {
@@ -344,7 +346,22 @@ class TwoHandInstrument extends AudioProgram {
         var drumPart = part1;
         this.triggerDrums(drumPart, "8n");
         //this.drumPart.start();
+
+        this.bell = this.toneTool.createBell(12, 800, 20, 4, -20);
+        let delay = this.toneTool.addFeedbackDelay(this.bell, 0.05, 0.5);
+        let reverb = this.toneTool.addReverb(delay, 0.2);
+        this.bell.chain(delay, reverb, Tone.Master);
+        this.triggerBells(bellPart, '1m');
         Tone.Transport.start();
+    }
+
+    triggerBells(bellPart, duration) {
+        this.part = bellPart;
+        var inst = this;
+        this.bellPart = new Tone.Part(function (time, pitch) {
+            inst.bell.triggerAttackRelease(pitch, duration, time);
+        }, inst.part);
+        this.bellPart.loop = true;
     }
 
 
@@ -399,7 +416,8 @@ class TwoHandInstrument extends AudioProgram {
             this.start();
         }
         else {
-            this.drumPart.start();
+            //this.drumPart.start();
+            this.bellPart.start();
         }
     }
 

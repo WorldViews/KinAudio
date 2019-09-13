@@ -27,6 +27,13 @@ var RVFeedback = class extends AudioProgram {
             [null, null, null],
             [null, null, null]];
         this.initGUI();
+
+        var gui = app.gui;
+        this.drumsVolume = -12;
+        var s01 = gui.addFolder('RV Drums Control');
+        s01.add(this, 'drumsVolume', -36, -6).listen();
+
+
     }
 
     triggerDrums(onset, notes, duration, time, volume) {
@@ -46,13 +53,13 @@ var RVFeedback = class extends AudioProgram {
 
     generateDrumParts(){
         var drums = this.toneTool.createDrum();
-        drums.volume.value = -12;
+        drums.volume.value = this.drumsVolume;
         var drums2 = this.toneTool.createDrum();
         this.drums = drums;
         this.drums2 = drums2;
         drums2.oscillator.type = 'triangle';
         drums2.octaves = 1;
-        drums2.volume.value = -12;
+        drums2.volume.value = this.drumsVolume;
         this.toneTool.addFilter(drums, 150, 'lowpass', -12);
         this.toneTool.addFilter(drums2, 150, 'lowpass', -12);
         this.toneTool.addReverb(this.toneTool.filter, 0.5);
@@ -63,27 +70,8 @@ var RVFeedback = class extends AudioProgram {
             inst.triggerDrums(0, ['c3', 'c3'], '4n', time, gain);
             inst.triggerDrums(5, ['f#2', 'f#2'], '8n', time, gain);
             inst.triggerDrums(6, ['f#2', 'f#2'], '8n', time, gain);
-
-            var bellPart = inst.toneTool.createBellPart(inst.bell, this.part1);
-            //churchBellPart = toneTool.createBellPart(churchBell, part1);
-
-            //bellPart.start(5);
-            //churchBellPart.start(10);
-
             this.counter = (this.counter + 1) % 16;
         }, '16n', this.toneTool.currentBpm);
-
-        this.bell = this.toneTool.createBell(12, 600, 20, 8, -20);
-        let delay = this.toneTool.addFeedbackDelay(this.bell, 0.05, 0.5);
-        let reverb = this.toneTool.addReverb(delay, 0.2);
-        this.bell.chain(delay, reverb, Tone.Master);
-
-        /*
-        churchBell = toneTool.createBell(100, 100, 250, 8, -20);
-        let delay2 = toneTool.addFeedbackDelay(churchBell, 0.05, 0.5);
-        let reverb2 = toneTool.addReverb(delay2, 0.2);
-        churchBell.chain(delay2, reverb2, Tone.Master);
-        */
     }
 
     startDrums() {
@@ -106,6 +94,7 @@ var RVFeedback = class extends AudioProgram {
         this.changeFilterParam(rv.poseError);
         this.handleBodies();
         this.updateStatus();
+        this.updateDrumsVolume();
     }
 
     // This is just to give some sample code of some things that can be
@@ -167,6 +156,11 @@ var RVFeedback = class extends AudioProgram {
         tempo = this.toneTool.getClosestTempo(tempo); // target tempo in bpm
         this.tempo = tempo;
         this.toneTool.setTempo(tempo);
+    }
+
+    updateDrumsVolume(){
+        this.drums.volume.value = this.drumsVolume;
+        this.drums2.volume.value = this.drumsVolume;
     }
 
     updateStatus() {
