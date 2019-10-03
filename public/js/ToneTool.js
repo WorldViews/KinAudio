@@ -250,7 +250,7 @@ class ToneTool {
     }
 
     setTempo(bpm) {
-        //console.log("setTempo", bpm);
+        console.log("setTempo", bpm);
         Tone.Transport.bpm.value = bpm;
         this.currentBpm = bpm;
     }

@@ -32,6 +32,7 @@ var RVFeedback = class extends AudioProgram {
         this.drumsVolume = -12;
         var s01 = gui.addFolder('RV Drums Control');
         s01.add(this, 'drumsVolume', -36, -6).listen();
+        s01.add(this, "startDrums");
 
 
     }
@@ -89,7 +90,7 @@ var RVFeedback = class extends AudioProgram {
     update() {
         //super.update();
         var rv = this.rvWatcher;
-        console.log("speed:", rv.playSpeed);
+        //console.log("speed:", rv.playSpeed);
         this.changePartTempo(rv.playSpeed, rv.smooSpeed);
         this.changeFilterParam(rv.poseError);
         this.handleBodies();
@@ -182,6 +183,7 @@ var RVFeedback = class extends AudioProgram {
         $("#filterFrequency").on('input', () => inst.changeFilterFrequency());
         $("#detune").on('input', () => inst.changeFilterDetune());
         $("#Q").on('input', () => inst.changeFilterQ());
+        $("#startDrums").click(() => inst.startDrums());
     }
 
 
@@ -191,7 +193,7 @@ var RVFeedback = class extends AudioProgram {
             return;
         }
         else if (error == undefined){
-            console.log("No error calculated yet!");
+            //console.log("No error calculated yet!");
             return;
         }
         else {
@@ -206,7 +208,7 @@ var RVFeedback = class extends AudioProgram {
             }
             this.audioEffects.biquad.frequency.value = fc;
             this.audioEffects.biquad.freq = fc;
-            console.log("Changing audioEffects.biquad.freq to ", fc, this.audioEffects.biquad.freq, this.audioEffects.biquad.frequency);
+            //console.log("Changing audioEffects.biquad.freq to ", fc, this.audioEffects.biquad.freq, this.audioEffects.biquad.frequency);
         }
     }
 
