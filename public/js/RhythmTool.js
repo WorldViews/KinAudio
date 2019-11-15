@@ -10,15 +10,15 @@ var soundPrefix = 'http://localhost:8000/sounds/';
 var SOUNDS1 = [
     'bass_drum.wav',
     'snare_drum.wav',
-     'low_tom.wav',
-     'mid_tom.wav',
-     'hi_tom.wav',
-     'rim_shot.wav',
-     'hand_clap.wav',
-     'cowbell.wav',
-     'cymbal.wav',
-     'o_hi_hat.wav',
-     'cl_hi_hat.wav',
+    'low_tom.wav',
+    'mid_tom.wav',
+    'hi_tom.wav',
+    'rim_shot.wav',
+    'hand_clap.wav',
+    'cowbell.wav',
+    'cymbal.wav',
+    'o_hi_hat.wav',
+    'cl_hi_hat.wav',
     'low_conga.wav',
     'mid_conga.wav',
     'hi_conga.wav',
@@ -35,6 +35,14 @@ var SOUNDS2 = [
     'taiko.wav'
 ];
 
+var SOUNDS3 = [
+    'low_conga.wav',
+    'mid_conga.wav',
+    'cowbell.wav',
+    'taiko.wav',
+    'taiko.wav'
+];
+
 var buffers = {};
 if (AudioContext) {
     var context = new AudioContext();
@@ -47,18 +55,38 @@ class RhythmTool {
         this.$beats = null;
         this.sounds = sounds || SOUNDS2;
         this.slength = this.sounds.length;
+        this.playing = true;
         this.BPM = 80;
         this.TICKS = 16;
+        this.pRandOn = .3;
+        this.pMutate = 0.001;
+        this.pAdd = .02;
+        this.pRemove = 0.02;
         this.currentTick = 0;
         this.lastTick = this.TICKS - 1;
         this.tickTime = 1 / (4 * this.BPM / (60 * 1000));
         this.setupGUI();
+        this.setupDATGUI();
     }
 
     start() {
         var inst = this;
-        this.requestInterval(() => inst.handleTick(), 1 / (4 * this.BPM / (60 * 1000)));
+        //this.requestInterval(() => inst.handleTick(), 1 / (4 * this.BPM / (60 * 1000)));
+        this.requestInterval(() => inst.tick());
     }
+
+    setupDATGUI() {
+        var P = this;
+        var gui = new dat.GUI();
+        gui.add(P, 'pRandOn', 0, 1);
+        gui.add(P, 'pMutate', 0, 1);
+        gui.add(P, 'pAdd', 0, 1);
+        gui.add(P, 'pRemove', 0, 1);
+        gui.add(P, "BPM", 50, 160);
+        gui.add(P, "playing");
+        gui.add(P, "tick");
+    }
+
 
     playSound(url) {
         if (!AudioContext) {
@@ -70,7 +98,7 @@ class RhythmTool {
             var req = new XMLHttpRequest();
             req.open('GET', url, true);
             req.responseType = 'arraybuffer';
-    
+
             req.onload = function () {
                 context.decodeAudioData(req.response,
                     function (buffer) {
@@ -95,14 +123,16 @@ class RhythmTool {
         }
     }
 
-    requestInterval(fn, delay) {
+    requestInterval(fn) {
+        var inst = this;
         var start = new Date().getTime();
         var handle = {};
 
         function loop() {
+            var delay = 1 / (4 * inst.BPM / (60 * 1000));
             var current = new Date().getTime();
             var delta = current - start;
-            if (delta >= delay) {
+            if (delta >= delay && inst.playing) {
                 fn.call();
                 start = new Date().getTime();
             }
@@ -112,49 +142,92 @@ class RhythmTool {
         return handle;
     }
 
-    handleTick() {
+    tick() {
         for (var i = 0; i < this.slength; i++) {
             var lastBeat = this.$beats[i * this.TICKS + this.lastTick];
             var currentBeat = this.$beats[i * this.TICKS + this.currentTick];
             lastBeat.classList.remove('ticked');
             currentBeat.classList.add('ticked');
-            if (currentBeat.classList.contains('on')) {
-                this.playSound(soundPrefix + this.sounds[i]);
+            if (this.getState(i, this.currentTick)) {
+                this.playSound(soundPrefix + this.sounds[i])
             }
         }
+        this.mutate();
         this.lastTick = this.currentTick;
         this.currentTick = (this.currentTick + 1) % this.TICKS;
     }
 
     clearBeat() {
-        var $onbeats = document.querySelectorAll('.beat.on');
-        if (!$onbeats.length) return;
         for (var r = 0; r < this.slength; r++) {
             for (var c = 0; c < this.TICKS; c++) {
-                var cell = $onbeats[c + (r * this.TICKS)];
-                if (cell) {
-                    cell.classList.remove('on');
-                }
+                this.setState(r, c, false);
             }
         }
     }
 
     setRandomBeat() {
         this.clearBeat();
-
         for (var r = 0; r < this.slength; r++) {
             for (var c = 0; c < this.TICKS; c++) {
-                var num = Math.ceil(Math.random() * 100) % 3;
-                if (num === 0) {
-                    this.$beats[c + (r * this.TICKS)].classList.toggle('on');
+                if (Math.random() < this.pRandOn) {
+                    this.setState(r,c,true);
                 }
             }
         }
     }
 
+    getState(r, c) {
+        var beat = this.$beats[r * this.TICKS + c];
+        return beat.classList.contains('on');
+    }
+
+    setState(r, c, v) {
+        console.log("setState", r, c, v);
+        var beat = this.$beats[r * this.TICKS + c];
+        if (v && !beat.classList.contains('on'))
+            beat.classList.add('on');
+        if (!v && beat.classList.contains('on'))
+            beat.classList.remove('on');
+    }
+
+    toggleState(r,c) {
+        //console.log("toggleState", r,c);
+        this.setState(r,c, !this.getState(r,c));
+    }
+
+    mutate() {
+        if (Math.random() > this.pMutate) {
+            return;
+        }
+        //console.log("mutate");
+        for (var r = 0; r < this.slength; r++) {
+            for (var c = 0; c < this.TICKS; c++) {
+                if (this.getState(r, c)) {
+                    if (Math.random() < this.pRemove) {
+                        this.setState(r, c, false);
+                        console.log("remove r,c", r, c);
+                    }
+                }
+                else {
+                    if (Math.random() < this.pAdd) {
+                        this.setState(r, c, true);
+                        console.log("add r,c", r, c);
+                    }
+                }
+            }
+        }
+    }
+
+    hitBeat() {
+        var i = this.sounds.length - 1;
+        this.playSound(soundPrefix + this.sounds[i])
+    }
+
     exportBeat() {
+        console.log("exportBeat");
         // create an object so we can jsonify it later
         var exportData = {}
+        var inst = this;
         // for each row (sound)
         this.sounds.forEach(function (sound) {
             // get the soundname, without .wav
@@ -164,7 +237,7 @@ class RhythmTool {
             var cellsgrouped = [];
 
             // this will give us [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-            var cellsbuffer = Array.apply(null, Array(this.TICKS)).map(Number.prototype.valueOf, 0);
+            var cellsbuffer = Array.apply(null, Array(inst.TICKS)).map(Number.prototype.valueOf, 0);
 
             // set the size of a group
             var groupsize = 4;
@@ -187,6 +260,7 @@ class RhythmTool {
             // update the object
             exportData[soundname] = cellsgrouped;
         });
+        console.log("beat:\n"+JSON.stringify(exportData));
     }
 
     setupGUI() {
@@ -196,8 +270,8 @@ class RhythmTool {
         this.$button = document.createElement('button');
         this.$button.classList.add('beat');
 
-        for (var r = 0; r < this.slength; r++) {
-            for (var c = 0; c < this.TICKS; c++) {
+        for (let r = 0; r < this.slength; r++) {
+            for (let c = 0; c < this.TICKS; c++) {
                 var _$button = this.$button.cloneNode(true);
                 if (c === 0) {
                     _$button.classList.add('first');
@@ -208,7 +282,9 @@ class RhythmTool {
                 _$button.dataset.instrument = soundname;
 
                 _$button.addEventListener('click', function () {
-                    this.classList.toggle('on');
+                    //this.classList.toggle('on');
+                    inst.toggleState(r,c);
+                    //this.classList.toggle('on');
                 }, false);
                 this.$grid.appendChild(_$button);
             }
@@ -218,5 +294,6 @@ class RhythmTool {
         document.querySelector('#export').addEventListener('click', () => inst.exportBeat());
         document.querySelector('#random').addEventListener('click', () => inst.setRandomBeat());
         document.querySelector('#clear').addEventListener('click', () => inst.clearBeat());
+        document.querySelector('#beat').addEventListener('click', () => inst.hitBeat());
     }
 }

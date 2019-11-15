@@ -15,8 +15,13 @@
         <button id="random">Random</button>
         <button id="export">Export <br>(json)</button>
         <a id="download_link" style="display:none"></a>
+        <button id="beat">Beat</button>
     </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/libs/jquery-3.1.0.min.js"></script>
+    <script src="js/libs/sprintf.js"></script>
     <script src="js/RhythmTool.js"></script>
+    <script src="js/libs/dat.gui.js"></script>
     <script>
         var rt = new RhythmTool();
         rt.start();
