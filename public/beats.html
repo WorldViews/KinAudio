@@ -4,12 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Beats</title>
-    <link rel="stylesheet" href="css/normalize.css">
-    <link rel="stylesheet" href="css/beatsStyle.css">
+    <style>
+        body {
+            background: #CCF;
+            padding: 10px;
+        }
+        .controls button {
+            margin-right: 10px;
+            width: 80px;
+            height: 40px;
+        }
+        .beatsbutton {
+            margin-right: 10px;
+            width: 32px;
+            height: 24px;
+            border-style: solid;
+            border-width: 4px;
+            border-color: green;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="beatsDiv"></div>
+    <div id="beatsDiv" class="beats"></div>
     <p></p>
     <div class="controls" xxstyle="border-width:3;border:solid">
         <button id="clear">Clear</button>

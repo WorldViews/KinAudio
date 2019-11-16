@@ -148,15 +148,15 @@ class RhythmTool {
         return this.beats[(r,c)];
     }
 
-    setBeatBG(r, c, color) {
+    setBeatBorder(r, c, color) {
         //console.log("setBeatBG", r, c);
-        this.getBeat(r,c).css('background-color', color);
+        this.getBeat(r,c).css('border-color', color);
     }
 
     tick() {
         for (let i = 0; i < this.slength; i++) {
-            this.setBeatBG(i, this.lastTick, 'white');
-            this.setBeatBG(i, this.currentTick, 'pink');
+            this.setBeatBorder(i, this.lastTick, 'grey');
+            this.setBeatBorder(i, this.currentTick, 'red');
             if (this.getState(i, this.currentTick)) {
                 console.log("tick play ", i, this.currentTick);
                 this.playSound(soundPrefix + this.sounds[i])
@@ -194,7 +194,7 @@ class RhythmTool {
         console.log("setState", r, c, v);
         this.states[r+"_"+c] = v;
         var bt = this.getBeat(r,c);
-        bt.css('color', v ? 'red' : 'blue');
+        bt.css('background-color', v ? 'blue' : 'white');
     }
 
     toggleState(r,c) {
@@ -268,31 +268,26 @@ class RhythmTool {
         this.toggleState(r,c);
     }
 
-    setupJQ() {
+    setupGUI() {
         var inst = this;
         var div = $("#beatsDiv");
         for (let r = 0; r < this.slength; r++) {
-            var beatDiv = div.append("<div></div>");
+            var beatDiv = div.append("<div class='beats'></div>");
             var soundname = this.sounds[r].split('.')[0];
             var id = soundname;
-            beatDiv.append(sprintf("<input id='%s' type='button' value=' '></input>", id));
+            beatDiv.append(sprintf("<input id='%s' type='button' value=' ' style='width:30px;height:30px;margin:4px'></input>", id));
             beatDiv.append(sprintf("%s", soundname));
             beatDiv.append("<br>");
             $("#"+id).click(e => inst.hitBeat(r));
             for (let c = 0; c < this.TICKS; c++) {
                 let id = sprintf("b_%s_%s", r, c);
-                let beat = $(sprintf("<input type='button' id='%s' value='x'></input>", id));
+                let beat = $(sprintf("<input type='button' class='beatsbutton' id='%s' value=''></input>", id));
                 beatDiv.append(beat);
                 beat.click((e) => inst.clickedOn(r,c));
                 this.beats[(r,c)] = beat;
             }
             beatDiv.append("<p>");
         }
-    }
-
-    setupGUI() {
-        this.setupJQ();
-        var inst = this;
         $('#export').click(() => inst.exportBeat());
         $('#random').click(() => inst.setRandomBeat());
         $('#clear').click(() => inst.clearBeat());
