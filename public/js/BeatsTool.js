@@ -50,6 +50,7 @@ if (AudioContext) {
 
 class RhythmTool {
     constructor(sounds) {
+        this.songs = [];
         this.beats = {};
         this.states = {};
         this.sounds = sounds || SOUNDS2;
@@ -88,7 +89,7 @@ class RhythmTool {
 
 
     playSound(url) {
-        console.log("playSound "+url);
+        //console.log("playSound "+url);
         if (!AudioContext) {
             new Audio(url).play();
             return;
@@ -158,7 +159,7 @@ class RhythmTool {
             this.setBeatBorder(i, this.lastTick, 'grey');
             this.setBeatBorder(i, this.currentTick, 'red');
             if (this.getState(i, this.currentTick)) {
-                console.log("tick play ", i, this.currentTick);
+                //console.log("tick play ", i, this.currentTick);
                 this.playSound(soundPrefix + this.sounds[i])
             }
         }
@@ -231,6 +232,24 @@ class RhythmTool {
         this.playSound(soundPrefix + this.sounds[i])
     }
 
+    loadData(id, song) {
+        console.log(id, song);
+        this.clearBeat();
+        let r = 0;
+        for (var soundname in song) {
+            var row = song[soundname];
+            let c = 0;
+            for (var i=0; i<4; i++) {
+                var g = row[i];
+                for (var j=0; j<4; j++) {
+                    this.setState(r, c, g[j]);
+                    c++;
+                }
+            }
+            r++;
+        }
+    }
+
     exportBeat() {
         console.log("exportBeat");
         // create an object so we can jsonify it later
@@ -261,6 +280,15 @@ class RhythmTool {
             exportData[soundname] = cellsgrouped;
         };
         console.log("beat:\n"+JSON.stringify(exportData, null, 3));
+        var n = this.songs.length + 1;
+        var id = "song"+n;
+        this.songs.push(exportData);
+        $("#songs").append(sprintf("<button id='%s'>%s</button>", id, id));
+        $("#"+id).click(e => {
+            console.log("song ", id);
+            console.log("beat:\n"+JSON.stringify(exportData, null, 3));
+            inst.loadData(id, exportData);
+        })
     }
 
     clickedOn(r,c) {
