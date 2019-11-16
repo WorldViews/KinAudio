@@ -50,9 +50,8 @@ if (AudioContext) {
 
 class RhythmTool {
     constructor(sounds) {
-        this.$grid = null;
-        this.$button = null;
-        this.$beats = null;
+        this.beats = {};
+        this.states = {};
         this.sounds = sounds || SOUNDS2;
         this.slength = this.sounds.length;
         this.playing = true;
@@ -89,6 +88,7 @@ class RhythmTool {
 
 
     playSound(url) {
+        console.log("playSound "+url);
         if (!AudioContext) {
             new Audio(url).play();
             return;
@@ -142,13 +142,23 @@ class RhythmTool {
         return handle;
     }
 
+    getBeat(r,c) {
+        let id = sprintf("#b_%s_%s", r, c);''
+        return $(id);
+        return this.beats[(r,c)];
+    }
+
+    setBeatBG(r, c, color) {
+        //console.log("setBeatBG", r, c);
+        this.getBeat(r,c).css('background-color', color);
+    }
+
     tick() {
-        for (var i = 0; i < this.slength; i++) {
-            var lastBeat = this.$beats[i * this.TICKS + this.lastTick];
-            var currentBeat = this.$beats[i * this.TICKS + this.currentTick];
-            lastBeat.classList.remove('ticked');
-            currentBeat.classList.add('ticked');
+        for (let i = 0; i < this.slength; i++) {
+            this.setBeatBG(i, this.lastTick, 'white');
+            this.setBeatBG(i, this.currentTick, 'pink');
             if (this.getState(i, this.currentTick)) {
+                console.log("tick play ", i, this.currentTick);
                 this.playSound(soundPrefix + this.sounds[i])
             }
         }
@@ -177,19 +187,14 @@ class RhythmTool {
     }
 
     getState(r, c) {
-        var beat = this.$beats[r * this.TICKS + c];
-        return beat.classList.contains('on');
+        return this.states[r+"_"+c];
     }
 
     setState(r, c, v) {
         console.log("setState", r, c, v);
-        var beat = this.$beats[r * this.TICKS + c];
-        var id = $(sprintf("#b_%s_%s", r, c));
-        $(id).css('color', v ? 'red' : 'blue');
-        if (v && !beat.classList.contains('on'))
-            beat.classList.add('on');
-        if (!v && beat.classList.contains('on'))
-            beat.classList.remove('on');
+        this.states[r+"_"+c] = v;
+        var bt = this.getBeat(r,c);
+        bt.css('color', v ? 'red' : 'blue');
     }
 
     toggleState(r,c) {
@@ -232,10 +237,10 @@ class RhythmTool {
         var exportData = {}
         var inst = this;
         // for each row (sound)
-        this.sounds.forEach(function (sound) {
+        for (let r=0; r<this.sounds.length; r++) {
+            var sound = this.sounds[r];
             // get the soundname, without .wav
             var soundname = sound.split('.')[0];
-
             // create arrays
             var cellsgrouped = [];
 
@@ -244,30 +249,22 @@ class RhythmTool {
 
             // set the size of a group
             var groupsize = 4;
-
-            // select all of the cells in the beat maker by the current soundname
-            var cells = document.querySelectorAll(`.beat.${soundname}`);
-
-            // loop over the cells
-            for (var i = 0; i < cells.length; i++) {
+            for (let c = 0; c < this.TICKS; c++) {
                 // if it's on, the value is 1
-                if (cells[i].classList.contains('on')) {
-                    cellsbuffer[i] = 1;
-                }
+                if (this.getState(r,c))
+                    cellsbuffer[c] = 1;
             }
-            // group the cells in to sets
-            // this will give us [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
             while (cellsbuffer.length > 0) {
                 cellsgrouped.push(cellsbuffer.splice(0, groupsize));
             }
             // update the object
             exportData[soundname] = cellsgrouped;
-        });
-        console.log("beat:\n"+JSON.stringify(exportData));
+        };
+        console.log("beat:\n"+JSON.stringify(exportData, null, 3));
     }
 
     clickedOn(r,c) {
-        console.log(sprintf("r: %s c: %s", r, c));
+        console.log(sprintf("clickedOn r: %s c: %s", r, c));
         this.toggleState(r,c);
     }
 
@@ -283,10 +280,11 @@ class RhythmTool {
             beatDiv.append("<br>");
             $("#"+id).click(e => inst.hitBeat(r));
             for (let c = 0; c < this.TICKS; c++) {
-                var id = sprintf("b_%s_%s", r, c);
-                let button = beatDiv.append(sprintf("<input type='button' id='%s' value='x'></input>", id));
-                //button.click((e) => inst.clickedOn(r,c));
-                $("#"+id).click(e => inst.clickedOn(r,c));
+                let id = sprintf("b_%s_%s", r, c);
+                let beat = $(sprintf("<input type='button' id='%s' value='x'></input>", id));
+                beatDiv.append(beat);
+                beat.click((e) => inst.clickedOn(r,c));
+                this.beats[(r,c)] = beat;
             }
             beatDiv.append("<p>");
         }
@@ -295,35 +293,9 @@ class RhythmTool {
     setupGUI() {
         this.setupJQ();
         var inst = this;
-        //this.$grid = document.querySelectorAll('.grid')[0];
-        this.$grid = document.querySelector('#grid1');
-        this.$button = document.createElement('button');
-        this.$button.classList.add('beat');
-
-        for (let r = 0; r < this.slength; r++) {
-            for (let c = 0; c < this.TICKS; c++) {
-                var _$button = this.$button.cloneNode(true);
-                if (c === 0) {
-                    _$button.classList.add('first');
-                }
-                // add a class based on the instrument
-                var soundname = this.sounds[r].split('.')[0];
-                _$button.classList.add(soundname);
-                _$button.dataset.instrument = soundname;
-
-                _$button.addEventListener('click', function () {
-                    //this.classList.toggle('on');
-                    inst.toggleState(r,c);
-                    //this.classList.toggle('on');
-                }, false);
-                this.$grid.appendChild(_$button);
-            }
-        }
-
-        this.$beats = document.querySelectorAll('.beat');
-        document.querySelector('#export').addEventListener('click', () => inst.exportBeat());
-        document.querySelector('#random').addEventListener('click', () => inst.setRandomBeat());
-        document.querySelector('#clear').addEventListener('click', () => inst.clearBeat());
-        document.querySelector('#beat').addEventListener('click', () => inst.hitBeat());
+        $('#export').click(() => inst.exportBeat());
+        $('#random').click(() => inst.setRandomBeat());
+        $('#clear').click(() => inst.clearBeat());
+        $('#beat').click(() => inst.hitBeat());
     }
 }
