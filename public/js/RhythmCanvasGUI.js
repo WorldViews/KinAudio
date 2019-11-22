@@ -1,8 +1,24 @@
+var NOTE = null;
+
 class NoteGraphic extends CanvasTool.Graphic {
+    constructor(opts) {
+        super(opts);
+        this.tool = opts.tool;
+        this.rhythmTool = this.tool.tool;
+        this.lineWidth = .02;
+        this.r = opts.r;
+        this.c = opts.c;
+        this.width = opts.width || 0.4;
+        this.height = opts.height || this.width/2;
+    }
+
     draw(canvas, ctx) {
-        var w = 0.5;
-        var h = w/3.0;
-        this.drawRect(canvas, ctx, this.x, this.y, w, h);
+        this.drawRect(canvas, ctx, this.x, this.y, this.width, this.height);
+    }
+
+    onClick() {
+        NOTE = this;
+        this.rhythmTool.clickedOn(this.r, this.c);
     }
 };
 
@@ -14,31 +30,60 @@ class TimeGraphic extends CanvasTool.Graphic {
 
     draw(canvas, ctx) {
         var t = this.t;
-        this.drawPolyLine(canvas, ctx, [{x: t, y:-100}, {x:t, y:100}]);
+        this.drawPolyLine(canvas, ctx, [{ x: t, y: -100 }, { x: t, y: 100 }]);
     }
 };
 
 class RhythmCanvas extends CanvasTool {
-    super() {
-        this.super("Rhythm");
+    constructor(gui, name, opts) {
+        super(name, opts);
+        this.gui = gui;
+        this.t2p = 0.5;
     }
+
+    handleMouseDrag(e) {
+        super.handleMouseDrag(e);
+        if (e.which != 1)
+            return;
+        var pt = this.getMousePos(e);
+        //this.gui.setTime(pt.x);
+        console.log("x: ", pt.x);
+        this.gui.timeGraphic.x = pt.x;
+        var t = this.posToTime(pt.x);
+        this.gui.tool.setBeatNum(t);
+    }
+
+    timeToPos(t) {
+        return t*this.t2p;
+    }
+    
+    posToTime(t) {
+        return t/this.t2p;
+    }
+    
 }
 
 class RhythmCanvasGUI extends RhythmGUI {
     constructor(tool) {
         super(tool);
-        this.canvas = new RhythmCanvas("canvas", {timerDelay:10});
+        this.canvas = new RhythmCanvas(this, "canvas", { timerDelay: 10 });
+        this.canvas.gui = this;
         this.canvas.init();
         this.notes = {};
     }
 
     setupGUI() {
         super.setupGUI();
-        this.setupButtonGUI();
+        if ($("#beatsDiv").length > 0) {
+         this.setupButtonGUI();
+        }
+        else {
+            console.log("*** No Buttons UI ***")
+        }
         this.setupCanvas();
         this.canvas.start();
         var inst = this;
-        setTimeout(e => inst.canvas.setViewRange(-1, 9, -1, 2), 100);
+        setTimeout(e => inst.canvas.setViewRange(-2, 9, -1, 2), 100);
     }
 
     setupCanvas() {
@@ -46,22 +91,26 @@ class RhythmCanvasGUI extends RhythmGUI {
         var tool = this.tool;
         var div = $("#beatsDiv");
         var nwd = 0.5;
-        var nht = 0.2;
+        var nht = 0.4;
         for (let r = 0; r < tool.slength; r++) {
             var soundname = tool.sounds[r].split('.')[0];
             var id = soundname;
+            var y = nht * r;
+            var label = new CanvasTool.TextGraphic({x: -.4, y: y+0.05, text: id});
+            this.canvas.addGraphic(label);
             for (let c = 0; c < tool.TICKS; c++) {
                 let id = sprintf("b_%s_%s", r, c);
-                var y = nht * r;
-                var x = nwd * c;
-                console.log("x", x, "y", y);
-                var ng = new NoteGraphic({ x, y });
+                var x = this.canvas.timeToPos(c);
+                //console.log("x", x, "y", y);
+                var ng = new NoteGraphic({ x, y, r, c, width: .4, tool: inst });
                 this.canvas.addGraphic(ng);
                 this.notes[r + "_" + c] = ng;
             }
         }
-        this.timeGraphic = new TimeGraphic({x: 0, y: 1, t: 0});
+        this.timeGraphic = new TimeGraphic({ x: 0, y: 1, t: 0 });
         this.canvas.addGraphic(this.timeGraphic);
+        this.beatGraphic = new  NoteGraphic({ x:0, y:2.5, r:0, c:0, width: 0.1, tool: inst });
+        this.canvas.addGraphic(this.beatGraphic);
     }
 
     setupButtonGUI() {
@@ -88,6 +137,22 @@ class RhythmCanvasGUI extends RhythmGUI {
         }
     }
 
+    noticeUserBeat(bn) {
+        console.log("noticeUserBeat", bn);
+        this.beatGraphic.x = bn * 0.5;
+    }
+
+    activateBeat(b) {
+        //console.log("activateBeat", b);
+        var tool = this.tool;
+        for (let r = 0; r < tool.slength; r++) {
+            for (let c = 0; c < this.tool.TICKS; c++) {
+                var note = this.notes[r + "_" + c];
+                note.strokeStyle = (c == b ? 'red' : 'grey');
+            }
+        }
+    }
+
     noticeState(r, c, v) {
         var bt = this.tool.getBeat(r, c);
         var color = v ? 'blue' : 'white';
@@ -100,9 +165,9 @@ class RhythmCanvasGUI extends RhythmGUI {
         }
         ng.fillStyle = color;
     }
-    
+
     noticeTime(t) {
-        this.timeGraphic.t = t*0.5;
+        this.timeGraphic.t = t * 0.5;
     }
 }
 

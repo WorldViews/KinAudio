@@ -69,18 +69,20 @@ class RhythmGUI {
         $('#export').click(() => tool.exportBeat());
         $('#random').click(() => tool.setRandomBeat());
         $('#clear').click(() => tool.clearBeat());
-        $('#beat').click(() => tool.hitBeat());
+        //$('#beat').click(() => tool.hitBeat());
+        $('#beat').mousedown(() => tool.hitBeat());
         this.setupDATGUI();
     }
 
     setupDATGUI() {
+        var inst = this;
         var P = this.tool;
         var gui = new dat.GUI();
         gui.add(P, 'pRandOn', 0, 1);
         gui.add(P, 'pMutate', 0, 1);
         gui.add(P, 'pAdd', 0, 1);
         gui.add(P, 'pRemove', 0, 1);
-        gui.add(P, "BPM", 0, 160);
+        gui.add(P, "BPM", 0, 160).onChange((bpm) => inst.tool.updateBPM(bpm));
         gui.add(P, "playing");
         gui.add(P, "tick");
     }
@@ -140,10 +142,11 @@ class RhythmTool {
         this.pRemove = 0.02;
         this.t = 0;
         this.currentTick = 0;
+        this.beatNum = 0;
         this.lastTick = this.TICKS - 1;
         this.tickTime = 1 / (4 * this.BPM / (60 * 1000));
         var guiClass = opts.guiClass || ButtonGUI;
-        console.log("class", guiClass);
+        //console.log("class", guiClass);
         this.gui = new guiClass(this);
         this.gui.init();
         //this.gui = new RhythmGUI(this);
@@ -195,19 +198,13 @@ class RhythmTool {
 
     requestInterval() {
         var inst = this;
-        var lastClockTime = getClockTime();
+        this.lastClockTime = getClockTime();
         this.iPrevBeatNum = -1;
         var handle = {};
 
         function loop() {
             if (inst.playing) {
-                var beatDelay = 1 / (4 * inst.BPM / 60.0);
-                var t = getClockTime();
-                var delta = t - lastClockTime;
-                lastClockTime = t;
-                inst.t += delta;
-                var beatNum = inst.t / beatDelay;
-                inst.setBeatNum(beatNum)
+                inst.updateBPM(inst.BPM);
             }
             handle.value = requestAnimationFrame(loop);
         }
@@ -232,6 +229,7 @@ class RhythmTool {
 
     handleBeat() {
         //this.gui.noticeTime(this.t);
+        this.gui.activateBeat(this.currentTick);
         for (let i = 0; i < this.slength; i++) {
             this.setBeatBorder(i, this.lastTick, 'grey');
             this.setBeatBorder(i, this.currentTick, 'red');
@@ -241,6 +239,16 @@ class RhythmTool {
             }
         }
         this.mutate();
+    }
+
+    updateBPM(bpm) {
+        //console.log(">bpm ", bpm, this);
+        var t = getClockTime();
+        var delta = t - this.lastClockTime;
+        this.lastClockTime = t;
+        var beatDelay = 1 / (4 * bpm / 60.0);
+        var beatNum = this.beatNum + delta / beatDelay;
+        this.setBeatNum(beatNum)
     }
 
     tick() {
@@ -320,7 +328,8 @@ class RhythmTool {
     hitBeat(i) {
         if (i == null)
             i = this.sounds.length - 1;
-        this.playSound(soundPrefix + this.sounds[i])
+        this.playSound(soundPrefix + this.sounds[i]);
+        this.gui.noticeUserBeat(this.beatNum);
     }
 
     loadData(id, song) {
