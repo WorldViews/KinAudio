@@ -1,7 +1,9 @@
 var NOTE = null;
 
-class NoteGraphic extends CanvasTool.Graphic {
+class NoteGraphic extends CanvasTool.RectGraphic {
     constructor(opts) {
+        var tool = opts.tool;
+        opts.x = tool.canvas.timeToPos(opts.t) + opts.width/2;
         super(opts);
         this.tool = opts.tool;
         this.rhythmTool = this.tool.tool;
@@ -12,15 +14,44 @@ class NoteGraphic extends CanvasTool.Graphic {
         this.height = opts.height || this.width/2;
     }
 
-    draw(canvas, ctx) {
-        this.drawRect(canvas, ctx, this.x, this.y, this.width, this.height);
+    setActive(val) {
+        this.strokeStyle = (val ? 'red' : 'grey');
     }
 
     onClick() {
         NOTE = this;
         this.rhythmTool.clickedOn(this.r, this.c);
     }
-};
+}
+
+class CountGraphic extends NoteGraphic {
+    constructor(opts) {
+        opts.textAlign = "left";
+        super(opts);
+        this.text = this.getCountText(opts.c);
+    }
+
+    getCountText(c) {
+        var b = (c % 4);
+        return ["one", "two", "three", "four"][b];
+    }
+
+    setActive(val) {
+        this.fillStyle = (val ? 'red' : 'grey');
+    }
+
+    draw(canvas, ctx) {
+        var x = this.x - this.width/2;
+        this.drawText(canvas, ctx, x, this.y, this.text);
+    }
+}
+
+class JapaneseCount extends CountGraphic {
+    getCountText(c) {
+        var b = (c % 4);
+        return ["itchi", "ni", "san", "shi"][b];
+    }
+}
 
 class TimeGraphic extends CanvasTool.Graphic {
     constructor(opts) {
@@ -93,8 +124,8 @@ class RhythmCanvasGUI extends RhythmGUI {
         var nwd = 0.5;
         var nht = 0.4;
         for (let r = 0; r < tool.slength; r++) {
-            var soundname = tool.sounds[r].split('.')[0];
-            var id = soundname;
+            var name = tool.sounds[r].split('.')[0];
+            var id = name;
             var y = nht * r;
             var label = new CanvasTool.TextGraphic({x: -.4, y: y+0.05, text: id});
             this.canvas.addGraphic(label);
@@ -102,7 +133,16 @@ class RhythmCanvasGUI extends RhythmGUI {
                 let id = sprintf("b_%s_%s", r, c);
                 var x = this.canvas.timeToPos(c);
                 //console.log("x", x, "y", y);
-                var ng = new NoteGraphic({ x, y, r, c, width: .4, tool: inst });
+                var ng;
+                if (name == 'count') {
+                    ng = new CountGraphic({ t: c, x, y, r, c, width: .4, tool: inst });
+                }
+                else if (name == 'nihongo') {
+                    ng = new JapaneseCount({ t: c, x, y, r, c, width: .4, tool: inst });
+                }
+                else {
+                    ng = new NoteGraphic({ t: c, x, y, r, c, width: .4, tool: inst });
+                }
                 this.canvas.addGraphic(ng);
                 this.notes[r + "_" + c] = ng;
             }
@@ -148,7 +188,7 @@ class RhythmCanvasGUI extends RhythmGUI {
         for (let r = 0; r < tool.slength; r++) {
             for (let c = 0; c < this.tool.TICKS; c++) {
                 var note = this.notes[r + "_" + c];
-                note.strokeStyle = (c == b ? 'red' : 'grey');
+                note.setActive(c == b);
             }
         }
     }

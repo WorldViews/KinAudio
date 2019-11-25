@@ -27,6 +27,8 @@ var SOUNDS1 = [
 ];
 
 var SOUNDS2 = [
+    'count',
+    'nihongo',
     'low_conga.wav',
     'mid_conga.wav',
     'hi_conga.wav',
@@ -83,7 +85,7 @@ class RhythmGUI {
         gui.add(P, 'pAdd', 0, 1);
         gui.add(P, 'pRemove', 0, 1);
         gui.add(P, "BPM", 0, 160).onChange((bpm) => inst.tool.updateBPM(bpm));
-        gui.add(P, "playing");
+        gui.add(P, "playing").onChange((v) => inst.tool.setPlaying(v));;
         gui.add(P, "tick");
     }
 }
@@ -239,6 +241,15 @@ class RhythmTool {
             }
         }
         this.mutate();
+    }
+
+    setPlaying(v) {
+        console.log("setPlaying", v);
+        this.playing = v;
+        if (this.playing) {
+            this.lastClockTime = getClockTime();
+            this.updateBPM(this.BPM);
+        }
     }
 
     updateBPM(bpm) {
