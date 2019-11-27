@@ -6,7 +6,8 @@ https://github.com/omgmog/beatmaker
 'use strict';
 var AudioContext = window.AudioContext || window.webkitAudioContext || false;
 
-var soundPrefix = 'http://localhost:8000/sounds/';
+//var soundPrefix = 'http://localhost:8000/sounds/';
+var soundPrefix = 'sounds/';
 var SOUNDS1 = [
     'bass_drum.wav',
     'snare_drum.wav',
@@ -133,9 +134,10 @@ class RhythmTool {
         opts = opts || {};
         this.songs = [];
         this.states = {};
+        this.muted = {};
         this.sounds = opts.sounds || SOUNDS2;
         this.slength = this.sounds.length;
-        this.playing = true;
+        this.playing = false;
         this.BPM = 80;
         this.TICKS = 16;
         this.pRandOn = .3;
@@ -161,6 +163,10 @@ class RhythmTool {
         this.requestInterval();
     }
 
+    setMuted(r, val) {
+        console.log("setMuted", r, val);
+        this.muted[r] = val;
+    }
 
     playSound(url) {
         //console.log("playSound "+url);
@@ -235,6 +241,8 @@ class RhythmTool {
         for (let i = 0; i < this.slength; i++) {
             this.setBeatBorder(i, this.lastTick, 'grey');
             this.setBeatBorder(i, this.currentTick, 'red');
+            if (this.muted[i])
+                continue;
             if (this.getState(i, this.currentTick)) {
                 //console.log("tick play ", i, this.currentTick);
                 this.playSound(soundPrefix + this.sounds[i])

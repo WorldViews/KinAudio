@@ -37,7 +37,7 @@ class CountGraphic extends NoteGraphic {
     }
 
     setActive(val) {
-        this.fillStyle = (val ? 'red' : 'grey');
+        this.textStyle = (val ? 'red' : 'grey');
     }
 
     draw(canvas, ctx) {
@@ -63,7 +63,27 @@ class TimeGraphic extends CanvasTool.Graphic {
         var t = this.t;
         this.drawPolyLine(canvas, ctx, [{ x: t, y: -100 }, { x: t, y: 100 }]);
     }
-};
+}
+
+class LabelGraphic extends CanvasTool.TextGraphic {
+    constructor(opts) {
+        //opts.textAlign = "center";
+        opts.fillStyle = "white";
+        super(opts);
+        this.r = opts.r;
+        this.tool = opts.tool;
+        this.rhythmTool = this.tool.tool;
+        this.muted = false;
+    }
+
+    onClick() {
+        this.muted = !this.muted;
+        console.log("muted:", this.id, this.muted);
+        //this.fillStyle = this.muted ? "gray" : "white";
+        this.textStyle = this.muted ? "gray" : "black";
+        this.rhythmTool.setMuted(this.r, this.muted);
+    }
+}
 
 class RhythmCanvas extends CanvasTool {
     constructor(gui, name, opts) {
@@ -127,7 +147,7 @@ class RhythmCanvasGUI extends RhythmGUI {
             var name = tool.sounds[r].split('.')[0];
             var id = name;
             var y = nht * r;
-            var label = new CanvasTool.TextGraphic({x: -.4, y: y+0.05, text: id});
+            var label = new LabelGraphic({id, r, x: -.8, y: y, width:1.2, height:.25, text: id, tool: inst});
             this.canvas.addGraphic(label);
             for (let c = 0; c < tool.TICKS; c++) {
                 let id = sprintf("b_%s_%s", r, c);
