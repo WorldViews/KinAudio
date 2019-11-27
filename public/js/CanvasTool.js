@@ -105,7 +105,7 @@ class CanvasTool {
         //    this.tx, this.ty, this.sx, this.sy);
         $("#canvasStat").html(
             sprintf("pt: %5.1f %5.1f   cpt: %5.1f %5.1f  %s",
-                     pt.x, pt.y, cpt.x, cpt.y, id));
+                pt.x, pt.y, cpt.x, cpt.y, id));
         this.getView();
     }
 
@@ -181,10 +181,9 @@ class CanvasTool {
         this.ty += dy;
     }
 
-    setViewRange(xLow, xHigh, yLow, yHigh)
-    {
-        var x = (xLow + xHigh)/2.0;
-        var y = (yLow + yHigh)/2.0;
+    setViewRange(xLow, xHigh, yLow, yHigh) {
+        var x = (xLow + xHigh) / 2.0;
+        var y = (yLow + yHigh) / 2.0;
         var w = xHigh - xLow;
         this.setView(x, y, w);
     }
@@ -193,14 +192,14 @@ class CanvasTool {
         var s = this.canvas.width / (0.0 + w);
         this.sx = s;
         this.sy = s;
-        this.draw();        
+        this.draw();
     }
 
-    setViewCenter(x,y) {
+    setViewCenter(x, y) {
         var view = this.getView();
         var dx = view.center.x - x;
         var dy = view.center.y - y;
-        this.pan(this.sx*dx,this.sy*dy);
+        this.pan(this.sx * dx, this.sy * dy);
         this.draw();
     }
 
@@ -214,20 +213,19 @@ class CanvasTool {
         if (w != null) {
             this.setViewWidth(w);
         }
-        this.setViewCenter(x,y);
+        this.setViewCenter(x, y);
     }
-    
+
     getView() {
         var cwidth = this.canvas.width;
         var cheight = this.canvas.height;
         var width = cwidth / this.sx;
         var height = cheight / this.sy;
-        var center = this.canvToModel({x: cwidth/2.0, y: cheight/2.0});
-        var view = {center, width, height};
+        var center = this.canvToModel({ x: cwidth / 2.0, y: cheight / 2.0 });
+        var view = { center, width, height };
         //console.log("view", view);
         return view;
     }
-
 
     clearCanvas() {
         var ctx = this.canvas.getContext('2d');
@@ -319,7 +317,7 @@ class CanvasTool {
     }
 
     start() {
-        this.setView(0,0,10);
+        this.setView(0, 0, 10);
         this.tick();
         let inst = this;
         setInterval(() => inst.tick(), inst.timerDelay);
@@ -329,7 +327,7 @@ class CanvasTool {
 
 var _graphicNum = 0;
 function getUniqueId() {
-    return "_gr"+_graphicNum++;
+    return "_gr" + _graphicNum++;
 }
 
 function getNumVal(v, def) {
@@ -344,6 +342,8 @@ CanvasTool.Graphic = class {
         this.id = opts.id || getUniqueId(this);
         this.x = opts.x || 0;
         this.y = opts.y || 0;
+        this.width = opts.width;
+        this.height = opts.height;
         this.textAlign = opts.textAlign || "right";
         this.lineWidth = getNumVal(opts.lineWidth, 0.01);
         this.strokeStyle = '#000';
@@ -366,25 +366,32 @@ CanvasTool.Graphic = class {
         ctx.fillStyle = this.fillStyle;
         ctx.beginPath();
         if (this.fillStyle)
-            ctx.fillRect(x-w/2, y-h/2, w, h);
-         ctx.rect(x-w/2, y-h/2, w, h);
-         ctx.stroke();
+            ctx.fillRect(x - w / 2, y - h / 2, w, h);
+        ctx.rect(x - w / 2, y - h / 2, w, h);
+        ctx.stroke();
     }
 
     drawText(canvas, ctx, x, y, str, font) {
         font = font || "1px Arial";
+        var s = .2;
         ctx.save();
-        ctx.translate(x,y);
-        ctx.scale(.2, .2);
+        ctx.translate(x, y);
+        ctx.scale(s,s);
         ctx.font = font;
-        ctx.textAlign = this.textAlign || "right";
-        ctx.fillStyle = this.fillStyle || "black";
+        var metrics = ctx.measureText(str);
+        //let fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+        let actualHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+        //console.log("height:", actualHeight);
+        ctx.translate(0, s*metrics.actualBoundingBoxAscent);
+        ctx.font = font;
+        ctx.textAlign = this.textAlign;
+        ctx.fillStyle = this.textStyle || "black";
         //ctx.fillText(str, x, y);
         ctx.fillText(str, 0, 0);
         ctx.restore();
     }
 
- 
+
     drawCircle(canvas, ctx, r, x, y) {
         ctx.lineWidth = this.lineWidth;
         ctx.strokeStyle = this.strokeStyle;
@@ -425,19 +432,34 @@ CanvasTool.RectGraphic = class extends CanvasTool.Graphic {
     }
 
     contains(pt) {
-       return this.x-this.width/2  < pt.x && pt.x < this.x+this.width/2 &&
-               this.y-this.height/2 < pt.y && pt.y < this.y+this.height/2;
+        return this.x - this.width / 2 < pt.x && pt.x < this.x + this.width / 2 &&
+            this.y - this.height / 2 < pt.y && pt.y < this.y + this.height / 2;
     }
 }
 
 CanvasTool.TextGraphic = class extends CanvasTool.Graphic {
     constructor(opts) {
+        opts.width = opts.width || 1;
+        opts.height = opts.height || 1;
+        opts.textAlign = opts.textAlign || "center";
         super(opts);
+        this.fillStyle = opts.fillStyle;
+        //this.width = opts.width || 1;
+        //this.height = opts.height || 1;
         this.text = opts.text || "text";
+        this.textStyle = opts.textStyle || "black";
     }
 
     draw(canvas, ctx) {
+        ctx.save();
+        this.drawRect(canvas, ctx, this.x, this.y, this.width, this.height);
         this.drawText(canvas, ctx, this.x, this.y, this.text);
+        ctx.restore();
+    }
+
+    contains(pt) {
+        return this.x - this.width / 2 < pt.x && pt.x < this.x + this.width / 2 &&
+            this.y - this.height / 2 < pt.y && pt.y < this.y + this.height / 2;
     }
 }
 
@@ -468,7 +490,7 @@ CanvasTool.CloudGraphic = class extends CanvasTool.Graphic {
         this.r = opts.r || .2;
         this.a0 = .2;
         this.a1 = 0;
-        this.rgb = [200,0,0];
+        this.rgb = [200, 0, 0];
     }
 
     draw(canvas, ctx) {
@@ -477,18 +499,18 @@ CanvasTool.CloudGraphic = class extends CanvasTool.Graphic {
 
     drawCloud(canvas, ctx, pt, rad, rgb, a0, a1) {
         rad = rad;
-        var r,g,b;
-        [r,g,b] = rgb;
+        var r, g, b;
+        [r, g, b] = rgb;
         if (a0 == null)
             a0 = .2;
         if (a1 == null)
             a1 = 0;
-        var color0 = sprintf('rgba(%d,%d,%d,%f)', r,g,b,a0);
-        var color1 = sprintf('rgba(%d,%d,%d,%f)', r,g,b,a1);
+        var color0 = sprintf('rgba(%d,%d,%d,%f)', r, g, b, a0);
+        var color1 = sprintf('rgba(%d,%d,%d,%f)', r, g, b, a1);
         var x = pt[0];
         var y = pt[1];
 
-        var innerRadius = 0.01*rad;
+        var innerRadius = 0.01 * rad;
         var outerRadius = rad;
         var gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
         gradient.addColorStop(0, color0);
@@ -505,14 +527,14 @@ CanvasTool.GraphGraphic = class extends CanvasTool.Graphic {
         super(opts);
         this.width = opts.width || 10;
         this.height = opts.height || 10;
-        this.rgb = opts.rgb || [200,0,0];
+        this.rgb = opts.rgb || [200, 0, 0];
         this.yvals = [];
         this.maxNumPoints = opts.maxNumPoints || 100;
-        for (var i=0; i<200; i++) {
-            var t = 0.1*i;
+        for (var i = 0; i < 200; i++) {
+            var t = 0.1 * i;
             var w = 3;
             var x = t;
-            var y = Math.sin(w*t);
+            var y = Math.sin(w * t);
             this.addPoint(y);
         }
         //this.lineWidth = .1;
@@ -529,12 +551,12 @@ CanvasTool.GraphGraphic = class extends CanvasTool.Graphic {
         //console.log("GraphGraphic draw", this.points);
         this.drawGraph(canvas, ctx, this.yvals);
     }
-    
+
     drawGraph(canvas, ctx, yvals) {
         ctx.lineWidth = this.lineWidth;
         ctx.strokeStyle = this.strokeStyle;
         ctx.beginPath();
-        var x0 = this.x - this.width/2;
+        var x0 = this.x - this.width / 2;
         var y0 = this.y;
         ctx.moveTo(x0, y0 + yvals[0]);
         for (var i = 1; i < yvals.length; i++) {
@@ -551,7 +573,7 @@ CanvasTool.GraphGraphic = class extends CanvasTool.Graphic {
 CanvasTool.TrailGraphic = class extends CanvasTool.Graphic {
     constructor(opts) {
         super(opts);
-        this.rgb = opts.rgb || [200,0,0];
+        this.rgb = opts.rgb || [200, 0, 0];
         this.points = opts.points || [];
         this.width = getNumVal(opts.width, 10);
         this.height = getNumVal(opts.height, 10);
@@ -579,14 +601,14 @@ CanvasTool.TrailGraphic = class extends CanvasTool.Graphic {
         //console.log("GraphGraphic draw", this.points);
         this.drawTrail(ctx, this.points);
     }
-    
+
     drawTrail(ctx, points) {
         if (!points || points.length == 0)
             return;
         ctx.lineWidth = this.lineWidth;
         ctx.strokeStyle = this.strokeStyle;
         ctx.beginPath();
-        var x0 = this.x - this.width/2;
+        var x0 = this.x - this.width / 2;
         var y0 = this.y;
         var p0 = this.points[0];
         ctx.moveTo(x0 + p0[0], y0 + p0[1]);
