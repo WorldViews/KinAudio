@@ -15,6 +15,8 @@ class DrumTool {
         this.rhythmTool = rhythmTool;
         this.arcLength = 0;
         this.gain = 10.0;
+        this.trackArcLen = false;
+        this.crank = true;
         this.initCanvasTool();
         let inst = this;
         //this.skelWatcher = null;
@@ -37,9 +39,16 @@ class DrumTool {
     }
 
     update() {
+        if (this.trackArcLen)
+            this.handleTrackArcLen();
+        if (this.crank)
+            this.handleCrank();
+    }
+
+    handleTrackArcLen() {
         var rpos = this.leapWatcher.RHAND.get();
-        var leapX = 5;
-        var leapY = 1;
+        //var leapX = 5;
+        //var leapY = 1;
         var leapX = 0;
         var leapY = 0;
         if (rpos && this.trail) {
@@ -54,20 +63,29 @@ class DrumTool {
             //console.log("trail pt", pt);
             this.trail.addPoint(pt);
         }
-        /*
-        var dlr = this.leapWatcher.DLR.get();
-        //console.log("dlr", dlr);
-        if (dlr && !this.leapWatcher.DLR.isStale()) {
-            this.DLR = dlr;
-            if (this.graph) {
-                if (this.useGain)
-                    this.graph.addPoint(this.gain*dlr);
-                else
-                this.graph.addPoint(dlr);
-            }
-        }
-        */
     }
+
+    handleCrank() {
+        var rpos = this.leapWatcher.RHAND.get();
+        var leapX = 0;
+        var leapY = 0;
+        if (rpos && this.trail) {
+            var x = rpos[0]/1000;
+            var y = rpos[1]/1000;
+            var a = Math.atan2(y,x);
+            var pt = [leapX+x, leapY-y];
+            if (this.lastPt) {
+                var d = dist(pt, this.lastPt);
+                this.arcLength = a*this.gain;
+                //console.log("arcLength", this.arcLength);
+                this.rhythmTool.setBeatNum(this.arcLength);
+            }
+            this.lastPt = pt;
+            //console.log("trail pt", pt);
+            this.trail.addPoint(pt);
+        }
+    }
+
 
     initCanvasTool() {
         this.canvasTool = new CanvasTool("trackingCanvas");
@@ -105,5 +123,9 @@ class DrumTool {
     }
 
     setupDATGUI() {
+        var gui = this.rhythmTool.datgui;
+        gui.add(this, "trackArcLen");
+        gui.add(this, "crank");
+        gui.add(this, "gain", 0, 30);
     }
 }

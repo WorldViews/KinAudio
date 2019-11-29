@@ -81,6 +81,7 @@ class RhythmGUI {
         var inst = this;
         var P = this.tool;
         var gui = new dat.GUI();
+        this.tool.datgui = gui;
         gui.add(P, 'pRandOn', 0, 1);
         gui.add(P, 'pMutate', 0, 1);
         gui.add(P, 'pAdd', 0, 1);
