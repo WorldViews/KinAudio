@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Taiko Gamepad</title>
+</head>
+
+<body>
+    <button id="gamepads">Gamepads</button>
+    <div id="gamepadInfo"></div>
+    <script src="js/GamePad.js"></script>
+    <script src="js/libs/jquery-3.1.0.min.js"></script>
+    <script src="js/libs/sprintf.js"></script>
+    <script src="js/libs/dat.gui.js"></script>
+    <script>
+        var gpt = null;
+
+        $(document).ready(() => {
+            console.log("init...");
+            gpt = new TaikoGamePad();
+            $("#gamepads").click((e) => gpt.scanGamepads());
+        })
+    </script>
+
+</body>
+
+</html>

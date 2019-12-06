@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Enum USB</title>
+</head>
+
+<body>
+    <button id="enum">List Devices</button>
+    <button id="get">Get Device</button>
+    <button id="gamepads">Gamepads</button>
+    <div id="gamepadInfo"></div>
+    <script src="js/libs/jquery-3.1.0.min.js"></script>
+    <script src="js/libs/sprintf.js"></script>
+    <script src="js/libs/dat.gui.js"></script>
+    <script>
+        var STR = "USB/VID_045E&PID_028E&IG_00";
+        var VID = "0453";
+        var PID = "028E";
+
+        async function getDev() {
+            //async () => {
+            let device;
+            const VENDOR_ID = 0x0453;
+            console.log("get ", VENDOR_ID);
+            try {
+                device = await navigator.usb.requestDevice({
+                    filters: [{
+                        vendorId: VENDOR_ID
+                    }]
+                })
+                console.log('open')
+                await device.open()
+                console.log('opened:', device)
+            } catch (error) {
+                console.log(error)
+            }
+            await device.close()
+            //})
+        }
+
+        function listDevs() {
+            console.log("List devices");
+            navigator.usb.getDevices()
+                .then(devices => {
+                    console.log("Total devices: " + devices.length);
+                    devices.forEach(device => {
+                        console.log("Product name: " + device.productName + ", serial number " + device.serialNumber);
+                    });
+                });
+        }
+        var GPADS;
+        function listGamepads() {
+            console.log("listGamepads");
+            var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []);
+            GPADS = gamepads;
+            console.log("gamepads", gamepads);
+            for (var i = 0; i < gamepads.length; i++) {
+                console.log("i", i);
+                var gp = gamepads[i];
+                console.log("gp", gp);
+                if (gp) {
+                    gamepadInfo.innerHTML = "Gamepad connected at index " + gp.index + ": " + gp.id +
+                        ". It has " + gp.buttons.length + " buttons and " + gp.axes.length + " axes.";
+                    //gameLoop();
+                    //clearInterval(interval);
+                }
+            }
+        }
+
+        window.addEventListener("gamepadconnected", function (e) {
+            console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+                e.gamepad.index, e.gamepad.id,
+                e.gamepad.buttons.length, e.gamepad.axes.length);
+        });
+
+        $(document).ready(() => {
+            console.log("init...");
+            $("#enum").click((e) => listDevs());
+            $("#get").click((e) => getDev());
+            $("#gamepads").click((e) => listGamepads());
+        })
+    </script>
+
+</body>
+
+</html>
