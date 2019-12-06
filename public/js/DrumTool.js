@@ -10,19 +10,6 @@ function dist2(v1, v2) {
     return d2;
 }
 
-class TaikoControl extends TaikoGamePad {
-    constructor(drumTool) {
-        super();
-        this.drumTool = drumTool;
-        this.rhythmTool = drumTool.rhythmTool;
-    }
-
-    onStrike(bid, ts) {
-        console.log("onStrike", bid);
-        this.rhythmTool.hitBeat();
-    }
-}
-
 
 class DrumTool {
     constructor(rhythmTool) {

@@ -1,6 +1,6 @@
 /*
-Base on
-https://github.com/omgmog/beatmaker
+Originally based on https://github.com/omgmog/beatmaker
+although there is little remaining resemblance.
 */
 
 'use strict';
@@ -55,6 +55,43 @@ function getClockTime() {
     return new Date().getTime() / 1000.0;
 }
 
+// This is a version for uploading to a specified path that may
+// not be a session.  (i.e. global configs, etc.)
+function uploadToFile(dpath, obj, fileName)
+{
+    return uploadDataToFile(dpath, JSON.stringify(obj, null, 3), fileName);
+}
+
+function uploadDataToFile(dpath, data, fileName)
+{
+    console.log("uploadDataToFile path " + dpath + "  fileName " + fileName);
+    var formData = new FormData();
+    formData.append('dir', dpath);
+    let blob = new Blob([data], { type: 'application/json' });
+    //  formData.append('data', blob, 'data.json');
+    formData.append(fileName, blob, fileName);
+    var request = new XMLHttpRequest();
+    request.onload = function () {
+        if (this.status == 200) {
+            var r = JSON.parse(this.response);
+            console.log(r);
+            if (r.error) {
+                alert('Error uploading: ' + r.error);
+            }
+        }
+    };
+    request.onerror = function (err) { alert('error uploading' + err) };
+    request.upload.addEventListener("progress", function (evt) {
+        if (evt.lengthComputable) {
+            var pc = Math.floor((evt.loaded / evt.total) * 100);
+            console.log(pc, '% uploaded');
+        }
+    }, false);
+    request.open("POST", "/api/uploadfile");
+    request.send(formData);
+}
+
+
 class RhythmGUI {
     constructor(tool) {
         this.tool = tool;
@@ -92,6 +129,8 @@ class RhythmGUI {
     }
 }
 
+// This is like the original HTML Buttom based version
+// from https://github.com/omgmog/beatmaker
 class ButtonGUI extends RhythmGUI {
     constructor(tool) {
         super(tool);
@@ -140,6 +179,7 @@ class RhythmTool {
         this.slength = this.sounds.length;
         this.playing = false;
         this.BPM = 80;
+        //this.TICKS = 16;
         this.TICKS = 16;
         this.pRandOn = .3;
         this.pMutate = 0.001;
@@ -310,7 +350,7 @@ class RhythmTool {
     }
 
     setState(r, c, v) {
-        console.log("setState", r, c, v);
+        //console.log("setState", r, c, v);
         this.states[r + "_" + c] = v;
         this.gui.noticeState(r, c, v);
         //var bt = this.getBeat(r,c);
@@ -352,28 +392,33 @@ class RhythmTool {
         this.gui.noticeUserBeat(this.beatNum);
     }
 
-    loadData(id, song) {
-        console.log(id, song);
+    loadData(id, spec) {
+        console.log("loadData", id, spec);
+        var tracks = spec.tracks;
+        var numMeasures = spec.numMeasures || 4;
+        var beatsPerMeasure = spec.beatsPerMeasure || 4;
         this.clearBeat();
-        let r = 0;
-        for (var soundname in song) {
-            var row = song[soundname];
+        for (var r=0; r<tracks.length; r++) {
+            var track = tracks[r];
+            var soundname = track.name;
+            console.log("track", r, soundname);
+            var beats = track.beats;
             let c = 0;
-            for (var i = 0; i < 4; i++) {
-                var g = row[i];
-                for (var j = 0; j < 4; j++) {
-                    this.setState(r, c, g[j]);
+            for (var i = 0; i < numMeasures; i++) {
+                var bar = beats[i];
+                console.log(" ", i, bar);
+                for (var j = 0; j < beatsPerMeasure; j++) {
+                    this.setState(r, c, bar[j]);
                     c++;
                 }
             }
-            r++;
         }
+        this.gui.updateSong();
     }
 
-    exportBeat() {
-        console.log("exportBeat");
-        // create an object so we can jsonify it later
-        var exportData = {}
+    getRhythmSpec() {
+        console.log("getRhythmSpec");
+        var spec = {tracks:[]};
         var inst = this;
         // for each row (sound)
         for (let r = 0; r < this.sounds.length; r++) {
@@ -397,18 +442,28 @@ class RhythmTool {
                 cellsgrouped.push(cellsbuffer.splice(0, groupsize));
             }
             // update the object
-            exportData[soundname] = cellsgrouped;
-        };
-        console.log("beat:\n" + JSON.stringify(exportData, null, 3));
+            var track = {name: soundname, beats: cellsgrouped};
+            spec.tracks.push(track);
+        }
+        return spec;
+    }
+
+    exportBeat() {
+        console.log("exportBeat");
+        var inst = this;
+        var spec = this.getRhythmSpec();
+        // create an object so we can jsonify it later
+        console.log("spec:\n" + JSON.stringify(spec, null, 3));
         var n = this.songs.length + 1;
         var id = "song" + n;
-        this.songs.push(exportData);
+        this.songs.push(spec);
         $("#songs").append(sprintf("<button id='%s'>%s</button>", id, id));
         $("#" + id).click(e => {
             console.log("song ", id);
-            console.log("beat:\n" + JSON.stringify(exportData, null, 3));
-            inst.loadData(id, exportData);
-        })
+            console.log("beat:\n" + JSON.stringify(spec, null, 3));
+            inst.loadData(id, spec);
+        });
+        uploadToFile("songSpecs", spec, id+".json");
     }
 
     clickedOn(r, c) {

@@ -67,9 +67,9 @@
     -->
     <script src="js/libs/dat.gui.js"></script>
     <script>
-        var rt = new RhythmTool({guiClass: RhythmCanvasGUI});
+        let rt = new RhythmTool({guiClass: RhythmCanvasGUI});
         let drumTool = new DrumTool(rt);
-        let taikoControl = new TaikoControl(drumTool);
+        let taikoControl = new TaikoControl(rt);
         rt.start();
     </script>
 

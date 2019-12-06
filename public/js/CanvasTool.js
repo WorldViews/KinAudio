@@ -162,6 +162,10 @@ class CanvasTool {
         this.zf = .95;
     }
 
+    clear() {
+        this.graphics = {};
+    }
+
     /*
     zoom(zf) {
         zf = zf || .9;

@@ -23,7 +23,7 @@ class GamePad {
         this.scanGamepads();
         var controller = this.controller;
         if (!controller) {
-            console.log("no controller");
+            //console.log("no controller");
             return;
         }
         var ts = controller.timestamp;
@@ -74,3 +74,17 @@ class TaikoGamePad extends GamePad {
     }
 
 }
+
+class TaikoControl extends TaikoGamePad {
+    constructor(rhythmTool) {
+        super();
+        this.rhythmTool = rhythmTool;
+    }
+
+    onStrike(bid, ts) {
+        console.log("onStrike", bid);
+        this.rhythmTool.hitBeat();
+    }
+}
+
+

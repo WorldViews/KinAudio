@@ -131,10 +131,15 @@ class RhythmCanvasGUI extends RhythmGUI {
         else {
             console.log("*** No Buttons UI ***")
         }
-        this.setupCanvas();
+        this.updateSong();
         this.canvas.start();
         var inst = this;
         setTimeout(e => inst.canvas.setViewRange(-2, 9, -1, 2), 100);
+    }
+
+    updateSong() {
+        this.canvas.clear();
+        this.setupCanvas();
     }
 
     setupCanvas() {
