@@ -360,6 +360,12 @@ class RhythmTool {
         this.getBeat(r, c).css('border-color', color);
     }
 
+    clear() {
+        this.sounds = [];
+        this.slength = 0;
+        this.states = {};
+    }
+
     clearBeat() {
         for (var r = 0; r < this.slength; r++) {
             for (var c = 0; c < this.TICKS; c++) {
@@ -432,10 +438,13 @@ class RhythmTool {
         this.numMeasures = spec.numMeasures || 4;
         this.beatsPerMeasure = spec.beatsPerMeasure || 4;
         this.TICKS = this.numMeasures * this.beatsPerMeasure;
-        this.clearBeat();
+        this.clear();
         for (var r=0; r<tracks.length; r++) {
             var track = tracks[r];
             var soundname = track.name;
+            var fname = soundname+".wav";
+            this.sounds.push(fname);
+            this.slength = this.sounds.length;
             console.log("track", r, soundname);
             var beats = track.beats;
             let c = 0;
