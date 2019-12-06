@@ -451,6 +451,23 @@ class RhythmTool {
         this.gui.updateSong();
     }
 
+    /*
+    updateGraphics() {
+        console.log("updateGraphics");
+        for (var r=0; r<this.slength; r++) {
+            let c = 0;
+            for (var i = 0; i < this.numMeasures; i++) {
+                for (var j = 0; j < this.beatsPerMeasure; j++) {
+                    var v = this.getState(r, c);
+                    console.log("update", r, c, v);
+                    this.gui.noticeState(r,c,v);
+                    c++;
+                }
+            }
+        }
+    }
+    */
+
     getRhythmSpec() {
         console.log("getRhythmSpec");
         var spec = {tracks:[]};

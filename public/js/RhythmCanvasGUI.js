@@ -145,6 +145,7 @@ class RhythmCanvasGUI extends RhythmGUI {
 
     updateSong() {
         this.canvas.clear();
+        this.notes = {};
         this.setupCanvas();
     }
 
@@ -176,6 +177,8 @@ class RhythmCanvasGUI extends RhythmGUI {
                 }
                 this.canvas.addGraphic(ng);
                 this.notes[r + "_" + c] = ng;
+                var v = this.tool.getState(r,c);
+                this.noticeState(r, c, v);
             }
         }
         this.timeGraphic = new TimeGraphic({ x: 0, y: 1, t: 0 });
@@ -225,15 +228,17 @@ class RhythmCanvasGUI extends RhythmGUI {
     }
 
     noticeState(r, c, v) {
+        //console.log("noticeState", r, c, v);
         var bt = this.tool.getBeat(r, c);
         var color = v ? 'blue' : 'white';
         bt.css('background-color', color);
         var id = r + "_" + c;
         var ng = this.notes[id];
         if (!ng) {
-            console.log("no note", id);
+            console.log("*** no note", id);
             return;
         }
+        //console.log("fillStyle", id, color);
         ng.fillStyle = color;
     }
 
