@@ -3,7 +3,8 @@ var MIDI_URLS = [
     "/rvaudio/midi/shimauta.midi.json",
     "/rvaudio/midi/NA_6-8_NmlStr_Congas_195.midi.json",
 //    "/rvaudio/midi/NA_12-8_NmlStr_T167_FullKit_158.midi.json"
-    "/rvaudio/midi/taiko.midi.json"
+    //"/rvaudio/midi/taiko.midi.json"
+    "/rvaudio/midi/P1000380.midi.drum.json"
 ];
 
 var CW = {
@@ -227,7 +228,7 @@ class MidiPlay1 extends AudioProgram {
         }
         var tempoMin = 40;
         var tempo = tempoMin + 200*this.DLR;
-        this.toneTool.setTempo(tempo);
+        //this.toneTool.setTempo(tempo);
         this.updateLeapInfo();
         this.updateStatus();
     }
@@ -315,7 +316,7 @@ class MidiPlay1 extends AudioProgram {
             console.log("changePartTempo ... ignored - no toneTool");
             return;
         }
-        var tempoMin = 40;
+        var tempoMin = 10;
         var tempoMax = 200;
         var v = document.getElementById("tempo").value;
         console.log("v:", v);
