@@ -91,6 +91,35 @@ function uploadDataToFile(dpath, data, fileName)
     request.send(formData);
 }
 
+// This is a promise based version of code for getting
+// JSON.
+async function loadJSON(url)
+{
+    console.log("loadJSON: "+url);
+    return new Promise((res, rej) => {
+        $.ajax({
+            url: url,
+            dataType: 'text',
+            success: function(str) {
+                var data;
+                try {
+                    data = JSON.parse(str);
+                }
+                catch (err) {
+                    console.log("err: "+err);
+                    alert("Error in json for: "+url+"\n"+err);
+                    rej(err);
+                }
+                res(data);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log("Failed to get JSON for "+url);
+                rej(errorThrown);
+            }
+        });  
+    })
+}
+
 
 class RhythmGUI {
     constructor(tool) {
@@ -180,7 +209,9 @@ class RhythmTool {
         this.playing = false;
         this.BPM = 80;
         //this.TICKS = 16;
-        this.TICKS = 16;
+        this.beatsPerMeasure = 4;
+        this.numMeasures = 4;
+        this.TICKS = this.beatsPerMeasure * this.numMeasures;
         this.pRandOn = .3;
         this.pMutate = 0.001;
         this.pAdd = .02;
@@ -196,6 +227,9 @@ class RhythmTool {
         this.gui.init();
         //this.gui = new RhythmGUI(this);
         this.setRandomBeat();
+        this.addSongButton("songs/triplets.json", "triplets");
+        this.addSongButton("songs/cowbells24.json", "cowbells24");
+        this.addSongButton("songs/cowbells33.json", "cowbells33");
     }
 
     start() {
@@ -395,8 +429,9 @@ class RhythmTool {
     loadData(id, spec) {
         console.log("loadData", id, spec);
         var tracks = spec.tracks;
-        var numMeasures = spec.numMeasures || 4;
-        var beatsPerMeasure = spec.beatsPerMeasure || 4;
+        this.numMeasures = spec.numMeasures || 4;
+        this.beatsPerMeasure = spec.beatsPerMeasure || 4;
+        this.TICKS = this.numMeasures * this.beatsPerMeasure;
         this.clearBeat();
         for (var r=0; r<tracks.length; r++) {
             var track = tracks[r];
@@ -404,10 +439,10 @@ class RhythmTool {
             console.log("track", r, soundname);
             var beats = track.beats;
             let c = 0;
-            for (var i = 0; i < numMeasures; i++) {
+            for (var i = 0; i < this.numMeasures; i++) {
                 var bar = beats[i];
                 console.log(" ", i, bar);
-                for (var j = 0; j < beatsPerMeasure; j++) {
+                for (var j = 0; j < this.beatsPerMeasure; j++) {
                     this.setState(r, c, bar[j]);
                     c++;
                 }
@@ -450,20 +485,30 @@ class RhythmTool {
 
     exportBeat() {
         console.log("exportBeat");
-        var inst = this;
         var spec = this.getRhythmSpec();
         // create an object so we can jsonify it later
         console.log("spec:\n" + JSON.stringify(spec, null, 3));
-        var n = this.songs.length + 1;
-        var id = "song" + n;
         this.songs.push(spec);
-        $("#songs").append(sprintf("<button id='%s'>%s</button>", id, id));
-        $("#" + id).click(e => {
-            console.log("song ", id);
-            console.log("beat:\n" + JSON.stringify(spec, null, 3));
-            inst.loadData(id, spec);
-        });
+        var n = this.songs.length + 1;
+        var id = "song" + n;    
+        this.addSongButton(spec, id);
         uploadToFile("songSpecs", spec, id+".json");
+    }
+
+    async addSongButton(specOrURL, id) {
+        $("#songs").append(sprintf("<button id='%s'>%s</button>", id, id));
+        var inst = this;
+        $("#" + id).click(async e => {
+            console.log("song ", id);
+            if (typeof specOrURL == "string") {
+                console.log("load song from URL", specOrURL);
+                var spec = await loadJSON(specOrURL);
+                inst.loadData(id, spec);
+            }
+            else {
+                inst.loadData(id, specOrURL);
+            }
+        });
     }
 
     clickedOn(r, c) {

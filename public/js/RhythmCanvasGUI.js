@@ -28,12 +28,19 @@ class CountGraphic extends NoteGraphic {
     constructor(opts) {
         opts.textAlign = "left";
         super(opts);
+        //this.tool = opts.tool;
+        this.rhythmTool = this.tool.tool;
+        this.beatsPerMeasure = this.rhythmTool.beatsPerMeasure;
         this.text = this.getCountText(opts.c);
     }
 
+    getLabels() {
+        return ["one", "two", "three", "four", "five", "six", "seven", "eight"];
+    }
+
     getCountText(c) {
-        var b = (c % 4);
-        return ["one", "two", "three", "four"][b];
+        var b = (c % this.beatsPerMeasure);
+        return this.getLabels()[b];
     }
 
     setActive(val) {
@@ -47,9 +54,8 @@ class CountGraphic extends NoteGraphic {
 }
 
 class JapaneseCount extends CountGraphic {
-    getCountText(c) {
-        var b = (c % 4);
-        return ["itchi", "ni", "san", "shi"][b];
+    getLabels(c) {
+        return ["itchi", "ni", "san", "shi", "go", "roku", "shichi", "hachi"];
     }
 }
 
