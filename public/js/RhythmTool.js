@@ -171,9 +171,9 @@ class ButtonGUI extends RhythmGUI {
         var inst = this;
         var tool = this.tool;
         var div = $("#beatsDiv");
-        for (let r = 0; r < tool.slength; r++) {
+        for (let r = 0; r < tool.numTracks; r++) {
             var beatDiv = div.append("<div class='beats'></div>");
-            var soundname = tool.sounds[r].split('.')[0];
+            var soundname = tool.tracks[r].sound.split('.')[0];
             var id = soundname;
             beatDiv.append(sprintf("<input id='%s' type='button' value=' ' style='width:30px;height:30px;margin:4px'></input>", id));
             beatDiv.append(sprintf("%s", soundname));
@@ -204,8 +204,7 @@ class RhythmTool {
         this.songs = [];
         this.states = {};
         this.muted = {};
-        this.sounds = opts.sounds || SOUNDS2;
-        this.slength = this.sounds.length;
+        this.numTracks = 0;
         this.playing = false;
         this.BPM = 80;
         //this.TICKS = 16;
@@ -224,12 +223,27 @@ class RhythmTool {
         var guiClass = opts.guiClass || ButtonGUI;
         //console.log("class", guiClass);
         this.gui = new guiClass(this);
+        this.initFromSounds(opts.sounds);
         this.gui.init();
         //this.gui = new RhythmGUI(this);
         this.setRandomBeat();
         this.addSongButton("songs/triplets.json", "triplets");
         this.addSongButton("songs/cowbells24.json", "cowbells24");
         this.addSongButton("songs/cowbells33.json", "cowbells33");
+        this.addSongButton("songs/taikoEx1.json", "taikoEx1");
+    }
+
+    initFromSounds(sounds) {
+        sounds = sounds || SOUNDS2;
+        this.numTracks = sounds.length;
+        this.tracks = [];
+        for (var i=0; i<this.numTracks; i++) {
+            var name = sounds[i];
+            var sound = name;
+            if (name.contains('.'))
+                name = name.split('.')[0];
+            this.tracks[i] = {name, sound};
+        }
     }
 
     start() {
@@ -313,14 +327,14 @@ class RhythmTool {
     handleBeat() {
         //this.gui.noticeTime(this.t);
         this.gui.activateBeat(this.currentTick);
-        for (let i = 0; i < this.slength; i++) {
+        for (let i = 0; i < this.numTracks; i++) {
             this.setBeatBorder(i, this.lastTick, 'grey');
             this.setBeatBorder(i, this.currentTick, 'red');
             if (this.muted[i])
                 continue;
             if (this.getState(i, this.currentTick)) {
                 //console.log("tick play ", i, this.currentTick);
-                this.playSound(soundPrefix + this.sounds[i])
+                this.playSound(soundPrefix + this.tracks[i].sound)
             }
         }
         this.mutate();
@@ -361,13 +375,13 @@ class RhythmTool {
     }
 
     clear() {
-        this.sounds = [];
-        this.slength = 0;
+        this.tracks = [];
+        this.numTracks = 0;
         this.states = {};
     }
 
     clearBeat() {
-        for (var r = 0; r < this.slength; r++) {
+        for (var r = 0; r < this.numTracks; r++) {
             for (var c = 0; c < this.TICKS; c++) {
                 this.setState(r, c, false);
             }
@@ -376,7 +390,7 @@ class RhythmTool {
 
     setRandomBeat() {
         this.clearBeat();
-        for (var r = 0; r < this.slength; r++) {
+        for (var r = 0; r < this.numTracks; r++) {
             for (var c = 0; c < this.TICKS; c++) {
                 if (Math.random() < this.pRandOn) {
                     this.setState(r, c, true);
@@ -407,7 +421,7 @@ class RhythmTool {
             return;
         }
         //console.log("mutate");
-        for (var r = 0; r < this.slength; r++) {
+        for (var r = 0; r < this.numTracks; r++) {
             for (var c = 0; c < this.TICKS; c++) {
                 if (this.getState(r, c)) {
                     if (Math.random() < this.pRemove) {
@@ -427,8 +441,8 @@ class RhythmTool {
 
     hitBeat(i) {
         if (i == null)
-            i = this.sounds.length - 1;
-        this.playSound(soundPrefix + this.sounds[i]);
+            i = this.numTracks - 1;
+        this.playSound(soundPrefix + this.tracks[i].sound);
         this.gui.noticeUserBeat(this.beatNum);
     }
 
@@ -441,11 +455,13 @@ class RhythmTool {
         this.clear();
         for (var r=0; r<tracks.length; r++) {
             var track = tracks[r];
-            var soundname = track.name;
-            var fname = soundname+".wav";
-            this.sounds.push(fname);
-            this.slength = this.sounds.length;
-            console.log("track", r, soundname);
+            if (!track.sound)
+                track.sound = track.name+".wav";
+            //var soundname = track.sound;
+            //var fname = soundname+".wav";
+            this.tracks.push(track);
+            this.numTracks = this.tracks.length;
+            console.log("track", r, track.name);
             var beats = track.beats;
             let c = 0;
             for (var i = 0; i < this.numMeasures; i++) {
@@ -463,7 +479,7 @@ class RhythmTool {
     /*
     updateGraphics() {
         console.log("updateGraphics");
-        for (var r=0; r<this.slength; r++) {
+        for (var r=0; r<this.numTracks; r++) {
             let c = 0;
             for (var i = 0; i < this.numMeasures; i++) {
                 for (var j = 0; j < this.beatsPerMeasure; j++) {
@@ -482,8 +498,8 @@ class RhythmTool {
         var spec = {tracks:[]};
         var inst = this;
         // for each row (sound)
-        for (let r = 0; r < this.sounds.length; r++) {
-            var sound = this.sounds[r];
+        for (let r = 0; r < this.numTracks; r++) {
+            var sound = this.tracks[r].sound;
             // get the soundname, without .wav
             var soundname = sound.split('.')[0];
             // create arrays

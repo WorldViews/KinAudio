@@ -155,8 +155,9 @@ class RhythmCanvasGUI extends RhythmGUI {
         var div = $("#beatsDiv");
         var nwd = 0.5;
         var nht = 0.4;
-        for (let r = 0; r < tool.slength; r++) {
-            var name = tool.sounds[r].split('.')[0];
+        for (let r = 0; r < tool.numTracks; r++) {
+            //var name = tool.tracks[r].sound.split('.')[0];
+            var name = tool.tracks[r].name;
             var id = name;
             var y = nht * r;
             var label = new LabelGraphic({id, r, x: -.8, y: y, width:1.2, height:.25, text: id, tool: inst});
@@ -192,9 +193,9 @@ class RhythmCanvasGUI extends RhythmGUI {
         var inst = this;
         var tool = this.tool;
         var div = $("#beatsDiv");
-        for (let r = 0; r < tool.slength; r++) {
+        for (let r = 0; r < tool.numTracks; r++) {
             var beatDiv = div.append("<div class='beats'></div>");
-            var soundname = tool.sounds[r].split('.')[0];
+            var soundname = tool.tracks[r].split('.')[0];
             var id = soundname;
             beatDiv.append(sprintf("<input id='%s' type='button' value=' ' style='width:30px;height:30px;margin:4px'></input>", id));
             beatDiv.append(sprintf("%s", soundname));
@@ -219,7 +220,7 @@ class RhythmCanvasGUI extends RhythmGUI {
     activateBeat(b) {
         //console.log("activateBeat", b);
         var tool = this.tool;
-        for (let r = 0; r < tool.slength; r++) {
+        for (let r = 0; r < tool.numTracks; r++) {
             for (let c = 0; c < this.tool.TICKS; c++) {
                 var note = this.notes[r + "_" + c];
                 note.setActive(c == b);
