@@ -230,7 +230,9 @@ class RhythmTool {
         this.addSongButton("songs/triplets.json", "triplets");
         this.addSongButton("songs/cowbells24.json", "cowbells24");
         this.addSongButton("songs/cowbells33.json", "cowbells33");
-        this.addSongButton("songs/taikoEx1.json", "taikoEx1");
+        this.addSongButton("songs/taikoEx1.json", "TaikoExercise1");
+        this.addSongButton("songs/taikoEx2.json", "TaikoExercise2");
+        this.addSongButton("songs/taikoEx3.json", "TaikoExercise3");
     }
 
     initFromSounds(sounds) {
@@ -240,7 +242,7 @@ class RhythmTool {
         for (var i=0; i<this.numTracks; i++) {
             var name = sounds[i];
             var sound = name;
-            if (name.contains('.'))
+            if (name.indexOf('.') >= 0)
                 name = name.split('.')[0];
             this.tracks[i] = {name, sound};
         }
